@@ -50,11 +50,11 @@
 (describe "The long option parser"
   (it "should parse \"--input\""
     (expect (parsec-with-input "--input" (docopt--parse-long-option))
-            :to-equal "input"))
+            :to-equal (docopt-make-option nil "input")))
 
   (it "should parse \"--input=ARG\""
     (expect (parsec-with-input "--input=ARG" (docopt--parse-long-option))
-            :to-equal '("input" "=" "ARG"))))
+            :to-equal (docopt-make-option nil "input" nil "ARG"))))
 
 (describe "The blank line parser"
   (it "should parse lines with spaces"
@@ -78,6 +78,18 @@
                         "  --moored      Moored (anchored) mine.\n")
               (docopt--parse-option-description))
             :to-equal "Show version.\n  More version help.")))
+
+(describe "The option parser"
+  (it "should parse a short option"
+    ;; (expect (parsec-with-input "-h Show this help."
+    ;;           (docopt--parse-option))
+    ;;         :to-equal (docopt-make-option "Show this help." nil "h"))
+    )
+
+  (it "should parse a long option without arguments"
+    (expect (parsec-with-input "  --moored      Moored (anchored) mine."
+              (docopt--parse-option))
+            :to-equal (docopt-make-option "Moored (anchored) mine." "moored"))))
 
 (describe "The option lines parser"
   (it "should parse single-line descriptions"

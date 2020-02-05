@@ -15,6 +15,7 @@
 (require 'cl-lib)
 (require 'eieio)
 (require 'parsec)
+(require 'seq)
 
 (defclass docopt-option ()
   ((argument
@@ -176,11 +177,13 @@ Options:
   "Parse a long option."
   (parsec-or
    (parsec-try
-    (parsec-collect
-     (docopt--parse-long-option-name)
-     (docopt--parse-long-option-separator)
-     (docopt--parse-long-option-argument)))
-   (docopt--parse-long-option-name)))
+    (seq-let [name _ argument]
+        (parsec-collect
+         (docopt--parse-long-option-name)
+         (docopt--parse-long-option-separator)
+         (docopt--parse-long-option-argument))
+      (docopt-make-option nil name nil argument)))
+   (docopt-make-option nil (docopt--parse-long-option-name))))
 
 ;; Option Line
 
@@ -203,14 +206,15 @@ Options:
 
 (defun docopt--parse-option ()
   "Parse an option line."
-  (let* ((result (parsec-collect
-                  (docopt--parse-spaces)
-                  (docopt--parse-long-option)
-                  (docopt--parse-spaces)
-                  (docopt--parse-option-description)))
-         (long-name (nth 1 result))
-         (description (nth 3 result)))
-    (docopt-make-option description long-name)))
+  (seq-let [_ long-option _ description]
+      (parsec-collect
+       (docopt--parse-spaces)
+       (docopt--parse-long-option)
+       (docopt--parse-spaces)
+       (docopt--parse-option-description))
+    (docopt-make-option
+     description
+     (docopt-option-long-name long-option))))
 
 (defun docopt--parse-options ()
   "Parse an option lines."
