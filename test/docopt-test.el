@@ -24,7 +24,7 @@
 
   (it "should parse the \"-h\" short option name"
     (expect (parsec-with-input "-h" (docopt--parse-short-option-name))
-            :to-equal "-h"))
+            :to-equal "h"))
 
   (it "should parse the \"--help\" long option name"
     (expect (parsec-with-input "--help" (docopt--parse-long-option-name))
@@ -41,11 +41,11 @@
 (describe "The short option parser"
   (it "should parse \"-f FILE\""
     (expect (parsec-with-input "-f FILE" (docopt--parse-short-option))
-            :to-equal '("-f" " " "FILE")))
+            :to-equal (docopt-make-option nil nil "f" "FILE")))
 
   (it "should parse \"-fFILE\""
     (expect (parsec-with-input "-fFILE" (docopt--parse-short-option))
-            :to-equal '("-f" nil "FILE"))))
+            :to-equal (docopt-make-option nil nil "f" "FILE"))))
 
 (describe "The long option parser"
   (it "should parse \"--input\""
