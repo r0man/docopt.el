@@ -150,22 +150,19 @@ Options:
 
 (defun docopt--parse-short-option-argument ()
   "Parse a short option argument."
-  (parsec-re "[[:alnum:]-_]+"))
+  (let ((case-fold-search nil))
+    (parsec-return (parsec-re "[A-Z0-9-_]+")
+      (parsec-lookahead (parsec-ch ?\s)))))
 
 (defun docopt--parse-short-option ()
   "Parse a short option."
-  (parsec-collect
-   (docopt--parse-short-option-name)
-   (parsec-optional (docopt--parse-short-option-separator))
-   (docopt--parse-short-option-argument)))
-
-(defun docopt--parse-short-option ()
-  "Parse a short option."
-  (seq-let [name _ argument]
+  (seq-let [name _ [_ argument]]
       (parsec-collect
        (docopt--parse-short-option-name)
-       (parsec-optional (docopt--parse-short-option-separator))
-       (docopt--parse-short-option-argument))
+       (parsec-optional
+        (parsec-try
+         (parsec-and (docopt--parse-short-option-separator)
+                     (docopt--parse-short-option-argument)))))
     (docopt-make-option nil nil name argument)))
 
 ;; Long Option
@@ -215,15 +212,19 @@ Options:
 
 (defun docopt--parse-option ()
   "Parse an option line."
-  (seq-let [_ long-option _ description]
+  (seq-let [_ short-option long-option _ description]
       (parsec-collect
        (docopt--parse-spaces)
-       (docopt--parse-long-option)
+       (parsec-optional (docopt--parse-short-option))
+       (parsec-optional (docopt--parse-long-option))
        (docopt--parse-spaces)
        (docopt--parse-option-description))
     (docopt-make-option
      description
-     (docopt-option-long-name long-option))))
+     (when long-option (oref long-option :long-name))
+     (when short-option (oref short-option :short-name))
+     (cond (long-option (oref long-option :argument))
+           (short-option (oref short-option :argument))))))
 
 (defun docopt--parse-options ()
   "Parse an option lines."
