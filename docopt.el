@@ -197,11 +197,11 @@ Options:
   (parsec-and (docopt--parse-long-option-separator)
               (docopt--parse-argument)))
 
-(defun docopt--parse-long-option-arity-0 ()
+(defun docopt--parse-long-option-without-argument ()
   "Parse a long option without an argument."
   (docopt-make-option nil (docopt--parse-long-option-name)))
 
-(defun docopt--parse-long-option-arity-1 ()
+(defun docopt--parse-long-option-with-argument ()
   "Parse a long option with an argument."
   (seq-let [name argument]
       (parsec-collect
@@ -211,8 +211,8 @@ Options:
 
 (defun docopt--parse-long-option ()
   "Parse a long option."
-  (parsec-or (parsec-try (docopt--parse-long-option-arity-1))
-             (docopt--parse-long-option-arity-0)))
+  (parsec-or (parsec-try (docopt--parse-long-option-with-argument))
+             (docopt--parse-long-option-without-argument)))
 
 ;; Options
 
