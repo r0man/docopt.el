@@ -43,10 +43,10 @@
     (expect (parsec-with-input "\n" (docopt--parse-blank-line))
             :to-equal '("" "\n"))))
 
-(describe "The option description parser"
+(describe "The option line description parser"
   (it "should parse single-line descriptions"
     (expect (parsec-with-input "Show version.\n  More version help."
-              (docopt--parse-option-description))
+              (docopt--parse-option-line-description))
             :to-equal "Show version.\n  More version help."))
 
   (it "should parse multi-line descriptions"
@@ -54,37 +54,46 @@
                 (concat "Show version.\n"
                         "  More version help.\n"
                         "  --moored      Moored (anchored) mine.\n")
-              (docopt--parse-option-description))
+              (docopt--parse-option-line-description))
             :to-equal "Show version.\n  More version help.")))
 
-(describe "The option parser"
+(describe "The argument parser"
+  (it "should parse a spaceship argument"
+    (expect (parsec-with-input "<host>" (docopt--parse-argument))
+            :to-equal (docopt-make-argument "host")))
+
+  (it "should parse an upper case argument"
+    (expect (parsec-with-input "HOST" (docopt--parse-argument))
+            :to-equal (docopt-make-argument "HOST"))))
+
+(describe "The option line parser"
 
   (it "should parse a short option without an argument"
-    (expect (parsec-with-input "-h Show this help." (docopt--parse-option))
+    (expect (parsec-with-input "-h  Show this help." (docopt--parse-option-line))
             :to-equal (docopt-make-option "Show this help." nil "h")))
 
   (it "should parse a short option with a space separated argument"
-    (expect (parsec-with-input "-p PATH Path to files." (docopt--parse-option))
-            :to-equal (docopt-make-option "Path to files." nil "p" "PATH")))
+    (expect (parsec-with-input "-p PATH  Path to files." (docopt--parse-option-line))
+            :to-equal (docopt-make-option "Path to files." nil "p" (docopt-make-argument "PATH"))))
 
   (it "should parse a short option with a not separated argument"
-    (expect (parsec-with-input "-pPATH Path to files." (docopt--parse-option))
-            :to-equal (docopt-make-option "Path to files." nil "p" "PATH")))
+    (expect (parsec-with-input "-pPATH  Path to files." (docopt--parse-option-line))
+            :to-equal (docopt-make-option "Path to files." nil "p" (docopt-make-argument "PATH"))))
 
   (it "should parse a long option without an argument"
-    (expect (parsec-with-input "--moored Moored (anchored) mine." (docopt--parse-option))
+    (expect (parsec-with-input "--moored  Moored (anchored) mine." (docopt--parse-option-line))
             :to-equal (docopt-make-option "Moored (anchored) mine." "moored")))
 
   (it "should parse a long option with an argument"
-    (expect (parsec-with-input "--path PATH Path to files." (docopt--parse-option))
-            :to-equal (docopt-make-option "Path to files." "path" nil "PATH"))))
+    (expect (parsec-with-input "--path PATH  Path to files." (docopt--parse-option-line))
+            :to-equal (docopt-make-option "Path to files." "path" nil (docopt-make-argument "PATH")))))
 
 (describe "The option lines parser"
   (it "should parse single-line descriptions"
     (expect (parsec-with-input
                 (concat "--moored      Moored (anchored) mine.\n"
                         "--drifting    Drifting mine.")
-              (docopt--parse-options))
+              (docopt--parse-option-lines))
             :to-equal (list (docopt-make-option "Moored (anchored) mine." "moored")
                             (docopt-make-option "Drifting mine." "drifting"))))
 
@@ -94,7 +103,7 @@
                         "--drifting    Drifting mine.\n"
                         "--version     Show version."
                         "                More version help.")
-              (docopt--parse-options))
+              (docopt--parse-option-lines))
             :to-equal (list (docopt-make-option "Moored (anchored) mine." "moored")
                             (docopt-make-option "Drifting mine." "drifting")
                             (docopt-make-option (concat "Show version.                More version help.")
