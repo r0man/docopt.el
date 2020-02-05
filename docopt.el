@@ -199,15 +199,20 @@ Options:
   "Parse a long option separator."
   (parsec-or (parsec-ch ?=) (parsec-ch ?\s)))
 
+(defun docopt--parse-long-option-argument ()
+  "Parse an optional long option argument."
+  (parsec-and
+   (docopt--parse-long-option-separator)
+   (docopt--parse-argument)))
+
 (defun docopt--parse-long-option ()
   "Parse a long option."
   (parsec-or
    (parsec-try
-    (seq-let [name _ argument]
+    (seq-let [name argument]
         (parsec-collect
          (docopt--parse-long-option-name)
-         (docopt--parse-long-option-separator)
-         (docopt--parse-argument))
+         (docopt--parse-long-option-argument))
       (docopt-make-option nil name nil argument)))
    (docopt-make-option nil (docopt--parse-long-option-name))))
 
