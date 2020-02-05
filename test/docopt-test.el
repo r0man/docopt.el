@@ -11,58 +11,58 @@
 
 (describe "Parsing"
   (it "should parse \"Examples\""
-    (expect (parsec-with-input "Examples:" (docopt-examples-str))
+    (expect (parsec-with-input "Examples:" (docopt--parse-examples-str))
             :to-equal "Examples:"))
 
   (it "should parse \"Usage\""
-    (expect (parsec-with-input "Usage:" (docopt-usage-str))
+    (expect (parsec-with-input "Usage:" (docopt--parse-usage-str))
             :to-equal "Usage:"))
 
   (it "should parse \"Options\""
-    (expect (parsec-with-input "Options:" (docopt-options-str))
+    (expect (parsec-with-input "Options:" (docopt--parse-options-str))
             :to-equal "Options:"))
 
   (it "should parse the \"-h\" short option name"
-    (expect (parsec-with-input "-h" (docopt-short-option-name))
+    (expect (parsec-with-input "-h" (docopt--parse-short-option-name))
             :to-equal "-h"))
 
   (it "should parse the \"--help\" long option name"
-    (expect (parsec-with-input "--help" (docopt-long-option-name))
+    (expect (parsec-with-input "--help" (docopt--parse-long-option-name))
             :to-equal "help"))
 
   (it "should parse the \"<name>\" argument"
-    (expect (parsec-with-input "<name>" (docopt-argument))
+    (expect (parsec-with-input "<name>" (docopt--parse-argument))
             :to-equal "name"))
 
   (it "should parse the \"my_program\" program name"
-    (expect (parsec-with-input "my_program" (docopt-program-name))
+    (expect (parsec-with-input "my_program" (docopt--parse-program-name))
             :to-equal "my_program")))
 
 (describe "The short option parser"
   (it "should parse \"-f FILE\""
-    (expect (parsec-with-input "-f FILE" (docopt-short-option))
+    (expect (parsec-with-input "-f FILE" (docopt--parse-short-option))
             :to-equal '("-f" " " "FILE")))
 
   (it "should parse \"-fFILE\""
-    (expect (parsec-with-input "-fFILE" (docopt-short-option))
+    (expect (parsec-with-input "-fFILE" (docopt--parse-short-option))
             :to-equal '("-f" nil "FILE"))))
 
 (describe "The long option parser"
   (it "should parse \"--input\""
-    (expect (parsec-with-input "--input" (docopt-long-option))
+    (expect (parsec-with-input "--input" (docopt--parse-long-option))
             :to-equal "input"))
 
   (it "should parse \"--input=ARG\""
-    (expect (parsec-with-input "--input=ARG" (docopt-long-option))
+    (expect (parsec-with-input "--input=ARG" (docopt--parse-long-option))
             :to-equal '("input" "=" "ARG"))))
 
 (describe "The blank line parser"
   (it "should parse lines with spaces"
-    (expect (parsec-with-input " \n" (docopt-blank-line))
+    (expect (parsec-with-input " \n" (docopt--parse-blank-line))
             :to-equal '(" " "\n")))
 
   (it "should parse lines without any spaces"
-    (expect (parsec-with-input "\n" (docopt-blank-line))
+    (expect (parsec-with-input "\n" (docopt--parse-blank-line))
             :to-equal '("" "\n"))))
 
 (describe "The option description parser"

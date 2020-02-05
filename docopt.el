@@ -69,144 +69,144 @@ Options:
   --drifting    Drifting mine.
 ")
 
-(defun docopt-spaces ()
+(defun docopt--parse-spaces ()
   "Parse spaces and newlines."
   (parsec-many-as-string
    (parsec-re "[[:space:]\r\n]")))
 
-(defun docopt-argument-name ()
+(defun docopt--parse-argument-name ()
   "Parse an argument name."
   (parsec-re "[[:alnum:]-_]+"))
 
-(defun docopt-repeated ()
+(defun docopt--parse-repeated ()
   "Parse the repeated \"...\" string."
   (parsec-str "..."))
 
-(defun docopt-argument ()
+(defun docopt--parse-argument ()
   "Parse an argument."
   (parsec-between
    (parsec-ch ?<) (parsec-ch ?>)
-   (docopt-argument-name)))
+   (docopt--parse-argument-name)))
 
-(defun docopt-newlines ()
+(defun docopt--parse-newlines ()
   "Parse newlines."
   (parsec-many (parsec-newline)))
 
-(defun docopt-parse-title ()
+(defun docopt--parse-parse-title ()
   "Parse the title."
-  (docopt-newlines)
+  (docopt--parse-newlines)
   (parsec-re "\\([^.]+\.\\)"))
 
-(defun docopt-parse-description ()
+(defun docopt--parse-parse-description ()
   "Parse the title."
   (parsec-until (parsec-str "Usage:")))
 
-(defun docopt-examples-str ()
+(defun docopt--parse-examples-str ()
   "Return the \"Examples:\" string parser."
   (parsec-str "Examples:"))
 
-(defun docopt-usage-str ()
+(defun docopt--parse-usage-str ()
   "Return the \"Usage:\" parser."
   (parsec-str "Usage:"))
 
-(defun docopt-program-name ()
+(defun docopt--parse-program-name ()
   "Parse a usage line."
   (parsec-re "[[:alnum:]-_]+"))
 
-(defun docopt-command-name ()
+(defun docopt--parse-command-name ()
   "Parse a command name."
   (parsec-re "[[:alnum:]-_]+"))
 
-(defun docopt-subcommand-name ()
+(defun docopt--parse-subcommand-name ()
   "Parse a subcommand name."
   (parsec-re "[[:alnum:]-_]+"))
 
-(defun docopt-usage-line ()
+(defun docopt--parse-usage-line ()
   "Parse a usage line."
   (parsec-collect
-   (docopt-program-name)
-   (docopt-spaces)
-   (docopt-command-name)
-   (docopt-spaces)
-   (docopt-subcommand-name)
-   (docopt-spaces)))
+   (docopt--parse-program-name)
+   (docopt--parse-spaces)
+   (docopt--parse-command-name)
+   (docopt--parse-spaces)
+   (docopt--parse-subcommand-name)
+   (docopt--parse-spaces)))
 
 ;; (s-match "[[:alnum:]-_]+" "my_program")
 
-(defun docopt-options-str ()
+(defun docopt--parse-options-str ()
   "Return the \"Options:\" parser."
   (parsec-str "Options:"))
 
 ;; Short Option
 
-(defun docopt-short-option-name ()
+(defun docopt--parse-short-option-name ()
   "Parse a short option name."
   (parsec-re "-[[:alnum:]]"))
 
-(defun docopt-short-option-separator ()
+(defun docopt--parse-short-option-separator ()
   "Parse a short option argument."
   (parsec-re "[[:space:]]"))
 
-(defun docopt-short-option-argument ()
+(defun docopt--parse-short-option-argument ()
   "Parse a short option argument."
   (parsec-re "[[:alnum:]-_]+"))
 
-(defun docopt-short-option ()
+(defun docopt--parse-short-option ()
   "Parse a short option."
   (parsec-collect
-   (docopt-short-option-name)
-   (parsec-optional (docopt-short-option-separator))
-   (docopt-short-option-argument)))
+   (docopt--parse-short-option-name)
+   (parsec-optional (docopt--parse-short-option-separator))
+   (docopt--parse-short-option-argument)))
 
 ;; Long Option
 
-(defun docopt-long-option-name ()
+(defun docopt--parse-long-option-name ()
   "Parse a long option name."
   (substring (parsec-re "--[[:alnum:]]+") 2))
 
-(defun docopt-long-option-argument ()
+(defun docopt--parse-long-option-argument ()
   "Parse a long option argument."
   (parsec-re "[[:alnum:]-_]+"))
 
-(defun docopt-long-option-separator ()
+(defun docopt--parse-long-option-separator ()
   "Parse a long option separator."
   (parsec-or (parsec-ch ?=) (parsec-ch ?\s)))
 
-(defun docopt-long-option ()
+(defun docopt--parse-long-option ()
   "Parse a long option."
   (parsec-or
    (parsec-try
     (parsec-collect
-     (docopt-long-option-name)
-     (docopt-long-option-separator)
-     (docopt-long-option-argument)))
-   (docopt-long-option-name)))
+     (docopt--parse-long-option-name)
+     (docopt--parse-long-option-separator)
+     (docopt--parse-long-option-argument)))
+   (docopt--parse-long-option-name)))
 
 ;; Option Line
 
-(defun docopt-option-begin ()
+(defun docopt--parse-option-begin ()
   "Parse the beginning of an option line."
   (parsec-and (parsec-re "\s*")
               (parsec-lookahead (parsec-ch ?-))))
 
-(defun docopt-option-separator ()
+(defun docopt--parse-option-separator ()
   "Parse the next option line."
-  (parsec-and (parsec-eol) (docopt-option-begin)))
+  (parsec-and (parsec-eol) (docopt--parse-option-begin)))
 
 (defun docopt--parse-option-description ()
   "Parse an option description."
   (parsec-many-till-s
    (parsec-any-ch)
    (parsec-or
-    (parsec-try (docopt-option-separator))
+    (parsec-try (docopt--parse-option-separator))
     (parsec-eof))))
 
 (defun docopt--parse-option ()
   "Parse an option line."
   (let* ((result (parsec-collect
-                  (docopt-spaces)
-                  (docopt-long-option)
-                  (docopt-spaces)
+                  (docopt--parse-spaces)
+                  (docopt--parse-long-option)
+                  (docopt--parse-spaces)
                   (docopt--parse-option-description)))
          (long-name (nth 1 result))
          (description (nth 3 result)))
@@ -216,22 +216,22 @@ Options:
   "Parse an option lines."
   (parsec-many (docopt--parse-option)))
 
-(defun docopt-blank-line ()
+(defun docopt--parse-blank-line ()
   "Parse a blank line."
   (parsec-collect
    (parsec-many-as-string (parsec-ch ?\s))
    (parsec-eol)))
 
-(defun docopt-parse-document (document)
+(defun docopt--parse-parse-document (document)
   (parsec-with-input document
     (parsec-collect
-     (parsec-return (docopt-parse-title)
-       (docopt-newlines))
+     (parsec-return (docopt--parse-parse-title)
+       (docopt--parse-newlines))
      (parsec-until (parsec-str "Usage:") :end)
-     (docopt-spaces)
-     ;; (parsec-return (docopt-usage-str)
-     ;;   (docopt-newlines))
-     ;; (docopt-parse-description)
+     (docopt--parse-spaces)
+     ;; (parsec-return (docopt--parse-usage-str)
+     ;;   (docopt--parse-newlines))
+     ;; (docopt--parse-parse-description)
      (parsec-until (parsec-eof)))))
 
 (provide 'docopt)
