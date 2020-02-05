@@ -173,16 +173,20 @@ Options:
   "Parse a short option separator."
   (parsec-re "[[:space:]]"))
 
+(defun docopt--parse-short-option-argument ()
+  "Parse an optional short option argument."
+  (parsec-optional
+   (parsec-try
+    (parsec-and
+     (parsec-optional (docopt--parse-short-option-separator))
+     (docopt--parse-argument)))))
+
 (defun docopt--parse-short-option ()
   "Parse a short option."
   (seq-let [name argument]
       (parsec-collect
        (docopt--parse-short-option-name)
-       (parsec-optional
-        (parsec-try
-         (parsec-and
-          (parsec-optional (docopt--parse-short-option-separator))
-          (docopt--parse-argument)))))
+       (docopt--parse-short-option-argument))
     (docopt-make-option nil nil name argument)))
 
 ;; Long Option
