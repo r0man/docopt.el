@@ -20,36 +20,64 @@
 (defclass docopt-argument ()
   ((default
      :initarg :default
+     :initform nil
      :accessor docopt-argument-default
      :documentation "The default of the argument.")
    (name
     :initarg :name
+    :initform nil
     :accessor docopt-argument-name
     :documentation "The name of the argument.")
    (optional
     :initarg :optional
+    :initform nil
     :accessor docopt-argument-optional
     :documentation "Whether the argument is optional or not."))
   "A class representing a DOCOPT argument.")
 
-(defclass docopt-option ()
+(defclass docopt-option-base ()
   ((argument
     :initarg :argument
+    :initform nil
     :accessor docopt-option-argument
     :documentation "The argument of the option.")
    (description
     :initarg :description
+    :initform nil
     :accessor docopt-option-description
     :documentation "The description of the option.")
-   (long-name
-    :initarg :long-name
-    :accessor docopt-option-long-name
+   (name
+    :initarg :name
+    :initform nil
+    :accessor docopt-option-name
     :documentation "The long name of the option.")
-   (short-name
-    :initarg :short-name
-    :accessor docopt-option-short-name
-    :documentation "The short name of the option."))
-  "A class representing a DOCOPT option.")
+   (optional
+    :initarg :optional
+    :initform nil
+    :accessor docopt-option-optional
+    :documentation "Whether the option is optional or not."))
+  "A class representing a DOCOPT base option.")
+
+(defclass docopt-long-option (docopt-option-base) ()
+  "A class representing a DOCOPT long option.")
+
+(defclass docopt-short-option (docopt-option-base) ()
+  "A class representing a DOCOPT short option.")
+
+(defclass docopt-option-line ()
+  ((description
+    :initarg :description
+    :accessor docopt-option-line-description
+    :documentation "The description of the option-line.")
+   (long-option
+    :initarg :long-option
+    :accessor docopt-option-line-long-option
+    :documentation "The long name of the option line.")
+   (short-option
+    :initarg :short-option
+    :accessor docopt-option-line-short-option
+    :documentation "The short name of the option line."))
+  "A class representing a DOCOPT option line.")
 
 (defun docopt-make-argument (&optional name default optional)
   "Make a new DOCOPT argument instance.
@@ -60,11 +88,22 @@ Initialize the NAME, DEFAULT and OPTIONAL slots of the instance."
   "Make a new DOCOPT option instance.
 Initialize the DESCRIPTION, LONG-NAME, SHORT-NAME and ARGUMENT
 slots of the instance."
-  (make-instance 'docopt-option
-                 :argument argument
-                 :description description
-                 :long-name long-name
-                 :short-name short-name))
+  (let ((argument (when argument (make-instance 'docopt-argument :name argument))))
+    (make-instance
+     'docopt-option-line
+     :description description
+     :long-option (when long-name
+                    (make-instance
+                     'docopt-long-option
+                     :argument argument
+                     :description description
+                     :name long-name))
+     :short-option (when short-name
+                     (make-instance
+                      'docopt-short-option
+                      :argument argument
+                      :description description
+                      :name short-name)))))
 
 (defvar docopt-example "
 Naval Fate.
@@ -85,10 +124,13 @@ Options:
   --drifting    Drifting mine.
 ")
 
-(defun docopt--parse-spaces ()
+(defun docopt--parse-whitespace ()
   "Parse spaces and newlines."
-  (parsec-many-as-string
-   (parsec-re "[[:space:]\r\n]")))
+  (parsec-re "[[:space:]\r\n]"))
+
+(defun docopt--parse-whitespaces ()
+  "Parse spaces and newlines."
+  (parsec-many-as-string (docopt--parse-whitespace)))
 
 (defun docopt--parse-newlines ()
   "Parse newlines."
@@ -127,11 +169,11 @@ Options:
   "Parse a usage line."
   (parsec-collect
    (docopt--parse-program-name)
-   (docopt--parse-spaces)
+   (docopt--parse-whitespaces)
    (docopt--parse-command-name)
-   (docopt--parse-spaces)
+   (docopt--parse-whitespaces)
    (docopt--parse-subcommand-name)
-   (docopt--parse-spaces)))
+   (docopt--parse-whitespaces)))
 
 ;; Argument
 
@@ -180,7 +222,7 @@ Options:
       (parsec-collect
        (docopt--parse-short-option-name)
        (docopt--parse-short-option-argument))
-    (docopt-make-option nil nil name argument)))
+    (make-instance 'docopt-short-option :name name :argument argument)))
 
 ;; Long Option
 
@@ -199,7 +241,7 @@ Options:
 
 (defun docopt--parse-long-option-without-argument ()
   "Parse a long option without an argument."
-  (docopt-make-option nil (docopt--parse-long-option-name)))
+  (make-instance 'docopt-long-option :name (docopt--parse-long-option-name)))
 
 (defun docopt--parse-long-option-with-argument ()
   "Parse a long option with an argument."
@@ -207,7 +249,7 @@ Options:
       (parsec-collect
        (docopt--parse-long-option-name)
        (docopt--parse-long-option-argument))
-    (docopt-make-option nil name nil argument)))
+    (make-instance 'docopt-long-option :name name :argument argument)))
 
 (defun docopt--parse-long-option ()
   "Parse a long option."
@@ -248,17 +290,20 @@ Options:
   "Parse an option line."
   (seq-let [_ short-option long-option _ description]
       (parsec-collect
-       (docopt--parse-spaces)
+       (docopt--parse-whitespaces)
        (parsec-optional (docopt--parse-short-option))
        (parsec-optional (docopt--parse-long-option))
-       (docopt--parse-spaces)
+       (docopt--parse-whitespaces)
        (docopt--parse-option-line-description))
-    (docopt-make-option
-     description
-     (when long-option (oref long-option :long-name))
-     (when short-option (oref short-option :short-name))
-     (cond (long-option (oref long-option :argument))
-           (short-option (oref short-option :argument))))))
+    (when long-option
+      (oset long-option :description description))
+    (when short-option
+      (oset short-option :description description))
+    (make-instance
+     'docopt-option-line
+     :description description
+     :long-option long-option
+     :short-option short-option)))
 
 (defun docopt--parse-option-lines ()
   "Parse an option lines."
@@ -270,13 +315,29 @@ Options:
    (parsec-many-as-string (parsec-ch ?\s))
    (parsec-eol)))
 
+;; Usage Line
+
+(defun docopt--parse-usage-line ()
+  "Parse a usage line."
+  )
+
+(parsec-with-input "naval_fate ship <name> move <x> <y> [--speed=<kn>]"
+  (parsec-collect
+   (docopt--parse-command-name)
+   (docopt--parse-whitespaces)
+   (docopt--parse-subcommand-name)
+   (docopt--parse-whitespaces)
+   (docopt--parse-argument)
+   ;; (parsec-sepby (docopt--parse-argument) (docopt--parse-whitespaces))
+   ))
+
 (defun docopt--parse-parse-document (document)
   (parsec-with-input document
     (parsec-collect
      (parsec-return (docopt--parse-parse-title)
        (docopt--parse-newlines))
      (parsec-until (parsec-str "Usage:") :end)
-     (docopt--parse-spaces)
+     (docopt--parse-whitespaces)
      ;; (parsec-return (docopt--parse-usage-str)
      ;;   (docopt--parse-newlines))
      ;; (docopt--parse-parse-description)
