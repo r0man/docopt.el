@@ -153,15 +153,8 @@ Options:
 
 (defun docopt--parse-argument ()
   "Parse an argument."
-  (parsec-or
-   (docopt--parse-spaceship-argument)
-   (docopt--parse-upper-case-argument)))
-
-;; Options
-
-(defun docopt--parse-options-str ()
-  "Return the \"Options:\" parser."
-  (parsec-str "Options:"))
+  (parsec-or (docopt--parse-spaceship-argument)
+             (docopt--parse-upper-case-argument)))
 
 ;; Short Option
 
@@ -201,20 +194,36 @@ Options:
 
 (defun docopt--parse-long-option-argument ()
   "Parse an optional long option argument."
-  (parsec-and
-   (docopt--parse-long-option-separator)
-   (docopt--parse-argument)))
+  (parsec-and (docopt--parse-long-option-separator)
+              (docopt--parse-argument)))
+
+(defun docopt--parse-long-option-arity-0 ()
+  "Parse a long option without an argument."
+  (docopt-make-option nil (docopt--parse-long-option-name)))
+
+(defun docopt--parse-long-option-arity-1 ()
+  "Parse a long option with an argument."
+  (seq-let [name argument]
+      (parsec-collect
+       (docopt--parse-long-option-name)
+       (docopt--parse-long-option-argument))
+    (docopt-make-option nil name nil argument)))
 
 (defun docopt--parse-long-option ()
   "Parse a long option."
-  (parsec-or
-   (parsec-try
-    (seq-let [name argument]
-        (parsec-collect
-         (docopt--parse-long-option-name)
-         (docopt--parse-long-option-argument))
-      (docopt-make-option nil name nil argument)))
-   (docopt-make-option nil (docopt--parse-long-option-name))))
+  (parsec-or (parsec-try (docopt--parse-long-option-arity-1))
+             (docopt--parse-long-option-arity-0)))
+
+;; Options
+
+(defun docopt--parse-options-str ()
+  "Return the \"Options:\" parser."
+  (parsec-str "Options:"))
+
+(defun docopt--parse-option ()
+  "Parse a long or short option."
+  (parsec-or (docopt--parse-long-option)
+             (docopt--parse-short-option)))
 
 ;; Option Line
 
@@ -225,15 +234,15 @@ Options:
 
 (defun docopt--parse-option-line-separator ()
   "Parse the next option line."
-  (parsec-and (parsec-eol) (docopt--parse-option-line-begin)))
+  (parsec-and (parsec-eol)
+              (docopt--parse-option-line-begin)))
 
 (defun docopt--parse-option-line-description ()
   "Parse an option description."
   (parsec-many-till-s
    (parsec-any-ch)
-   (parsec-or
-    (parsec-try (docopt--parse-option-line-separator))
-    (parsec-eof))))
+   (parsec-or (parsec-try (docopt--parse-option-line-separator))
+              (parsec-eof))))
 
 (defun docopt--parse-option-line ()
   "Parse an option line."

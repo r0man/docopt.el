@@ -66,6 +66,30 @@
     (expect (parsec-with-input "HOST" (docopt--parse-argument))
             :to-equal (docopt-make-argument "HOST"))))
 
+
+(describe "The option parser"
+
+  (it "should parse a short option without an argument"
+    (expect (parsec-with-input "-h  Show this help." (docopt--parse-option))
+            :to-equal (docopt-make-option nil nil "h")))
+
+  (it "should parse a short option with a space separated argument"
+    (expect (parsec-with-input "-p PATH  Path to files." (docopt--parse-option))
+            :to-equal (docopt-make-option nil nil "p" (docopt-make-argument "PATH"))))
+
+  (it "should parse a short option with a not separated argument"
+    (expect (parsec-with-input "-pPATH  Path to files." (docopt--parse-option))
+            :to-equal (docopt-make-option nil nil "p" (docopt-make-argument "PATH"))))
+
+  (it "should parse a long option without an argument"
+    (expect (parsec-with-input "--moored  Moored (anchored) mine." (docopt--parse-option))
+            :to-equal (docopt-make-option nil "moored")))
+
+  (it "should parse a long option with an argument"
+    (expect (parsec-with-input "--path PATH  Path to files." (docopt--parse-option))
+            :to-equal (docopt-make-option nil "path" nil (docopt-make-argument "PATH")))))
+
+
 (describe "The option line parser"
 
   (it "should parse a short option without an argument"
