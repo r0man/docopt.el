@@ -28,7 +28,7 @@
 
   (it "should parse the \"--help\" long option name"
     (expect (parsec-with-input "--help" (docopt-long-option-name))
-            :to-equal "--help"))
+            :to-equal "help"))
 
   (it "should parse the \"<name>\" argument"
     (expect (parsec-with-input "<name>" (docopt-argument))
@@ -50,11 +50,11 @@
 (describe "The long option parser"
   (it "should parse \"--input\""
     (expect (parsec-with-input "--input" (docopt-long-option))
-            :to-equal "--input"))
+            :to-equal "input"))
 
   (it "should parse \"--input=ARG\""
     (expect (parsec-with-input "--input=ARG" (docopt-long-option))
-            :to-equal '("--input" "=" "ARG"))))
+            :to-equal '("input" "=" "ARG"))))
 
 (describe "The blank line parser"
   (it "should parse lines with spaces"
@@ -68,7 +68,7 @@
 (describe "The option description parser"
   (it "should parse single-line descriptions"
     (expect (parsec-with-input "Show version.\n  More version help."
-              (docopt-option-description))
+              (docopt--parse-option-description))
             :to-equal "Show version.\n  More version help."))
 
   (it "should parse multi-line descriptions"
@@ -76,7 +76,7 @@
                 (concat "Show version.\n"
                         "  More version help.\n"
                         "  --moored      Moored (anchored) mine.\n")
-              (docopt-option-description))
+              (docopt--parse-option-description))
             :to-equal "Show version.\n  More version help.")))
 
 (describe "The option lines parser"
@@ -85,8 +85,8 @@
                 (concat "  --moored      Moored (anchored) mine.\n"
                         "  --drifting    Drifting mine.")
               (docopt-option-lines))
-            :to-equal `(("  " "--moored" "      " "Moored (anchored) mine.")
-                        ("" "--drifting" "    " "Drifting mine."))))
+            :to-equal (list (docopt-make-option "Moored (anchored) mine." "moored")
+                            (docopt-make-option "Drifting mine." "drifting"))))
 
   (it "should parse multi-line descriptions"
     (expect (parsec-with-input
@@ -95,8 +95,9 @@
                         "  --version     Show version."
                         "                More version help.")
               (docopt-option-lines))
-            :to-equal `(("  " "--moored" "      " "Moored (anchored) mine.")
-                        ("" "--drifting" "    " "Drifting mine.")
-                        ("" "--version" "     " "Show version.                More version help.")))))
+            :to-equal (list (docopt-make-option "Moored (anchored) mine." "moored")
+                            (docopt-make-option "Drifting mine." "drifting")
+                            (docopt-make-option (concat "Show version.                More version help.")
+                                                "version")))))
 
 ;;; docopt-test.el ends here

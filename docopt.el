@@ -16,6 +16,40 @@
 (require 'eieio)
 (require 'parsec)
 
+(defclass docopt-option ()
+  ((argument
+    :initarg :argument
+    :accessor docopt-option-argument
+    :documentation "The argument of the option.")
+   (default
+     :initarg :default
+     :accessor docopt-option-default
+     :documentation "The default of the option.")
+   (description
+    :initarg :description
+    :accessor docopt-option-description
+    :documentation "The description of the option.")
+   (long-name
+    :initarg :long-name
+    :accessor docopt-option-long-name
+    :documentation "The long name of the option.")
+   (short-name
+    :initarg :short-name
+    :accessor docopt-option-short-name
+    :documentation "The short name of the option."))
+  "A class representing a DOCOPT option.")
+
+(defun docopt-make-option (&optional description long-name short-name argument default)
+  "Make a new DOCOPT option instance.
+Initialize the DESCRIPTION, LONG-NAME, SHORT-NAME, ARGUMENT and
+DEFAULT slots of the instance."
+  (make-instance 'docopt-option
+                 :argument argument
+                 :default default
+                 :description description
+                 :long-name long-name
+                 :short-name short-name))
+
 (defvar docopt-example "
 Naval Fate.
 
@@ -128,7 +162,7 @@ Options:
 
 (defun docopt-long-option-name ()
   "Parse a long option name."
-  (parsec-re "--[[:alnum:]]+"))
+  (substring (parsec-re "--[[:alnum:]]+") 2))
 
 (defun docopt-long-option-argument ()
   "Parse a long option argument."
@@ -159,16 +193,7 @@ Options:
   "Parse the next option line."
   (parsec-and (parsec-eol) (docopt-option-begin)))
 
-(defun docopt-option-description ()
-  "Parse an option description."
-  (parsec-many-till-s
-   (parsec-any-ch)
-   (parsec-try
-    (parsec-or (docopt-option-separator)
-               ;; (parsec-eof)
-               ))))
-
-(defun docopt-option-description ()
+(defun docopt--parse-option-description ()
   "Parse an option description."
   (parsec-many-till-s
    (parsec-any-ch)
@@ -178,11 +203,14 @@ Options:
 
 (defun docopt-option-line ()
   "Parse an option line."
-  (parsec-collect
-   (docopt-spaces)
-   (docopt-long-option)
-   (docopt-spaces)
-   (docopt-option-description)))
+  (let* ((result (parsec-collect
+                  (docopt-spaces)
+                  (docopt-long-option)
+                  (docopt-spaces)
+                  (docopt--parse-option-description)))
+         (long-name (nth 1 result))
+         (description (nth 3 result)))
+    (docopt-make-option description long-name)))
 
 (defun docopt-option-lines ()
   "Parse an option lines."
