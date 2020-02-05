@@ -84,7 +84,7 @@
     (expect (parsec-with-input
                 (concat "  --moored      Moored (anchored) mine.\n"
                         "  --drifting    Drifting mine.")
-              (docopt-option-lines))
+              (docopt--parse-options))
             :to-equal (list (docopt-make-option "Moored (anchored) mine." "moored")
                             (docopt-make-option "Drifting mine." "drifting"))))
 
@@ -94,7 +94,7 @@
                         "  --drifting    Drifting mine.\n"
                         "  --version     Show version."
                         "                More version help.")
-              (docopt-option-lines))
+              (docopt--parse-options))
             :to-equal (list (docopt-make-option "Moored (anchored) mine." "moored")
                             (docopt-make-option "Drifting mine." "drifting")
                             (docopt-make-option (concat "Show version.                More version help.")

@@ -201,7 +201,7 @@ Options:
     (parsec-try (docopt-option-separator))
     (parsec-eof))))
 
-(defun docopt-option-line ()
+(defun docopt--parse-option ()
   "Parse an option line."
   (let* ((result (parsec-collect
                   (docopt-spaces)
@@ -212,9 +212,9 @@ Options:
          (description (nth 3 result)))
     (docopt-make-option description long-name)))
 
-(defun docopt-option-lines ()
+(defun docopt--parse-options ()
   "Parse an option lines."
-  (parsec-many (docopt-option-line)))
+  (parsec-many (docopt--parse-option)))
 
 (defun docopt-blank-line ()
   "Parse a blank line."
