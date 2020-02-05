@@ -34,6 +34,7 @@
     (expect (parsec-with-input "my_program" (docopt--parse-program-name))
             :to-equal "my_program")))
 
+
 (describe "The blank line parser"
   (it "should parse lines with spaces"
     (expect (parsec-with-input " \n" (docopt--parse-blank-line))
@@ -42,6 +43,7 @@
   (it "should parse lines without any spaces"
     (expect (parsec-with-input "\n" (docopt--parse-blank-line))
             :to-equal '("" "\n"))))
+
 
 (describe "The option line description parser"
   (it "should parse single-line descriptions"
@@ -56,6 +58,7 @@
                         "  --moored      Moored (anchored) mine.\n")
               (docopt--parse-option-line-description))
             :to-equal "Show version.\n  More version help.")))
+
 
 (describe "The argument parser"
   (it "should parse a spaceship argument"
