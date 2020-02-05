@@ -75,20 +75,6 @@ Options:
   (parsec-many-as-string
    (parsec-re "[[:space:]\r\n]")))
 
-(defun docopt--parse-argument-name ()
-  "Parse an argument name."
-  (parsec-re "[[:alnum:]-_]+"))
-
-(defun docopt--parse-repeated ()
-  "Parse the repeated \"...\" string."
-  (parsec-str "..."))
-
-(defun docopt--parse-argument ()
-  "Parse an argument."
-  (parsec-between
-   (parsec-ch ?<) (parsec-ch ?>)
-   (docopt--parse-argument-name)))
-
 (defun docopt--parse-newlines ()
   "Parse newlines."
   (parsec-many (parsec-newline)))
@@ -148,7 +134,7 @@ Options:
   "Parse a short option argument."
   (parsec-re "[[:space:]]"))
 
-(defun docopt--parse-short-option-argument ()
+(defun docopt--parse-option-argument ()
   "Parse a short option argument."
   (let ((case-fold-search nil))
     (parsec-return (parsec-re "[A-Z0-9-_]+")
@@ -156,13 +142,14 @@ Options:
 
 (defun docopt--parse-short-option ()
   "Parse a short option."
-  (seq-let [name _ [_ argument]]
+  (seq-let [name argument]
       (parsec-collect
        (docopt--parse-short-option-name)
        (parsec-optional
         (parsec-try
-         (parsec-and (docopt--parse-short-option-separator)
-                     (docopt--parse-short-option-argument)))))
+         (parsec-and
+          (parsec-optional (docopt--parse-short-option-separator))
+          (docopt--parse-option-argument)))))
     (docopt-make-option nil nil name argument)))
 
 ;; Long Option
@@ -170,10 +157,6 @@ Options:
 (defun docopt--parse-long-option-name ()
   "Parse a long option name."
   (substring (parsec-re "--[[:alnum:]]+") 2))
-
-(defun docopt--parse-long-option-argument ()
-  "Parse a long option argument."
-  (parsec-re "[[:alnum:]-_]+"))
 
 (defun docopt--parse-long-option-separator ()
   "Parse a long option separator."
@@ -187,7 +170,7 @@ Options:
         (parsec-collect
          (docopt--parse-long-option-name)
          (docopt--parse-long-option-separator)
-         (docopt--parse-long-option-argument))
+         (docopt--parse-option-argument))
       (docopt-make-option nil name nil argument)))
    (docopt-make-option nil (docopt--parse-long-option-name))))
 
