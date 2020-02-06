@@ -143,8 +143,7 @@ slots of the instance."
 
 (defun docopt--parse-default (s)
   "Parse the default value from S."
-  ;; (s-match "[default:\s*([^]]+)\s*]" s)
-  (nth 1 (s-match "\\[default:\s*\\([^] ]+\\)\s*\\]" s)))
+  (when s (s-match "\\[default:\s*\\([^] ]+\\)\s*\\]" s)))
 
 (defun docopt--parse-examples-str ()
   "Return the \"Examples:\" string parser."

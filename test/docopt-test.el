@@ -101,6 +101,9 @@ Options:
 
 (describe "The default parser"
 
+  (it "should handle nil"
+    (expect (docopt--parse-default nil) :to-be nil))
+
   (it "should parse a decimal as a default"
     (expect (docopt--parse-default "[default: 2.95]") :to-equal "2.95"))
 
