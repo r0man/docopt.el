@@ -73,14 +73,17 @@
 (defclass docopt-option-line ()
   ((description
     :initarg :description
+    :initform nil
     :accessor docopt-option-line-description
     :documentation "The description of the option-line.")
    (long-option
     :initarg :long-option
+    :initform nil
     :accessor docopt-option-line-long-option
     :documentation "The long name of the option line.")
    (short-option
     :initarg :short-option
+    :initform nil
     :accessor docopt-option-line-short-option
     :documentation "The short name of the option line."))
   "A class representing a DOCOPT option line.")
