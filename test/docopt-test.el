@@ -28,16 +28,21 @@ Options:
   --drifting    Drifting mine.
 ")
 
-(describe "Parsing"
-  (it "should parse \"Examples\""
+(describe "Parsing tokens"
+
+  (it "should parse \"[options]\""
+    (expect (parsec-with-input "[options]" (docopt--parse-options-shortcut))
+            :to-equal "[options]"))
+
+  (it "should parse \"Examples:\""
     (expect (parsec-with-input "Examples:" (docopt--parse-examples-str))
             :to-equal "Examples:"))
 
-  (it "should parse \"Usage\""
+  (it "should parse \"Usage:\""
     (expect (parsec-with-input "Usage:" (docopt--parse-usage-str))
             :to-equal "Usage:"))
 
-  (it "should parse \"Options\""
+  (it "should parse \"Options:\""
     (expect (parsec-with-input "Options:" (docopt--parse-options-str))
             :to-equal "Options:"))
 

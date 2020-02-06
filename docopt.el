@@ -148,6 +148,10 @@ slots of the instance."
   "Return the \"Usage:\" parser."
   (parsec-str "Usage:"))
 
+(defun docopt--parse-options-shortcut ()
+  "Parse the string \"[options]\", aka the options shortcut."
+  (parsec-str "[options]"))
+
 (defun docopt--parse-program-name ()
   "Parse a usage line."
   (parsec-re "[[:alnum:]-_]+"))
