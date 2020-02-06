@@ -122,8 +122,8 @@
             :to-equal (docopt-make-option "Path to files." nil "p" "PATH")))
 
   (it "should parse a long option without an argument"
-    (expect (parsec-with-input "--moored  Moored (anchored) mine." (docopt--parse-option-line))
-            :to-equal (docopt-make-option "Moored (anchored) mine." "moored")))
+    (expect (parsec-with-input "--help  Show this help." (docopt--parse-option-line))
+            :to-equal (docopt-make-option "Show this help." "help")))
 
   (it "should parse a long option with an argument"
     (expect (parsec-with-input "--path PATH  Path to files." (docopt--parse-option-line))

@@ -17,7 +17,15 @@
 (require 'parsec)
 (require 'seq)
 
-(defclass docopt-argument ()
+(defclass docopt-required ()
+  ((required-p
+    :initarg :required
+    :initform t
+    :accessor docopt-required
+    :documentation "Whether the object is required or not."))
+  "A class representing a required DOCOPT object.")
+
+(defclass docopt-argument (docopt-required)
   ((default
      :initarg :default
      :initform nil
@@ -27,15 +35,10 @@
     :initarg :name
     :initform nil
     :accessor docopt-argument-name
-    :documentation "The name of the argument.")
-   (optional
-    :initarg :optional
-    :initform nil
-    :accessor docopt-argument-optional
-    :documentation "Whether the argument is optional or not."))
+    :documentation "The name of the argument."))
   "A class representing a DOCOPT argument.")
 
-(defclass docopt-option-base ()
+(defclass docopt-option-base (docopt-required)
   ((argument
     :initarg :argument
     :initform nil
@@ -50,12 +53,7 @@
     :initarg :name
     :initform nil
     :accessor docopt-option-name
-    :documentation "The long name of the option.")
-   (optional
-    :initarg :optional
-    :initform nil
-    :accessor docopt-option-optional
-    :documentation "Whether the option is optional or not."))
+    :documentation "The long name of the option."))
   "A class representing a DOCOPT base option.")
 
 (defclass docopt-long-option (docopt-option-base) ()
@@ -79,10 +77,10 @@
     :documentation "The short name of the option line."))
   "A class representing a DOCOPT option line.")
 
-(defun docopt-make-argument (&optional name default optional)
+(defun docopt-make-argument (&optional name default)
   "Make a new DOCOPT argument instance.
-Initialize the NAME, DEFAULT and OPTIONAL slots of the instance."
-  (make-instance 'docopt-argument :name name :default default :optional optional))
+Initialize the NAME and DEFAULT slots of the instance."
+  (make-instance 'docopt-argument :name name :default default))
 
 (defun docopt-make-option (&optional description long-name short-name argument)
   "Make a new DOCOPT option instance.
