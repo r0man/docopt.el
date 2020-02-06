@@ -77,10 +77,9 @@
     :documentation "The short name of the option line."))
   "A class representing a DOCOPT option line.")
 
-(defun docopt-make-argument (&optional name default)
-  "Make a new DOCOPT argument instance.
-Initialize the NAME and DEFAULT slots of the instance."
-  (make-instance 'docopt-argument :name name :default default))
+(defun docopt-make-argument (&rest args)
+  "Make a new DOCOPT argument suing ARGS."
+  (apply 'make-instance 'docopt-argument args))
 
 (defun docopt-make-option (&optional description long-name short-name argument)
   "Make a new DOCOPT option instance.
@@ -173,6 +172,18 @@ Options:
    (docopt--parse-subcommand-name)
    (docopt--parse-whitespaces)))
 
+;; Optional
+
+(defmacro docopt--parse-optional (parser)
+  "Parse an optional object with PARSER."
+  (let ((result (make-symbol "result")))
+    `(parsec-or (parsec-between
+                 (parsec-ch ?\[) (parsec-ch ?\])
+                 (let ((,result ,parser))
+                   (when ,result (oset ,result :required nil))
+                   ,result))
+                ,parser)))
+
 ;; Argument
 
 (defun docopt--parse-identifier ()
@@ -181,19 +192,21 @@ Options:
 
 (defun docopt--parse-spaceship-argument ()
   "Parse a spaceship argument."
-  (docopt-make-argument
-   (parsec-between
-    (parsec-ch ?<) (parsec-ch ?>)
-    (docopt--parse-identifier))))
+  (docopt--parse-optional
+   (docopt-make-argument
+    :name (parsec-between
+           (parsec-ch ?<) (parsec-ch ?>)
+           (docopt--parse-identifier)))))
 
 (defun docopt--parse-upper-case-argument ()
   "Parse an upper case argument."
   (let ((case-fold-search nil))
-    (docopt-make-argument (parsec-re "[A-Z0-9_-]+"))))
+    (docopt--parse-optional
+     (docopt-make-argument :name (parsec-re "[A-Z0-9_-]+")))))
 
 (defun docopt--parse-argument ()
   "Parse an argument."
-  (parsec-or (docopt--parse-spaceship-argument)
+  (parsec-or (parsec-try (docopt--parse-spaceship-argument))
              (docopt--parse-upper-case-argument)))
 
 ;; Short Option
@@ -216,11 +229,12 @@ Options:
 
 (defun docopt--parse-short-option ()
   "Parse a short option."
-  (seq-let [name argument]
-      (parsec-collect
-       (docopt--parse-short-option-name)
-       (docopt--parse-short-option-argument))
-    (make-instance 'docopt-short-option :name name :argument argument)))
+  (docopt--parse-optional
+   (seq-let [name argument]
+       (parsec-collect
+        (docopt--parse-short-option-name)
+        (docopt--parse-short-option-argument))
+     (make-instance 'docopt-short-option :name name :argument argument))))
 
 ;; Long Option
 
