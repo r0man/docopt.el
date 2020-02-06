@@ -25,7 +25,15 @@
     :documentation "Whether the object is required or not."))
   "A class representing a required DOCOPT object.")
 
-(defclass docopt-argument (docopt-required)
+(defclass docopt-repeated ()
+  ((repeated-p
+    :initarg :repeated
+    :initform nil
+    :accessor docopt-repeated
+    :documentation "Whether the object is repeated or not."))
+  "A class representing a repeated DOCOPT object.")
+
+(defclass docopt-argument (docopt-required docopt-repeated)
   ((default
      :initarg :default
      :initform nil
@@ -173,6 +181,21 @@ slots of the instance."
                    ,result))
                 ,parser)))
 
+;; Repeated
+
+(defun docopt--parse-ellipsis ()
+  "Parse an identifier."
+  (parsec-str "..."))
+
+(defmacro docopt--parse-repeated (parser)
+  "Parse an repeated object with PARSER and set its :repeated slot to t."
+  (let ((object (make-symbol "object"))
+        (ellipsis (make-symbol "ellipsis")))
+    `(seq-let [,object ,ellipsis]
+         (parsec-collect ,parser (parsec-optional (docopt--parse-ellipsis)))
+       (when ,ellipsis (oset ,object :repeated t))
+       ,object)))
+
 ;; Argument
 
 (defun docopt--parse-identifier ()
@@ -182,16 +205,18 @@ slots of the instance."
 (defun docopt--parse-spaceship-argument ()
   "Parse a spaceship argument."
   (docopt--parse-optional
-   (docopt-make-argument
-    :name (parsec-between
-           (parsec-ch ?<) (parsec-ch ?>)
-           (docopt--parse-identifier)))))
+   (docopt--parse-repeated
+    (docopt-make-argument
+     :name (parsec-between
+            (parsec-ch ?<) (parsec-ch ?>)
+            (docopt--parse-identifier))))))
 
 (defun docopt--parse-upper-case-argument ()
   "Parse an upper case argument."
   (let ((case-fold-search nil))
     (docopt--parse-optional
-     (docopt-make-argument :name (parsec-re "[A-Z0-9_-]+")))))
+     (docopt--parse-repeated
+      (docopt-make-argument :name (parsec-re "[A-Z0-9_-]+"))))))
 
 (defun docopt--parse-argument ()
   "Parse an argument."

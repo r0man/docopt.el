@@ -89,7 +89,7 @@ Options:
     (expect (parsec-with-input "HOST" (docopt--parse-argument))
             :to-equal (docopt-make-argument :name "HOST")))
 
-  ;; Same as above, but optional
+  ;; Optional
 
   (it "should parse an optional spaceship argument"
     (expect (parsec-with-input "[<host>]" (docopt--parse-argument))
@@ -97,7 +97,17 @@ Options:
 
   (it "should parse an optional upper case argument"
     (expect (parsec-with-input "[HOST]" (docopt--parse-argument))
-            :to-equal (docopt-make-argument :name "HOST" :required nil))))
+            :to-equal (docopt-make-argument :name "HOST" :required nil)))
+
+  ;; Repeated
+
+  (it "should parse a repeated spaceship argument"
+    (expect (parsec-with-input "<host>..." (docopt--parse-argument))
+            :to-equal (docopt-make-argument :name "host" :repeated t)))
+
+  (it "should parse a repeated upper case argument"
+    (expect (parsec-with-input "HOST..." (docopt--parse-argument))
+            :to-equal (docopt-make-argument :name "HOST" :repeated t))))
 
 
 (describe "The long option parser"
