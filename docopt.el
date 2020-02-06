@@ -17,6 +17,7 @@
 (require 'parsec)
 (require 's)
 (require 'seq)
+(require 'subr-x)
 
 (defclass docopt-optionable ()
   ((optional
@@ -101,11 +102,14 @@
   "Make a new DOCOPT long option using ARGS."
   (apply 'make-instance 'docopt-long-option args))
 
-(cl-defun docopt-make-option-line (&key description long-name short-name argument-name)
+(cl-defun docopt-make-option-line (&key description long-name short-name argument argument-name)
   "Make a new DOCOPT option line instance.
-Initialize the DESCRIPTION, LONG-NAME, SHORT-NAME and ARGUMENT-NAME
+Initialize the DESCRIPTION, LONG-NAME, SHORT-NAME, ARGUMENT and ARGUMENT-NAME
 slots of the instance."
-  (let ((argument (when argument-name (docopt-make-argument :name argument-name))))
+  (let ((argument (cond
+                   ((and argument
+                         (object-of-class-p argument 'docopt-argument)) argument)
+                   (argument-name (docopt-make-argument :name argument-name)))))
     (make-instance
      'docopt-option-line
      :description description
@@ -143,7 +147,7 @@ slots of the instance."
 
 (defun docopt--parse-default (s)
   "Parse the default value from S."
-  (when s (s-match "\\[default:\s*\\([^] ]+\\)\s*\\]" s)))
+  (when s (nth 1 (s-match "\\[default:\s*\\([^] ]+\\)\s*\\]" s))))
 
 (defun docopt--parse-examples-str ()
   "Return the \"Examples:\" string parser."
@@ -333,15 +337,20 @@ slots of the instance."
        (parsec-optional (docopt--parse-long-option))
        (docopt--parse-whitespaces)
        (docopt--parse-option-line-description))
-    (when long-option
-      (oset long-option :description description))
-    (when short-option
-      (oset short-option :description description))
-    (make-instance
-     'docopt-option-line
-     :description description
-     :long-option long-option
-     :short-option short-option)))
+    (let ((default (docopt--parse-default description)))
+      (when long-option
+        (oset long-option :description description)
+        (when-let ((argument (docopt-option-argument long-option)))
+          (oset argument :default default)))
+      (when short-option
+        (oset short-option :description description)
+        (when-let ((argument (docopt-option-argument short-option)))
+          (oset argument :default default)))
+      (make-instance
+       'docopt-option-line
+       :description description
+       :long-option long-option
+       :short-option short-option))))
 
 (defun docopt--parse-option-lines ()
   "Parse an option lines."

@@ -239,7 +239,22 @@ Options:
             :to-equal (docopt-make-option-line
                        :argument-name "PATH"
                        :description "Path to files."
-                       :long-name "path"))))
+                       :long-name "path")))
+
+  (it "should parse a short option with a default argument"
+    (expect (parsec-with-input "-c K  The K coefficient [default: 2.95]" (docopt--parse-option-line))
+            :to-equal (docopt-make-option-line
+                       :argument (docopt-make-argument :name "K" :default "2.95")
+                       :description "The K coefficient [default: 2.95]"
+                       :short-name "c")))
+
+  (it "should parse a long option with a default argument"
+    (expect (parsec-with-input "--coefficient=K  The K coefficient [default: 2.95]" (docopt--parse-option-line))
+            :to-equal (docopt-make-option-line
+                       :argument (docopt-make-argument :name "K" :default "2.95")
+                       :description "The K coefficient [default: 2.95]"
+                       :long-name "coefficient"))))
+
 
 (describe "The option lines parser"
   (it "should parse single-line descriptions"
