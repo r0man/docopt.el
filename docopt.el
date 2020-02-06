@@ -17,23 +17,23 @@
 (require 'parsec)
 (require 'seq)
 
-(defclass docopt-required ()
-  ((required-p
-    :initarg :required
+(defclass docopt-optionable ()
+  ((optional
+    :initarg :optional
     :initform t
-    :accessor docopt-required
-    :documentation "Whether the object is required or not."))
-  "A class representing a required DOCOPT object.")
+    :accessor docopt-optional
+    :documentation "Whether the object is optional or not."))
+  "A class representing a optional DOCOPT object.")
 
-(defclass docopt-repeated ()
-  ((repeated-p
+(defclass docopt-repeatable ()
+  ((repeated
     :initarg :repeated
     :initform nil
     :accessor docopt-repeated
-    :documentation "Whether the object is repeated or not."))
-  "A class representing a repeated DOCOPT object.")
+    :documentation "Whether the object is repeatable or not."))
+  "A class representing a repeatable DOCOPT object.")
 
-(defclass docopt-argument (docopt-required docopt-repeated)
+(defclass docopt-argument (docopt-optionable docopt-repeatable)
   ((default
      :initarg :default
      :initform nil
@@ -46,7 +46,7 @@
     :documentation "The name of the argument."))
   "A class representing a DOCOPT argument.")
 
-(defclass docopt-option-base (docopt-required)
+(defclass docopt-option-base (docopt-optionable)
   ((argument
     :initarg :argument
     :initform nil
@@ -172,12 +172,12 @@ slots of the instance."
 ;; Optional
 
 (defmacro docopt--parse-optional (parser)
-  "Parse an optional object with PARSER and set its required slot to nil."
+  "Parse an optional object with PARSER and set its :optional slot to nil."
   (let ((result (make-symbol "result")))
     `(parsec-or (parsec-between
                  (parsec-ch ?\[) (parsec-ch ?\])
                  (let ((,result ,parser))
-                   (when ,result (oset ,result :required nil))
+                   (when ,result (oset ,result :optional t))
                    ,result))
                 ,parser)))
 
