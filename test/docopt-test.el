@@ -85,13 +85,15 @@ Options:
     (expect (parsec-with-input "<host>" (docopt--parse-argument))
             :to-equal (docopt-make-argument :name "host")))
 
-  (it "should parse an optional spaceship argument"
-    (expect (parsec-with-input "[<host>]" (docopt--parse-argument))
-            :to-equal (docopt-make-argument :name "host" :required nil)))
-
   (it "should parse an upper case argument"
     (expect (parsec-with-input "HOST" (docopt--parse-argument))
             :to-equal (docopt-make-argument :name "HOST")))
+
+  ;; Same as above, but optional
+
+  (it "should parse an optional spaceship argument"
+    (expect (parsec-with-input "[<host>]" (docopt--parse-argument))
+            :to-equal (docopt-make-argument :name "host" :required nil)))
 
   (it "should parse an optional upper case argument"
     (expect (parsec-with-input "[HOST]" (docopt--parse-argument))
@@ -102,38 +104,74 @@ Options:
 
   (it "should parse an option without an argument"
     (expect (parsec-with-input "--help" (docopt--parse-long-option))
-            :to-equal (make-instance 'docopt-long-option :name "help")))
+            :to-equal (docopt-make-long-option :name "help")))
 
   (it "should parse an option with a space separated argument"
     (expect (parsec-with-input "--path PATH" (docopt--parse-long-option))
-            :to-equal (make-instance 'docopt-long-option :name "path" :argument (docopt-make-argument :name "PATH"))))
+            :to-equal (docopt-make-long-option :name "path" :argument (docopt-make-argument :name "PATH"))))
 
   (it "should parse an option with a space separated spaceship argument"
     (expect (parsec-with-input "--path <path>" (docopt--parse-long-option))
-            :to-equal (make-instance 'docopt-long-option :name "path" :argument (docopt-make-argument :name "path"))))
+            :to-equal (docopt-make-long-option :name "path" :argument (docopt-make-argument :name "path"))))
 
   (it "should parse an option with a \"=\" separated argument"
     (expect (parsec-with-input "--path=PATH" (docopt--parse-long-option))
-            :to-equal (make-instance 'docopt-long-option :name "path" :argument (docopt-make-argument :name "PATH"))))
+            :to-equal (docopt-make-long-option :name "path" :argument (docopt-make-argument :name "PATH"))))
 
   (it "should parse an option with a \"=\" separated spaceship argument"
     (expect (parsec-with-input "--path=<path>" (docopt--parse-long-option))
-            :to-equal (make-instance 'docopt-long-option :name "path" :argument (docopt-make-argument :name "path")))))
+            :to-equal (docopt-make-long-option :name "path" :argument (docopt-make-argument :name "path"))))
+
+  ;; Same as above, but optional
+
+  (it "should parse an optional option without an argument"
+    (expect (parsec-with-input "[--help]" (docopt--parse-long-option))
+            :to-equal (docopt-make-long-option :name "help" :required nil)))
+
+  (it "should parse an optional option with a space separated argument"
+    (expect (parsec-with-input "[--path PATH]" (docopt--parse-long-option))
+            :to-equal (docopt-make-long-option :name "path" :argument (docopt-make-argument :name "PATH") :required nil)))
+
+  (it "should parse an optional option with a space separated spaceship argument"
+    (expect (parsec-with-input "[--path <path>]" (docopt--parse-long-option))
+            :to-equal (docopt-make-long-option :name "path" :argument (docopt-make-argument :name "path") :required nil)))
+
+  (it "should parse an optional option with a \"=\" separated argument"
+    (expect (parsec-with-input "[--path=PATH]" (docopt--parse-long-option))
+            :to-equal (docopt-make-long-option :name "path" :argument (docopt-make-argument :name "PATH") :required nil)))
+
+  (it "should parse an optional option with a \"=\" separated spaceship argument"
+    (expect (parsec-with-input "[--path=<path>]" (docopt--parse-long-option))
+            :to-equal (docopt-make-long-option :name "path" :argument (docopt-make-argument :name "path") :required nil))))
 
 
 (describe "The short option parser"
 
   (it "should parse an option without an argument"
     (expect (parsec-with-input "-h" (docopt--parse-short-option))
-            :to-equal (make-instance 'docopt-short-option :name "h")))
+            :to-equal (docopt-make-short-option :name "h")))
 
   (it "should parse an option with a space separated argument"
     (expect (parsec-with-input "-p PATH" (docopt--parse-short-option))
-            :to-equal (make-instance 'docopt-short-option :name "p" :argument (docopt-make-argument :name "PATH"))))
+            :to-equal (docopt-make-short-option :name "p" :argument (docopt-make-argument :name "PATH"))))
 
   (it "should parse an option with a not separated argument"
     (expect (parsec-with-input "-pPATH" (docopt--parse-short-option))
-            :to-equal (make-instance 'docopt-short-option :name "p" :argument (docopt-make-argument :name "PATH")))))
+            :to-equal (docopt-make-short-option :name "p" :argument (docopt-make-argument :name "PATH"))))
+
+  ;; Same as above, but optional
+
+  (it "should parse an optional option without an argument"
+    (expect (parsec-with-input "[-h]" (docopt--parse-short-option))
+            :to-equal (docopt-make-short-option :name "h" :required nil)))
+
+  (it "should parse an optional option with a space separated argument"
+    (expect (parsec-with-input "[-p PATH]" (docopt--parse-short-option))
+            :to-equal (docopt-make-short-option :name "p" :argument (docopt-make-argument :name "PATH") :required nil)))
+
+  (it "should parse an optional option with a not separated argument"
+    (expect (parsec-with-input "[-pPATH]" (docopt--parse-short-option))
+            :to-equal (docopt-make-short-option :name "p" :argument (docopt-make-argument :name "PATH") :required nil))))
 
 
 (describe "The option line parser"

@@ -78,8 +78,16 @@
   "A class representing a DOCOPT option line.")
 
 (defun docopt-make-argument (&rest args)
-  "Make a new DOCOPT argument suing ARGS."
+  "Make a new DOCOPT argument using ARGS."
   (apply 'make-instance 'docopt-argument args))
+
+(defun docopt-make-short-option (&rest args)
+  "Make a new DOCOPT short option using ARGS."
+  (apply 'make-instance 'docopt-short-option args))
+
+(defun docopt-make-long-option (&rest args)
+  "Make a new DOCOPT long option using ARGS."
+  (apply 'make-instance 'docopt-long-option args))
 
 (defun docopt-make-option (&optional description long-name short-name argument)
   "Make a new DOCOPT option instance.
@@ -156,7 +164,7 @@ slots of the instance."
 ;; Optional
 
 (defmacro docopt--parse-optional (parser)
-  "Parse an optional object with PARSER."
+  "Parse an optional object with PARSER and set its required slot to nil."
   (let ((result (make-symbol "result")))
     `(parsec-or (parsec-between
                  (parsec-ch ?\[) (parsec-ch ?\])
@@ -215,7 +223,7 @@ slots of the instance."
        (parsec-collect
         (docopt--parse-short-option-name)
         (docopt--parse-short-option-argument))
-     (make-instance 'docopt-short-option :name name :argument argument))))
+     (docopt-make-short-option :name name :argument argument))))
 
 ;; Long Option
 
@@ -234,15 +242,17 @@ slots of the instance."
 
 (defun docopt--parse-long-option-without-argument ()
   "Parse a long option without an argument."
-  (make-instance 'docopt-long-option :name (docopt--parse-long-option-name)))
+  (docopt--parse-optional
+   (docopt-make-long-option :name (docopt--parse-long-option-name))))
 
 (defun docopt--parse-long-option-with-argument ()
   "Parse a long option with an argument."
-  (seq-let [name argument]
-      (parsec-collect
-       (docopt--parse-long-option-name)
-       (docopt--parse-long-option-argument))
-    (make-instance 'docopt-long-option :name name :argument argument)))
+  (docopt--parse-optional
+   (seq-let [name argument]
+       (parsec-collect
+        (docopt--parse-long-option-name)
+        (docopt--parse-long-option-argument))
+     (docopt-make-long-option :name name :argument argument))))
 
 (defun docopt--parse-long-option ()
   "Parse a long option."
