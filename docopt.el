@@ -97,23 +97,21 @@
   "Make a new DOCOPT long option using ARGS."
   (apply 'make-instance 'docopt-long-option args))
 
-(defun docopt-make-option (&optional description long-name short-name argument)
-  "Make a new DOCOPT option instance.
-Initialize the DESCRIPTION, LONG-NAME, SHORT-NAME and ARGUMENT
+(cl-defun docopt-make-option-line (&key description long-name short-name argument-name)
+  "Make a new DOCOPT option line instance.
+Initialize the DESCRIPTION, LONG-NAME, SHORT-NAME and ARGUMENT-NAME
 slots of the instance."
-  (let ((argument (when argument (make-instance 'docopt-argument :name argument))))
+  (let ((argument (when argument-name (docopt-make-argument :name argument-name))))
     (make-instance
      'docopt-option-line
      :description description
      :long-option (when long-name
-                    (make-instance
-                     'docopt-long-option
+                    (docopt-make-long-option
                      :argument argument
                      :description description
                      :name long-name))
      :short-option (when short-name
-                     (make-instance
-                      'docopt-short-option
+                     (docopt-make-short-option
                       :argument argument
                       :description description
                       :name short-name)))))
