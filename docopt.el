@@ -15,6 +15,7 @@
 (require 'cl-lib)
 (require 'eieio)
 (require 'parsec)
+(require 's)
 (require 'seq)
 
 (defclass docopt-optionable ()
@@ -139,6 +140,11 @@ slots of the instance."
 (defun docopt--parse-parse-description ()
   "Parse the title."
   (parsec-until (parsec-str "Usage:")))
+
+(defun docopt--parse-default (s)
+  "Parse the default value from S."
+  ;; (s-match "[default:\s*([^]]+)\s*]" s)
+  (nth 1 (s-match "\\[default:\s*\\([^] ]+\\)\s*\\]" s)))
 
 (defun docopt--parse-examples-str ()
   "Return the \"Examples:\" string parser."

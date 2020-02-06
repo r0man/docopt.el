@@ -68,22 +68,6 @@ Options:
     (expect (parsec-with-input "\n" (docopt--parse-blank-line))
             :to-equal '("" "\n"))))
 
-
-(describe "The option line description parser"
-  (it "should parse single-line descriptions"
-    (expect (parsec-with-input "Show version.\n  More version help."
-              (docopt--parse-option-line-description))
-            :to-equal "Show version.\n  More version help."))
-
-  (it "should parse multi-line descriptions"
-    (expect (parsec-with-input
-                (concat "Show version.\n"
-                        "  More version help.\n"
-                        "  --moored      Moored (anchored) mine.\n")
-              (docopt--parse-option-line-description))
-            :to-equal "Show version.\n  More version help.")))
-
-
 (describe "The argument parser"
 
   (it "should parse a spaceship argument"
@@ -113,6 +97,24 @@ Options:
   (it "should parse a repeated upper case argument"
     (expect (parsec-with-input "HOST..." (docopt--parse-argument))
             :to-equal (docopt-make-argument :name "HOST" :repeated t))))
+
+
+(describe "The default parser"
+
+  (it "should parse a decimal as a default"
+    (expect (docopt--parse-default "[default: 2.95]") :to-equal "2.95"))
+
+  (it "should parse a default without spaces"
+    (expect (docopt--parse-default "[default:2.95]") :to-equal "2.95"))
+
+  (it "should parse a default with spaces"
+    (expect (docopt--parse-default "[default:  2.95  ]") :to-equal "2.95"))
+
+  (it "should parse a filename as a default"
+    (expect (docopt--parse-default "[default: test.txt]") :to-equal "test.txt"))
+
+  (it "should parse the current directory as a default"
+    (expect (docopt--parse-default "[default: ./]") :to-equal "./")))
 
 
 (describe "The long option parser"
@@ -188,6 +190,20 @@ Options:
     (expect (parsec-with-input "[-pPATH]" (docopt--parse-short-option))
             :to-equal (docopt-make-short-option :name "p" :argument (docopt-make-argument :name "PATH") :optional t))))
 
+(describe "The option line description parser"
+  (it "should parse single-line descriptions"
+    (expect (parsec-with-input "Show version.\n  More version help."
+              (docopt--parse-option-line-description))
+            :to-equal "Show version.\n  More version help."))
+
+  (it "should parse multi-line descriptions"
+    (expect (parsec-with-input
+                (concat "Show version.\n"
+                        "  More version help.\n"
+                        "  --moored      Moored (anchored) mine.\n")
+              (docopt--parse-option-line-description))
+            :to-equal "Show version.\n  More version help.")))
+
 
 (describe "The option line parser"
 
@@ -221,7 +237,6 @@ Options:
                        :argument-name "PATH"
                        :description "Path to files."
                        :long-name "path"))))
-
 
 (describe "The option lines parser"
   (it "should parse single-line descriptions"
