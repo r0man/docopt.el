@@ -39,7 +39,7 @@ Options:
             :to-equal "Examples:"))
 
   (it "should parse \"Usage:\""
-    (expect (parsec-with-input "Usage:" (docopt--parse-usage-str))
+    (expect (parsec-with-input "Usage:" (docopt--parse-usage-header))
             :to-equal "Usage:"))
 
   (it "should parse \"Options:\""

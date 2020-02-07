@@ -197,10 +197,6 @@ slots of the instance."
   "Return the \"Examples:\" string parser."
   (parsec-str "Examples:"))
 
-(defun docopt--parse-usage-str ()
-  "Return the \"Usage:\" parser."
-  (parsec-str "Usage:"))
-
 (defun docopt--parse-options-shortcut ()
   "Parse the string \"[options]\", aka the options shortcut."
   (parsec-str "[options]"))
@@ -438,6 +434,12 @@ slots of the instance."
        :name name
        :short-options short-options))))
 
+;; Usage
+
+(defun docopt--parse-usage-header ()
+  "Parse the \"Usage:\" header."
+  (parsec-str "Usage:"))
+
 (defun docopt--parse-usage-pattern ()
   "Parse a usage pattern."
   (let ((docopt-strict-long-options t))
@@ -451,7 +453,7 @@ slots of the instance."
 
 (defun docopt--parse-usage ()
   "Parse a usage pattern."
-  (parsec-and (docopt--parse-usage-str)
+  (parsec-and (docopt--parse-usage-header)
               (docopt--parse-whitespaces)
               (parsec-sepby (docopt--parse-usage-pattern) (parsec-eol))))
 
@@ -462,7 +464,7 @@ slots of the instance."
        (docopt--parse-newlines))
      (parsec-until (parsec-str "Usage:") :end)
      (docopt--parse-whitespaces)
-     ;; (parsec-return (docopt--parse-usage-str)
+     ;; (parsec-return (docopt--parse-usage-header)
      ;;   (docopt--parse-newlines))
      ;; (docopt--parse-parse-description)
      (parsec-until (parsec-eof)))))
