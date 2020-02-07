@@ -27,7 +27,7 @@ When t, only allow \"=\" as the long option separator, otherwise
 (defclass docopt-optionable ()
   ((optional
     :initarg :optional
-    :initform t
+    :initform nil
     :accessor docopt-optional
     :documentation "Whether the object is optional or not."))
   "A class representing a optional DOCOPT object.")
@@ -225,14 +225,23 @@ slots of the instance."
 
 ;; Optional
 
+(defun docopt--set-optional (obj optional)
+  "Set the :optional slot of OBJ to OPTIONAL and return OBJ."
+  (cond
+   ((and (object-p obj)
+         (object-of-class-p obj 'docopt-optionable))
+    (oset obj :optional optional))
+   ((listp obj)
+    (seq-doseq (element obj)
+      (oset element :optional optional))))
+  obj)
+
 (defmacro docopt--parse-optional (parser)
   "Parse an optional object with PARSER and set its :optional slot to nil."
   (let ((result (make-symbol "result")))
     `(parsec-or (parsec-between
                  (parsec-ch ?\[) (parsec-ch ?\])
-                 (let ((,result ,parser))
-                   (when ,result (oset ,result :optional t))
-                   ,result))
+                 (docopt--set-optional ,parser t))
                 ,parser)))
 
 ;; Repeated
@@ -456,6 +465,14 @@ slots of the instance."
   (parsec-and (docopt--parse-usage-header)
               (docopt--parse-whitespaces)
               (parsec-sepby (docopt--parse-usage-pattern) (parsec-eol))))
+
+
+(defun docopt--parse-mutually-exclusive ()
+  "Parse a mutually exclusive list."
+  (docopt--parse-optional
+   (parsec-sepby
+    (docopt--parse-option)
+    (parsec-re "\s*|\s*"))))
 
 (defun docopt--parse-parse-document (document)
   (parsec-with-input document
