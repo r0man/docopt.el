@@ -337,6 +337,12 @@ slots of the instance."
            (docopt--parse-argument)))))
      (docopt-make-short-option :name name :argument argument))))
 
+(defun docopt--parse-stacked-short-options ()
+  "Parse stacked short options."
+  (seq-map (lambda (short-char)
+             (docopt-make-short-option :name (char-to-string short-char)))
+           (substring (parsec-re "-[[:alnum:]]+") 1)))
+
 ;; Options
 
 (defun docopt--parse-options-str ()

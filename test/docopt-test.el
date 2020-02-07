@@ -410,4 +410,12 @@ Options:
                              :description "Show version.                More version help."
                              :long-name "version")))))
 
+
+(describe "Parsing stacked short options"
+  (it "should return a list of short options"
+    (expect (parsec-with-input "-abc" (docopt--parse-stacked-short-options))
+            :to-equal (list (docopt-make-short-option :name "a")
+                            (docopt-make-short-option :name "b")
+                            (docopt-make-short-option :name "c")))))
+
 ;;; docopt-test.el ends here
