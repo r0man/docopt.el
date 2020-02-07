@@ -30,6 +30,21 @@ Options:
 
 (describe "Parsing tokens"
 
+  (it "should parse a space"
+    (expect (parsec-with-input " " (docopt--parse-space)) :to-equal " "))
+
+  (it "should parse spaces"
+    (expect (parsec-with-input "  " (docopt--parse-spaces)) :to-equal "  "))
+
+  (it "should parse a space character as white space"
+    (expect (parsec-with-input " " (docopt--parse-whitespace)) :to-equal " "))
+
+  (it "should parse a newline as white space"
+    (expect (parsec-with-input "\n" (docopt--parse-whitespace)) :to-equal "\n"))
+
+  (it "should parse CRLF as white space and return newline"
+    (expect (parsec-with-input "\r\n" (docopt--parse-whitespace)) :to-equal "\n"))
+
   (it "should parse \"[options]\""
     (expect (parsec-with-input "[options]" (docopt--parse-options-shortcut))
             :to-equal "[options]"))

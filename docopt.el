@@ -168,9 +168,17 @@ slots of the instance."
                       :description description
                       :name short-name)))))
 
+(defun docopt--parse-space ()
+  "Parse a space character."
+  (parsec-ch ?\s))
+
+(defun docopt--parse-spaces ()
+  "Parse many space characters."
+  (parsec-many-s (docopt--parse-space)))
+
 (defun docopt--parse-whitespace ()
-  "Parse spaces and newlines."
-  (parsec-re "[[:space:]\r\n]"))
+  "Parse a space character, newline or a CRLF."
+  (parsec-or (docopt--parse-space) (parsec-eol)))
 
 (defun docopt--parse-whitespaces ()
   "Parse spaces and newlines."
