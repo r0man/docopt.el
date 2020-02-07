@@ -453,12 +453,19 @@ slots of the instance."
 (defun docopt--parse-usage-pattern ()
   "Parse a usage pattern."
   (let ((docopt-strict-long-options t))
-    (parsec-sepby
-     (parsec-or
-      (docopt--parse-command-name)
-      (docopt--parse-option)
-      (docopt--parse-argument))
-     (docopt--parse-whitespaces))))
+    (parsec-and (docopt--parse-whitespaces)
+                (parsec-sepby
+                 (parsec-or
+                  (docopt--parse-command-name)
+                  (docopt--parse-option)
+                  (docopt--parse-argument))
+                 (docopt--parse-whitespaces)))))
+
+(defun docopt--parse-usage ()
+  "Parse a usage pattern."
+  (parsec-and (docopt--parse-usage-str)
+              (docopt--parse-whitespaces)
+              (parsec-sepby (docopt--parse-usage-pattern) (parsec-eol))))
 
 (defun docopt--parse-parse-document (document)
   (parsec-with-input document
