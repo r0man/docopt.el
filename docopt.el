@@ -322,17 +322,13 @@ slots of the instance."
 
 (defun docopt--parse-long-option-separator ()
   "Parse a long option separator."
-  (parsec-or (parsec-ch ?=) (parsec-ch ?\s)))
-
-(defun docopt--parse-long-option-strict-separator ()
-  "Parse a strict long option separator."
-  (parsec-ch ?=))
+  (if docopt-strict-long-options
+      (parsec-ch ?=)
+    (parsec-or (parsec-ch ?=) (parsec-ch ?\s))))
 
 (defun docopt--parse-long-option-argument ()
   "Parse an optional long option argument."
-  (parsec-and (if docopt-strict-long-options
-                  (docopt--parse-long-option-strict-separator)
-                (docopt--parse-long-option-separator))
+  (parsec-and (docopt--parse-long-option-separator)
               (docopt--parse-argument)))
 
 (defun docopt--parse-long-option-without-argument ()
