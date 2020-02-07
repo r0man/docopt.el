@@ -105,7 +105,7 @@ Options:
 
 (describe "The command parser"
 
-  (it "should parse multiple arguments only"
+  (it "should parse multiple arguments"
     (expect (parsec-with-input "my_program <host> <port>" (docopt--parse-command))
             :to-equal (docopt-make-command
                        :name "my_program"

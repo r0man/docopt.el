@@ -440,11 +440,10 @@ slots of the instance."
 (defun docopt--parse-command ()
   "Parse a command."
   (let ((docopt-strict-long-options t))
-    (seq-let [name _ [long-options short-options arguments]]
-        (parsec-collect
-         (docopt--parse-command-name)
-         (docopt--parse-whitespaces)
-         (docopt--parse-opts-and-args))
+    (seq-let [name [long-options short-options arguments]]
+        (parsec-collect (docopt--parse-command-name)
+                        (parsec-and (docopt--parse-whitespaces)
+                                    (docopt--parse-opts-and-args)))
       (docopt-make-command
        :arguments arguments
        :long-options long-options
