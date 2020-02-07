@@ -239,9 +239,10 @@ slots of the instance."
 (defmacro docopt--parse-optional (parser)
   "Parse an optional object with PARSER and set its :optional slot to nil."
   (let ((result (make-symbol "result")))
-    `(parsec-or (parsec-between
-                 (parsec-ch ?\[) (parsec-ch ?\])
-                 (docopt--set-optional ,parser t))
+    `(parsec-or (parsec-try
+                 (parsec-between
+                  (parsec-ch ?\[) (parsec-ch ?\])
+                  (docopt--set-optional ,parser t)))
                 ,parser)))
 
 ;; Repeated
@@ -283,7 +284,7 @@ slots of the instance."
 
 (defun docopt--parse-argument ()
   "Parse an argument."
-  (parsec-or (parsec-try (docopt--parse-spaceship-argument))
+  (parsec-or (docopt--parse-spaceship-argument)
              (docopt--parse-upper-case-argument)))
 
 ;; Short Option
