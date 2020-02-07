@@ -322,30 +322,17 @@ slots of the instance."
       (parsec-ch ?=)
     (parsec-or (parsec-ch ?=) (parsec-ch ?\s))))
 
-(defun docopt--parse-long-option-argument ()
-  "Parse an optional long option argument."
-  (parsec-and (docopt--parse-long-option-separator)
-              (docopt--parse-argument)))
-
-(defun docopt--parse-long-option-without-argument ()
-  "Parse a long option without an argument."
-  (docopt--parse-optional
-   (docopt-make-long-option :name (docopt--parse-long-option-name))))
-
-(defun docopt--parse-long-option-with-argument ()
-  "Parse a long option with an argument."
-  (docopt--parse-optional
-   (seq-let [name argument]
-       (parsec-try
-        (parsec-collect
-         (docopt--parse-long-option-name)
-         (docopt--parse-long-option-argument)))
-     (docopt-make-long-option :name name :argument argument))))
-
 (defun docopt--parse-long-option ()
   "Parse a long option."
-  (parsec-or (docopt--parse-long-option-with-argument)
-             (docopt--parse-long-option-without-argument)))
+  (docopt--parse-optional
+   (seq-let [name argument]
+       (parsec-collect
+        (docopt--parse-long-option-name)
+        (parsec-optional
+         (parsec-try
+          (parsec-and (docopt--parse-long-option-separator)
+                      (docopt--parse-argument)))))
+     (docopt-make-long-option :name name :argument argument))))
 
 ;; Options
 
