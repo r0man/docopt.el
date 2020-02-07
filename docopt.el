@@ -283,33 +283,6 @@ slots of the instance."
   (parsec-or (docopt--parse-argument-spaceship)
              (docopt--parse-argument-upper-case)))
 
-;; Short Option
-
-(defun docopt--parse-short-option-name ()
-  "Parse a short option name."
-  (substring (parsec-re "-[[:alnum:]]") 1))
-
-(defun docopt--parse-short-option-separator ()
-  "Parse a short option separator."
-  (parsec-re "[[:space:]]"))
-
-(defun docopt--parse-short-option-argument ()
-  "Parse an optional short option argument."
-  (parsec-optional
-   (parsec-try
-    (parsec-and
-     (parsec-optional (docopt--parse-short-option-separator))
-     (docopt--parse-argument)))))
-
-(defun docopt--parse-short-option ()
-  "Parse a short option."
-  (docopt--parse-optional
-   (seq-let [name argument]
-       (parsec-collect
-        (docopt--parse-short-option-name)
-        (docopt--parse-short-option-argument))
-     (docopt-make-short-option :name name :argument argument))))
-
 ;; Long Option
 
 (defun docopt--parse-long-option-name ()
@@ -333,6 +306,29 @@ slots of the instance."
           (parsec-and (docopt--parse-long-option-separator)
                       (docopt--parse-argument)))))
      (docopt-make-long-option :name name :argument argument))))
+
+;; Short Option
+
+(defun docopt--parse-short-option-name ()
+  "Parse a short option name."
+  (substring (parsec-re "-[[:alnum:]]") 1))
+
+(defun docopt--parse-short-option-separator ()
+  "Parse a short option separator."
+  (parsec-re "[[:space:]]"))
+
+(defun docopt--parse-short-option ()
+  "Parse a short option."
+  (docopt--parse-optional
+   (seq-let [name argument]
+       (parsec-collect
+        (docopt--parse-short-option-name)
+        (parsec-optional
+         (parsec-try
+          (parsec-and
+           (parsec-optional (docopt--parse-short-option-separator))
+           (docopt--parse-argument)))))
+     (docopt-make-short-option :name name :argument argument))))
 
 ;; Options
 
