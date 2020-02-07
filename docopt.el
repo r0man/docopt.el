@@ -90,7 +90,7 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 ;;; Base Option
 
-(defclass docopt-option-base (docopt-optionable)
+(defclass docopt-option-base (docopt-optionable docopt-repeatable)
   ((argument
     :initarg :argument
     :initform nil
@@ -168,6 +168,23 @@ slots of the instance."
                       :description description
                       :name short-name)))))
 
+(defmacro docopt--parse-sep-end-by1 (parser sep)
+  "Parse one or more occurrences of PARSER, separated and optionally ended by SEP."
+  `(cons ,parser (parsec-return (parsec-many (parsec-try (parsec-and ,sep ,parser)))
+                   (parsec-optional ,sep))))
+
+(defmacro docopt--parse-sepby1 (parser sep)
+  "Parse one or more occurrences of PARSER, separated by SEP."
+  `(cons ,parser (parsec-many (parsec-and ,sep ,parser))))
+
+(defmacro docopt--parse-group (open close parser)
+  "Parse a group between OPEN and CLOSE using PARSER."
+  `(parsec-between (parsec-ch ,open) (parsec-ch ,close) ,parser))
+
+(defun docopt--parse-pipe ()
+  "Parse a pipe."
+  (parsec-or (parsec-ch ?\|) (parsec-str "'|'")))
+
 (defun docopt--parse-space ()
   "Parse a space character."
   (parsec-ch ?\s))
@@ -193,10 +210,6 @@ slots of the instance."
   (docopt--parse-newlines)
   (parsec-re "\\([^.]+\.\\)"))
 
-(defun docopt--parse-parse-description ()
-  "Parse the title."
-  (parsec-until (parsec-str "Usage:")))
-
 (defun docopt--parse-default (s)
   "Parse the default value from S."
   (when s (nth 1 (s-match "\\[default:\s*\\([^] ]+\\)\s*\\]" s))))
@@ -209,81 +222,23 @@ slots of the instance."
   "Parse the string \"[options]\", aka the options shortcut."
   (parsec-str "[options]"))
 
-(defun docopt--parse-program-name ()
-  "Parse a usage line."
-  (parsec-re "[[:alnum:]-_]+"))
-
 (defun docopt--parse-command-name ()
   "Parse a command name."
   (parsec-re "[[:alnum:]][[:alnum:]-_]*"))
-
-(defun docopt--parse-subcommand-name ()
-  "Parse a subcommand name."
-  (parsec-re "[[:alnum:]-_]+"))
-
-(defun docopt--parse-usage-line ()
-  "Parse a usage line."
-  (parsec-collect
-   (docopt--parse-program-name)
-   (docopt--parse-whitespaces)
-   (docopt--parse-command-name)
-   (docopt--parse-whitespaces)
-   (docopt--parse-subcommand-name)
-   (docopt--parse-whitespaces)))
-
-;; Optional
-
-(defun docopt--set-optional (obj optional)
-  "Set the :optional slot of OBJ to OPTIONAL and return OBJ."
-  (cond
-   ((and (object-p obj)
-         (object-of-class-p obj 'docopt-optionable))
-    (oset obj :optional optional))
-   ((listp obj)
-    (seq-doseq (element obj)
-      (oset element :optional optional))))
-  obj)
-
-(defmacro docopt--parse-optional (parser)
-  "Parse an optional object with PARSER and set its :optional slot to nil."
-  `(parsec-or (parsec-try
-               (parsec-between
-                (parsec-ch ?\[) (parsec-ch ?\])
-                (docopt--set-optional ,parser t)))
-              ,parser))
-
-;; Repeated
-
-(defun docopt--parse-ellipsis ()
-  "Parse an identifier."
-  (parsec-str "..."))
-
-(defmacro docopt--parse-repeated (parser)
-  "Parse an repeated object with PARSER and set its :repeated slot to t."
-  (let ((object (make-symbol "object"))
-        (ellipsis (make-symbol "ellipsis")))
-    `(seq-let [,object ,ellipsis]
-         (parsec-collect ,parser (parsec-optional (docopt--parse-ellipsis)))
-       (when ,ellipsis (oset ,object :repeated t))
-       ,object)))
 
 ;; Argument
 
 (defun docopt--parse-argument-spaceship ()
   "Parse a spaceship argument."
-  (docopt--parse-optional
-   (docopt--parse-repeated
-    (docopt-make-argument
-     :name (parsec-between
-            (parsec-ch ?<) (parsec-ch ?>)
-            (parsec-re "[[:alnum:]][[:alnum:]-_]*"))))))
+  (docopt-make-argument
+   :name (parsec-between
+          (parsec-ch ?<) (parsec-ch ?>)
+          (parsec-re "[[:alnum:]][[:alnum:]-_]*"))))
 
 (defun docopt--parse-argument-upper-case ()
   "Parse an upper case argument."
   (let ((case-fold-search nil))
-    (docopt--parse-optional
-     (docopt--parse-repeated
-      (docopt-make-argument :name (parsec-re "[A-Z0-9][A-Z0-9_-]*"))))))
+    (docopt-make-argument :name (parsec-re "[A-Z0-9][A-Z0-9_-]*"))))
 
 (defun docopt--parse-argument ()
   "Parse an argument."
@@ -304,15 +259,14 @@ slots of the instance."
 
 (defun docopt--parse-long-option ()
   "Parse a long option."
-  (docopt--parse-optional
-   (seq-let [name argument]
-       (parsec-collect
-        (docopt--parse-long-option-name)
-        (parsec-optional
-         (parsec-try
-          (parsec-and (docopt--parse-long-option-separator)
-                      (docopt--parse-argument)))))
-     (docopt-make-long-option :name name :argument argument))))
+  (seq-let [name argument]
+      (parsec-collect
+       (docopt--parse-long-option-name)
+       (parsec-optional
+        (parsec-try
+         (parsec-and (docopt--parse-long-option-separator)
+                     (docopt--parse-argument)))))
+    (docopt-make-long-option :name name :argument argument)))
 
 ;; Short Option
 
@@ -322,26 +276,25 @@ slots of the instance."
 
 (defun docopt--parse-short-option-separator ()
   "Parse a short option separator."
-  (parsec-re "[[:space:]]"))
+  (docopt--parse-whitespace))
 
 (defun docopt--parse-short-option ()
   "Parse a short option."
-  (docopt--parse-optional
-   (seq-let [name argument]
-       (parsec-collect
-        (docopt--parse-short-option-name)
-        (parsec-optional
-         (parsec-try
-          (parsec-and
-           (parsec-optional (docopt--parse-short-option-separator))
-           (docopt--parse-argument)))))
-     (docopt-make-short-option :name name :argument argument))))
+  (seq-let [name argument]
+      (parsec-collect
+       (docopt--parse-short-option-name)
+       (parsec-optional
+        (parsec-try
+         (parsec-and
+          (parsec-optional (docopt--parse-short-option-separator))
+          (docopt--parse-argument)))))
+    (docopt-make-short-option :name name :argument argument)))
 
-(defun docopt--parse-stacked-short-options ()
+(defun docopt--parse-short-options-stacked ()
   "Parse stacked short options."
   (seq-map (lambda (short-char)
              (docopt-make-short-option :name (char-to-string short-char)))
-           (substring (parsec-re "-[[:alnum:]]+") 1)))
+           (substring (parsec-re "-[[:alnum:]][[:alnum:]]+") 1)))
 
 ;; Options
 
@@ -401,12 +354,6 @@ slots of the instance."
   "Parse an option lines."
   (parsec-many (docopt--parse-option-line)))
 
-(defun docopt--parse-blank-line ()
-  "Parse a blank line."
-  (parsec-collect
-   (parsec-many-as-string (parsec-ch ?\s))
-   (parsec-eol)))
-
 ;; Command
 
 (defun docopt--parse-opts-and-args ()
@@ -433,48 +380,123 @@ slots of the instance."
        :name name
        :short-options short-options))))
 
+
+;; Repeatable
+
+(defun docopt--parse-ellipsis ()
+  "Parse the repeatable identifier."
+  (parsec-str "..."))
+
+(defun docopt-repeatable--set-maybe (repeatable-obj value)
+  "Set the :repeated slot of REPEATABLE-OBJ to VALUE when supported."
+  (when (docopt-repeatable-child-p repeatable-obj)
+    (oset repeatable-obj :repeated value)))
+
+(defun docopt-repeatable--set-maybe-seq (seq value)
+  "Set the :repeated slot of the items in SEQ to VALUE when supported."
+  (seq-doseq (element seq) (docopt-repeatable--set-maybe element value)))
+
+(defun docopt--expr-set-repeatable (expr value)
+  "Set the :repeated slot of all items in EXPR to VALUE if they support it."
+  (cond
+   ((sequencep expr) (docopt-repeatable--set-maybe-seq expr value))
+   (t (docopt-repeatable--set-maybe expr value))))
+
+(defmacro docopt--parse-repeatable (parser)
+  "Parse a repeatable expression with PARSER."
+  (let ((object (make-symbol "object"))
+        (ellipsis (make-symbol "ellipsis")))
+    `(seq-let [,object ,ellipsis]
+         (parsec-collect ,parser (parsec-optional (docopt--parse-ellipsis)))
+       (when ,ellipsis
+         (docopt--expr-set-repeatable ,object t))
+       ,object)))
+
+;; Expression
+
+(defun docopt-optionable--set-maybe (optional-obj value)
+  "Set the :optional slot of OPTIONAL-OBJ to VALUE when supported."
+  (when (docopt-optionable-child-p optional-obj)
+    (oset optional-obj :optional value)))
+
+(defun docopt-optionable--set-maybe-seq (seq value)
+  "Set the :optional slot of the items in SEQ to VALUE when supported."
+  (seq-doseq (element seq) (docopt-optionable--set-maybe element value)))
+
+(defun docopt-optionable--set-maybe-seq-nested (nested-seq value)
+  "Set the :optional slot of the items in the NESTED-SEQ to VALUE when supported."
+  (seq-mapcat (lambda (seq) (docopt-optionable--set-maybe-seq seq value)) nested-seq))
+
+(defun docopt--expr-set-optional (expr value)
+  "Set the :optional slot of all items in EXPR to VALUE if they support it."
+  (cond
+   ((and (sequencep expr) (sequencep (car expr)))
+    (docopt-optionable--set-maybe-seq-nested expr value))
+   ((sequencep expr)
+    (docopt-optionable--set-maybe-seq expr value))
+   (t expr)))
+
+(defun docopt--parse-expr-group (open close)
+  "Parse an expression group between OPEN and CLOSE."
+  (docopt--parse-group open close (docopt--parse-expr-seq)))
+
+(defun docopt--parse-optional-group ()
+  "Parse a optional expression group."
+  (docopt--expr-set-optional (docopt--parse-expr-group ?\[ ?\]) t))
+
+(defun docopt--parse-required-group ()
+  "Parse a required expression group."
+  (docopt--expr-set-optional (docopt--parse-expr-group ?\( ?\)) nil))
+
+(defun docopt--parse-expr-atom ()
+  "Parse an atom of a usage expression."
+  (parsec-or (docopt--parse-option)
+             (docopt--parse-argument)
+             (docopt--parse-usage-command)))
+
+(defun docopt--parse-mutually-exclusive1 ()
+  "Parse a mutually exclusive list."
+  (let ((result (docopt--parse-sepby1 (docopt--parse-expr-atom) (parsec-re "\s*|\s*"))))
+    (if (= (length result) 1) (car result) result)))
+
+(defun docopt--parse-expr ()
+  "Parse an atom of a usage line expression."
+  (docopt--parse-repeatable
+   (parsec-or (parsec-try (docopt--parse-short-options-stacked))
+              (docopt--parse-mutually-exclusive1)
+              (docopt--parse-required-group)
+              (docopt--parse-optional-group)
+              ;; (docopt--parse-expr-atom)
+              )))
+
+(defun docopt--parse-expr-seq ()
+  "Parse an expression sequence."
+  (parsec-sepby (docopt--parse-expr) (docopt--parse-spaces)))
+
 ;; Usage
+
+(defun docopt--parse-usage-command ()
+  "Parse a command in a usage pattern."
+  (docopt-make-command :name (docopt--parse-command-name)))
 
 (defun docopt--parse-usage-header ()
   "Parse the \"Usage:\" header."
   (parsec-str "Usage:"))
 
-(defun docopt--parse-usage-pattern ()
-  "Parse a usage pattern."
-  (let ((docopt-strict-long-options t))
-    (parsec-and (docopt--parse-whitespaces)
-                (parsec-sepby
-                 (parsec-or
-                  (docopt--parse-command-name)
-                  (docopt--parse-option)
-                  (docopt--parse-argument))
-                 (docopt--parse-whitespaces)))))
+(defun docopt--parse-usage-line ()
+  "Parse a usage line."
+  (parsec-and (docopt--parse-spaces) (docopt--parse-expr-seq)))
 
-(defun docopt--parse-usage ()
-  "Parse a usage pattern."
+(defun docopt--parse-usage-patterns ()
+  "Parse the usage patterns."
   (parsec-and (docopt--parse-usage-header)
-              (docopt--parse-whitespaces)
-              (parsec-sepby (docopt--parse-usage-pattern) (parsec-eol))))
+              (parsec-sepby (docopt--parse-usage-line) (parsec-eol))))
 
+;; TODO: mutually exclusive
 
 (defun docopt--parse-mutually-exclusive ()
   "Parse a mutually exclusive list."
-  (docopt--parse-optional
-   (parsec-sepby
-    (docopt--parse-option)
-    (parsec-re "\s*|\s*"))))
-
-(defun docopt--parse-parse-document (document)
-  (parsec-with-input document
-    (parsec-collect
-     (parsec-return (docopt--parse-parse-title)
-       (docopt--parse-newlines))
-     (parsec-until (parsec-str "Usage:") :end)
-     (docopt--parse-whitespaces)
-     ;; (parsec-return (docopt--parse-usage-header)
-     ;;   (docopt--parse-newlines))
-     ;; (docopt--parse-parse-description)
-     (parsec-until (parsec-eof)))))
+  (parsec-sepby (docopt--parse-option) (parsec-re "\s*|\s*")))
 
 (provide 'docopt)
 
