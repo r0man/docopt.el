@@ -262,30 +262,26 @@ slots of the instance."
 
 ;; Argument
 
-(defun docopt--parse-identifier ()
-  "Parse an identifier."
-  (parsec-re "[[:alnum:]-_]+"))
-
-(defun docopt--parse-spaceship-argument ()
+(defun docopt--parse-argument-spaceship ()
   "Parse a spaceship argument."
   (docopt--parse-optional
    (docopt--parse-repeated
     (docopt-make-argument
      :name (parsec-between
             (parsec-ch ?<) (parsec-ch ?>)
-            (docopt--parse-identifier))))))
+            (parsec-re "[[:alnum:]][[:alnum:]-_]*"))))))
 
-(defun docopt--parse-upper-case-argument ()
+(defun docopt--parse-argument-upper-case ()
   "Parse an upper case argument."
   (let ((case-fold-search nil))
     (docopt--parse-optional
      (docopt--parse-repeated
-      (docopt-make-argument :name (parsec-re "[A-Z0-9_-]+"))))))
+      (docopt-make-argument :name (parsec-re "[A-Z0-9][A-Z0-9_-]*"))))))
 
 (defun docopt--parse-argument ()
   "Parse an argument."
-  (parsec-or (docopt--parse-spaceship-argument)
-             (docopt--parse-upper-case-argument)))
+  (parsec-or (docopt--parse-argument-spaceship)
+             (docopt--parse-argument-upper-case)))
 
 ;; Short Option
 
