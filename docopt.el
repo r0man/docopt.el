@@ -450,15 +450,15 @@ slots of the instance."
        :name name
        :short-options short-options))))
 
-(parsec-with-input "naval_fate ship <name> move <x> <y> [--speed=<kn>]"
-  (parsec-collect
-   (docopt--parse-command-name)
-   (docopt--parse-whitespaces)
-   (docopt--parse-subcommand-name)
-   (docopt--parse-whitespaces)
-   (docopt--parse-argument)
-   ;; (parsec-sepby (docopt--parse-argument) (docopt--parse-whitespaces))
-   ))
+(defun docopt--parse-usage-pattern ()
+  "Parse a usage pattern."
+  (let ((docopt-strict-long-options t))
+    (parsec-sepby
+     (parsec-or
+      (docopt--parse-command-name)
+      (docopt--parse-option)
+      (docopt--parse-argument))
+     (docopt--parse-whitespaces))))
 
 (defun docopt--parse-parse-document (document)
   (parsec-with-input document

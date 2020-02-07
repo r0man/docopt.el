@@ -104,13 +104,19 @@ Options:
 
 
 (describe "The command parser"
-
   (it "should parse multiple arguments"
     (expect (parsec-with-input "my_program <host> <port>" (docopt--parse-command))
             :to-equal (docopt-make-command
                        :name "my_program"
                        :arguments (list (docopt-make-argument :name "host")
                                         (docopt-make-argument :name "port"))))))
+
+(describe "The usage pattern parser"
+  (it "should parse 2 sub commands with options"
+    (expect (parsec-with-input "naval_fate ship <name> move <x> <y> [--speed=<kn>]" (docopt--parse-usage-pattern))
+            :to-equal (list "naval_fate" "ship" (docopt-make-argument :name "name") "move"
+                            (docopt-make-argument :name "x") (docopt-make-argument :name "y")
+                            (docopt-make-long-option :name "speed" :argument (docopt-make-argument :name "kn"))))))
 
 
 (describe "The default parser"
