@@ -125,12 +125,18 @@ Options:
   (it "should parse multiple options, all optional"
     (expect (parsec-with-input "[-h | --speed=<kn>]" (docopt--parse-mutually-exclusive))
             :to-equal (list (docopt-make-short-option :name "h" :optional t)
-                            (docopt-make-long-option :name "speed" :argument (docopt-make-argument :name "kn") :optional t))))
+                            (docopt-make-long-option
+                             :argument (docopt-make-argument :name "kn")
+                             :name "speed"
+                             :optional t))))
 
   (xit "should parse multiple options, each optional"
     (expect (parsec-with-input "[-h] | [--speed=<kn>]" (docopt--parse-mutually-exclusive))
             :to-equal (list (docopt-make-short-option :name "h" :optional t)
-                            (docopt-make-long-option :name "speed" :argument (docopt-make-argument :name "kn") :optional t)))))
+                            (docopt-make-long-option
+                             :argument (docopt-make-argument :name "kn")
+                             :name "speed"
+                             :optional t)))))
 
 
 (describe "The command parser"
@@ -145,17 +151,27 @@ Options:
 (describe "The usage pattern parser"
   (it "should parse 2 sub commands with options"
     (expect (parsec-with-input "naval_fate ship <name> move <x> <y> [--speed=<kn>]" (docopt--parse-usage-pattern))
-            :to-equal (list "naval_fate" "ship" (docopt-make-argument :name "name") "move"
-                            (docopt-make-argument :name "x") (docopt-make-argument :name "y")
-                            (docopt-make-long-option :name "speed" :argument (docopt-make-argument :name "kn") :optional t)))))
+            :to-equal (list "naval_fate" "ship"
+                            (docopt-make-argument :name "name") "move"
+                            (docopt-make-argument :name "x")
+                            (docopt-make-argument :name "y")
+                            (docopt-make-long-option
+                             :argument (docopt-make-argument :name "kn")
+                             :name "speed"
+                             :optional t)))))
 
 
 (describe "The usage parser"
   (it "should parse a single usage line"
     (expect (parsec-with-input "Usage: naval_fate ship <name> move <x> <y> [--speed=<kn>]" (docopt--parse-usage))
-            :to-equal (list (list "naval_fate" "ship" (docopt-make-argument :name "name") "move"
-                                  (docopt-make-argument :name "x") (docopt-make-argument :name "y")
-                                  (docopt-make-long-option :name "speed" :argument (docopt-make-argument :name "kn") :optional t))))))
+            :to-equal (list (list "naval_fate" "ship"
+                                  (docopt-make-argument :name "name") "move"
+                                  (docopt-make-argument :name "x")
+                                  (docopt-make-argument :name "y")
+                                  (docopt-make-long-option
+                                   :argument (docopt-make-argument :name "kn")
+                                   :name "speed"
+                                   :optional t))))))
 
 
 (describe "The default parser"
