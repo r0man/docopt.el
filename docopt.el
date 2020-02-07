@@ -55,10 +55,6 @@ When t, only allow \"=\" as the long option separator, otherwise
     :documentation "The name of the argument."))
   "A class representing a DOCOPT argument.")
 
-(defun docopt-argument-p (obj)
-  "Return t if OBJ is a DOCOPT argument, otherwise nil."
-  (same-class-p obj 'docopt-argument))
-
 (defun docopt-make-argument (&rest args)
   "Make a new DOCOPT argument using ARGS."
   (apply 'make-instance 'docopt-argument args))
@@ -117,10 +113,6 @@ When t, only allow \"=\" as the long option separator, otherwise
 (defclass docopt-long-option (docopt-option-base) ()
   "A class representing a DOCOPT long option.")
 
-(defun docopt-long-option-p (obj)
-  "Return t if OBJ is a DOCOPT long option, otherwise nil."
-  (same-class-p obj 'docopt-long-option))
-
 (defun docopt-make-long-option (&rest args)
   "Make a new DOCOPT long option using ARGS."
   (apply 'make-instance 'docopt-long-option args))
@@ -129,10 +121,6 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 (defclass docopt-short-option (docopt-option-base) ()
   "A class representing a DOCOPT short option.")
-
-(defun docopt-short-option-p (obj)
-  "Return t if OBJ is a DOCOPT short option, otherwise nil."
-  (same-class-p obj 'docopt-short-option))
 
 (defun docopt-make-short-option (&rest args)
   "Make a new DOCOPT short option using ARGS."
@@ -433,9 +421,9 @@ slots of the instance."
                          (docopt--parse-option)
                          (docopt--parse-argument))
                         (docopt--parse-whitespaces))))
-    (list (seq-filter 'docopt-long-option-p opts-and-args)
-          (seq-filter 'docopt-short-option-p opts-and-args)
-          (seq-filter 'docopt-argument-p opts-and-args))))
+    (list (seq-filter #'docopt-long-option-p opts-and-args)
+          (seq-filter #'docopt-short-option-p opts-and-args)
+          (seq-filter #'docopt-argument-p opts-and-args))))
 
 (defun docopt--parse-command ()
   "Parse a command."
