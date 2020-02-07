@@ -19,6 +19,11 @@
 (require 'seq)
 (require 'subr-x)
 
+(defvar docopt-strict-long-options nil
+  "Whether to parse long options in strict mode or not.
+When t, only allow \"=\" as the long option separator, otherwise
+\"=\" and \" \" are allowed.")
+
 (defclass docopt-optionable ()
   ((optional
     :initarg :optional
@@ -35,6 +40,8 @@
     :documentation "Whether the object is repeatable or not."))
   "A class representing a repeatable DOCOPT object.")
 
+;;; Argument
+
 (defclass docopt-argument (docopt-optionable docopt-repeatable)
   ((default
      :initarg :default
@@ -47,6 +54,45 @@
     :accessor docopt-argument-name
     :documentation "The name of the argument."))
   "A class representing a DOCOPT argument.")
+
+(defun docopt-argument-p (obj)
+  "Return t if OBJ is a DOCOPT argument, otherwise nil."
+  (same-class-p obj 'docopt-argument))
+
+(defun docopt-make-argument (&rest args)
+  "Make a new DOCOPT argument using ARGS."
+  (apply 'make-instance 'docopt-argument args))
+
+;;; Command
+
+(defclass docopt-command ()
+  ((arguments
+    :initarg :arguments
+    :initform nil
+    :accessor docopt-command-arguments
+    :documentation "The arguments of the command.")
+   (name
+    :initarg :name
+    :initform nil
+    :accessor docopt-command-name
+    :documentation "The name of the command.")
+   (long-options
+    :initarg :long-options
+    :initform nil
+    :accessor docopt-command-long-options
+    :documentation "The long-options of the command.")
+   (short-options
+    :initarg :short-options
+    :initform nil
+    :accessor docopt-command-short-options
+    :documentation "The short-options of the command."))
+  "A class representing a DOCOPT command.")
+
+(defun docopt-make-command (&rest args)
+  "Make a new DOCOPT command using ARGS."
+  (apply 'make-instance 'docopt-command args))
+
+;;; Base Option
 
 (defclass docopt-option-base (docopt-optionable)
   ((argument
@@ -66,11 +112,33 @@
     :documentation "The long name of the option."))
   "A class representing a DOCOPT base option.")
 
+;;; Long Option
+
 (defclass docopt-long-option (docopt-option-base) ()
   "A class representing a DOCOPT long option.")
 
+(defun docopt-long-option-p (obj)
+  "Return t if OBJ is a DOCOPT long option, otherwise nil."
+  (same-class-p obj 'docopt-long-option))
+
+(defun docopt-make-long-option (&rest args)
+  "Make a new DOCOPT long option using ARGS."
+  (apply 'make-instance 'docopt-long-option args))
+
+;;; Short option
+
 (defclass docopt-short-option (docopt-option-base) ()
   "A class representing a DOCOPT short option.")
+
+(defun docopt-short-option-p (obj)
+  "Return t if OBJ is a DOCOPT short option, otherwise nil."
+  (same-class-p obj 'docopt-short-option))
+
+(defun docopt-make-short-option (&rest args)
+  "Make a new DOCOPT short option using ARGS."
+  (apply 'make-instance 'docopt-short-option args))
+
+;; Option line
 
 (defclass docopt-option-line ()
   ((description
@@ -89,18 +157,6 @@
     :accessor docopt-option-line-short-option
     :documentation "The short name of the option line."))
   "A class representing a DOCOPT option line.")
-
-(defun docopt-make-argument (&rest args)
-  "Make a new DOCOPT argument using ARGS."
-  (apply 'make-instance 'docopt-argument args))
-
-(defun docopt-make-short-option (&rest args)
-  "Make a new DOCOPT short option using ARGS."
-  (apply 'make-instance 'docopt-short-option args))
-
-(defun docopt-make-long-option (&rest args)
-  "Make a new DOCOPT long option using ARGS."
-  (apply 'make-instance 'docopt-long-option args))
 
 (cl-defun docopt-make-option-line (&key description long-name short-name argument argument-name)
   "Make a new DOCOPT option line instance.
@@ -167,7 +223,7 @@ slots of the instance."
 
 (defun docopt--parse-command-name ()
   "Parse a command name."
-  (parsec-re "[[:alnum:]-_]+"))
+  (parsec-re "[[:alnum:]][[:alnum:]-_]*"))
 
 (defun docopt--parse-subcommand-name ()
   "Parse a subcommand name."
@@ -268,15 +324,21 @@ slots of the instance."
 
 (defun docopt--parse-long-option-name ()
   "Parse a long option name."
-  (substring (parsec-re "--[[:alnum:]]+") 2))
+  (substring (parsec-re "--[[:alnum:]-_]+") 2))
 
 (defun docopt--parse-long-option-separator ()
   "Parse a long option separator."
   (parsec-or (parsec-ch ?=) (parsec-ch ?\s)))
 
+(defun docopt--parse-long-option-strict-separator ()
+  "Parse a strict long option separator."
+  (parsec-ch ?=))
+
 (defun docopt--parse-long-option-argument ()
   "Parse an optional long option argument."
-  (parsec-and (docopt--parse-long-option-separator)
+  (parsec-and (if docopt-strict-long-options
+                  (docopt--parse-long-option-strict-separator)
+                (docopt--parse-long-option-separator))
               (docopt--parse-argument)))
 
 (defun docopt--parse-long-option-without-argument ()
@@ -362,11 +424,32 @@ slots of the instance."
    (parsec-many-as-string (parsec-ch ?\s))
    (parsec-eol)))
 
-;; Usage Line
+;; Command
 
-(defun docopt--parse-usage-line ()
-  "Parse a usage line."
-  )
+(defun docopt--parse-opts-and-args ()
+  "Parse an argument or option separated by whitespace."
+  (let ((opts-and-args (parsec-sepby
+                        (parsec-or
+                         (docopt--parse-option)
+                         (docopt--parse-argument))
+                        (docopt--parse-whitespaces))))
+    (list (seq-filter 'docopt-long-option-p opts-and-args)
+          (seq-filter 'docopt-short-option-p opts-and-args)
+          (seq-filter 'docopt-argument-p opts-and-args))))
+
+(defun docopt--parse-command ()
+  "Parse a command."
+  (let ((docopt-strict-long-options t))
+    (seq-let [name _ [long-options short-options arguments]]
+        (parsec-collect
+         (docopt--parse-command-name)
+         (docopt--parse-whitespaces)
+         (docopt--parse-opts-and-args))
+      (docopt-make-command
+       :arguments arguments
+       :long-options long-options
+       :name name
+       :short-options short-options))))
 
 (parsec-with-input "naval_fate ship <name> move <x> <y> [--speed=<kn>]"
   (parsec-collect

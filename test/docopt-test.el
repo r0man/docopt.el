@@ -54,6 +54,10 @@ Options:
     (expect (parsec-with-input "--help" (docopt--parse-long-option-name))
             :to-equal "help"))
 
+  (it "should parse the \"--help-me\" long option name"
+    (expect (parsec-with-input "--help-me" (docopt--parse-long-option-name))
+            :to-equal "help-me"))
+
   (it "should parse the \"my_program\" program name"
     (expect (parsec-with-input "my_program" (docopt--parse-program-name))
             :to-equal "my_program")))
@@ -97,6 +101,16 @@ Options:
   (it "should parse a repeated upper case argument"
     (expect (parsec-with-input "HOST..." (docopt--parse-argument))
             :to-equal (docopt-make-argument :name "HOST" :repeated t))))
+
+
+(describe "The command parser"
+
+  (it "should parse multiple arguments only"
+    (expect (parsec-with-input "my_program <host> <port>" (docopt--parse-command))
+            :to-equal (docopt-make-command
+                       :name "my_program"
+                       :arguments (list (docopt-make-argument :name "host")
+                                        (docopt-make-argument :name "port"))))))
 
 
 (describe "The default parser"
