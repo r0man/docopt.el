@@ -358,33 +358,6 @@ slots of the instance."
   "Parse an option lines."
   (parsec-many (docopt--parse-option-line)))
 
-;; Command
-
-(defun docopt--parse-opts-and-args ()
-  "Parse an argument or option separated by whitespace."
-  (let ((opts-and-args (parsec-sepby
-                        (parsec-or
-                         (docopt--parse-option)
-                         (docopt--parse-argument))
-                        (docopt--parse-whitespaces))))
-    (list (seq-filter #'docopt-long-option-p opts-and-args)
-          (seq-filter #'docopt-short-option-p opts-and-args)
-          (seq-filter #'docopt-argument-p opts-and-args))))
-
-(defun docopt--parse-command ()
-  "Parse a command."
-  (let ((docopt-strict-long-options t))
-    (seq-let [name [long-options short-options arguments]]
-        (parsec-collect (docopt--parse-command-name)
-                        (parsec-and (docopt--parse-whitespaces)
-                                    (docopt--parse-opts-and-args)))
-      (docopt-make-command
-       :arguments arguments
-       :long-options long-options
-       :name name
-       :short-options short-options))))
-
-
 ;; Repeatable
 
 (defun docopt--parse-ellipsis ()
@@ -416,7 +389,7 @@ slots of the instance."
          (docopt--expr-set-repeatable ,object t))
        ,object)))
 
-;; Expression
+;; Usage Expression
 
 (defun docopt-optionable--set-maybe (optional-obj value)
   "Set the :optional slot of OPTIONAL-OBJ to VALUE when supported."
@@ -440,44 +413,48 @@ slots of the instance."
     (docopt-optionable--set-maybe-seq expr value))
    (t expr)))
 
-(defun docopt--parse-expr-group (open close)
+(defun docopt--parse-usage-expr-group (open close)
   "Parse an expression group between OPEN and CLOSE."
-  (docopt--parse-group open close (docopt--parse-expr-seq)))
+  (docopt--parse-group open close (docopt--parse-usage-expr-seq)))
 
 (defun docopt--parse-optional-group ()
   "Parse a optional expression group."
-  (docopt--expr-set-optional (docopt--parse-expr-group ?\[ ?\]) t))
+  (docopt--expr-set-optional (docopt--parse-usage-expr-group ?\[ ?\]) t))
 
 (defun docopt--parse-required-group ()
   "Parse a required expression group."
-  (docopt--expr-set-optional (docopt--parse-expr-group ?\( ?\)) nil))
+  (docopt--expr-set-optional (docopt--parse-usage-expr-group ?\( ?\)) nil))
 
-(defun docopt--parse-expr-atom ()
+(defun docopt--parse-usage-expr-atom ()
   "Parse an atom of a usage expression."
   (parsec-or (docopt--parse-option)
              (docopt--parse-argument)
              (docopt--parse-usage-command)))
 
-(defun docopt--parse-mutually-exclusive1 ()
-  "Parse a mutually exclusive list."
-  (let ((result (docopt--parse-sep-by1 (docopt--parse-expr-atom) (parsec-re "\s*|\s*"))))
-    (if (= (length result) 1) (car result) result)))
+(defun docopt--parse-either-end ()
+  "Parse the end of an either expression."
+  (parsec-and (parsec-re "\s*|\s*") (docopt--parse-usage-expr-seq)))
 
-(defun docopt--parse-expr ()
+(defun docopt--parse-either-start (expr)
+  "Parse the start of an either expression or return EXPR."
+  (if-let ((sep (parsec-peek-p (parsec-re "\s*|\s*"))))
+      (cons expr (docopt--parse-either-end))
+    expr))
+
+(defun docopt--parse-usage-expr ()
   "Parse an atom of a usage line expression."
   (docopt--parse-repeatable
-   (parsec-or (parsec-try (docopt--parse-short-options-stacked))
-              (docopt--parse-mutually-exclusive1)
-              (docopt--parse-required-group)
-              (docopt--parse-optional-group)
-              ;; (docopt--parse-expr-atom)
-              )))
+   (docopt--parse-either-start
+    (parsec-or (parsec-try (docopt--parse-short-options-stacked))
+               (docopt--parse-required-group)
+               (docopt--parse-optional-group)
+               (docopt--parse-usage-expr-atom)))))
 
-(defun docopt--parse-expr-seq ()
+(defun docopt--parse-usage-expr-seq ()
   "Parse an expression sequence."
-  (parsec-sepby (docopt--parse-expr) (docopt--parse-spaces)))
+  (parsec-sepby (docopt--parse-usage-expr) (docopt--parse-spaces)))
 
-;; Usage
+;; Usage Section
 
 (defun docopt--parse-usage-command ()
   "Parse a command in a usage pattern."
@@ -489,16 +466,12 @@ slots of the instance."
 
 (defun docopt--parse-usage-line ()
   "Parse a usage line."
-  (parsec-and (docopt--parse-spaces) (docopt--parse-expr-seq)))
+  (parsec-and (docopt--parse-spaces) (docopt--parse-usage-expr-seq)))
 
 (defun docopt--parse-usage-patterns ()
   "Parse the usage patterns."
   (parsec-and (docopt--parse-usage-header)
               (parsec-sepby (docopt--parse-usage-line) (parsec-eol))))
-
-(defun docopt--parse-mutually-exclusive ()
-  "Parse a mutually exclusive list."
-  (parsec-sepby (docopt--parse-option) (parsec-re "\s*|\s*")))
 
 (provide 'docopt)
 
