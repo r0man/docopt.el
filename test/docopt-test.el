@@ -411,6 +411,9 @@ Options:
   (it "should parse \"a\""
     (expect (parsec-with-input "a" (funcall parser)) :to-equal (list "a")))
 
+  (it "should parse \"aa\""
+    (expect (parsec-with-input "aa" (funcall parser)) :to-equal (list "a")))
+
   (it "should parse \"a|\""
     (expect (parsec-with-input "a|" (funcall parser))
             :to-equal (list "a")))
@@ -423,12 +426,51 @@ Options:
     (expect (parsec-with-input "a|a|" (funcall parser))
             :to-equal (list "a" "a")))
 
-  (it "should not parse \"\""
+  (it "should parse a|a||"
+    (expect (parsec-with-input "a|a||" (funcall parser))
+            :to-equal (list "a" "a")))
+
+  (it "should fail parsing \"\""
+    (expect (parsec-with-input "" (funcall parser))
+            :to-equal '(parsec-error . "Found \"`EOF'\" -> Expected \"a\"")))
+
+  (it "should fail parsing \"b\""
     (expect (parsec-with-input "" (funcall parser))
             :to-equal '(parsec-error . "Found \"`EOF'\" -> Expected \"a\""))))
 
-(describe "The docopt--parse-sepby1 combinator"
-  :var ((parser (lambda () (docopt--parse-sepby1 (parsec-ch ?a) (parsec-ch ?\|)))))
+(describe "The docopt--parse-sep-end-by combinator"
+  :var ((parser (lambda () (docopt--parse-sep-end-by (parsec-ch ?a) (parsec-ch ?\|)))))
+
+  (it "should parse \"a\""
+    (expect (parsec-with-input "a" (funcall parser)) :to-equal (list "a")))
+
+  (it "should parse \"aa\""
+    (expect (parsec-with-input "aa" (funcall parser)) :to-equal (list "a")))
+
+  (it "should parse \"a|\""
+    (expect (parsec-with-input "a|" (funcall parser))
+            :to-equal (list "a")))
+
+  (it "should parse \"a|a\""
+    (expect (parsec-with-input "a|a" (funcall parser))
+            :to-equal (list "a" "a")))
+
+  (it "should parse a|a|"
+    (expect (parsec-with-input "a|a|" (funcall parser))
+            :to-equal (list "a" "a")))
+
+  (it "should parse a|a||"
+    (expect (parsec-with-input "a|a||" (funcall parser))
+            :to-equal (list "a" "a")))
+
+  (it "should parse \"\""
+    (expect (parsec-with-input "" (funcall parser)) :to-be nil))
+
+  (it "should fail parsing \"b\""
+    (expect (parsec-with-input "" (funcall parser)) :to-be nil)))
+
+(describe "The docopt--parse-sep-by1 combinator"
+  :var ((parser (lambda () (docopt--parse-sep-by1 (parsec-ch ?a) (parsec-ch ?\|)))))
 
   (it "should parse \"a\""
     (expect (parsec-with-input "a" (funcall parser)) :to-equal (list "a")))

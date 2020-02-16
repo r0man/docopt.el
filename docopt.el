@@ -173,7 +173,11 @@ slots of the instance."
   `(cons ,parser (parsec-return (parsec-many (parsec-try (parsec-and ,sep ,parser)))
                    (parsec-optional ,sep))))
 
-(defmacro docopt--parse-sepby1 (parser sep)
+(defmacro docopt--parse-sep-end-by (parser sep)
+  "Parse zero or more occurrences of PARSER, separated and optionally ended by SEP."
+  `(parsec-optional (docopt--parse-sep-end-by1 ,parser ,sep)))
+
+(defmacro docopt--parse-sep-by1 (parser sep)
   "Parse one or more occurrences of PARSER, separated by SEP."
   `(cons ,parser (parsec-many (parsec-and ,sep ,parser))))
 
@@ -456,7 +460,7 @@ slots of the instance."
 
 (defun docopt--parse-mutually-exclusive1 ()
   "Parse a mutually exclusive list."
-  (let ((result (docopt--parse-sepby1 (docopt--parse-expr-atom) (parsec-re "\s*|\s*"))))
+  (let ((result (docopt--parse-sep-by1 (docopt--parse-expr-atom) (parsec-re "\s*|\s*"))))
     (if (= (length result) 1) (car result) result)))
 
 (defun docopt--parse-expr ()
@@ -491,8 +495,6 @@ slots of the instance."
   "Parse the usage patterns."
   (parsec-and (docopt--parse-usage-header)
               (parsec-sepby (docopt--parse-usage-line) (parsec-eol))))
-
-;; TODO: mutually exclusive
 
 (defun docopt--parse-mutually-exclusive ()
   "Parse a mutually exclusive list."
