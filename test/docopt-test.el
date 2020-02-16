@@ -32,7 +32,9 @@ Options:
 
 (describe "Parsing naval fate"
   :var ((program (doctopt-parse-program docopt-example-naval-fate)))
+  (it "should parse the title"
+    (expect (docopt-program-title program) :to-equal "Naval Fate"))
   (it "should parse the description"
-    (expect (docopt-program-description program) :to-equal "Naval Fate.")))
+    (expect (docopt-program-description program) :to-be nil)))
 
 ;;; docopt-test.el ends here

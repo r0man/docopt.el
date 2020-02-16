@@ -222,6 +222,11 @@ slots of the instance."
     :initform nil
     :accessor docopt-program-examples
     :documentation "The examples of the program.")
+   (title
+    :initarg :title
+    :initform nil
+    :accessor docopt-program-title
+    :documentation "The title of the program.")
    (usage
     :initarg :usage
     :initform nil

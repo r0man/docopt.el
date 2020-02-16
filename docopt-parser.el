@@ -282,19 +282,33 @@
 (defun docopt--parse-usage-patterns ()
   "Parse the usage patterns."
   (parsec-and (docopt--parse-usage-header)
+              (parsec-optional (parsec-eol))
               (parsec-sepby (docopt--parse-usage-line) (parsec-eol))))
 
 ;; Program
 
+(defun docopt--parse-program-title ()
+  "Parse a Docopt program title."
+  (s-trim (parsec-many-till-s (parsec-any-ch) (parsec-ch ?\.))))
+
 (defun docopt--parse-program-description ()
-  "Parse a Docopt program."
-  (s-trim (parsec-many-till-s (parsec-any-ch) (docopt--parse-usage-header))))
+  "Parse a Docopt program desciption."
+  (let ((description (s-trim (parsec-many-till-s
+                              (parsec-any-ch)
+                              (parsec-lookahead
+                               (docopt--parse-usage-header))))))
+    (unless (zerop (length description))
+      description)))
 
 (defun docopt--parse-program ()
   "Parse a Docopt program."
-  (seq-let [description]
-      (parsec-collect (docopt--parse-program-description))
-    (docopt-make-program :description description)))
+  (seq-let [title description]
+      (parsec-collect
+       (docopt--parse-program-title)
+       (docopt--parse-program-description))
+    (docopt-make-program
+     :description description
+     :title title)))
 
 (provide 'docopt-parser)
 
