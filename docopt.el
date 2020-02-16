@@ -24,6 +24,22 @@
 When t, only allow \"=\" as the long option separator, otherwise
 \"=\" and \" \" are allowed.")
 
+(defun docopt--flatten (list)
+  "Flatten the LIST."
+  (mapcan (lambda (x) (if (listp x) x nil)) list))
+
+(defclass docopt-either ()
+  ((members
+    :initarg :members
+    :initform nil
+    :accessor docopt-either-members
+    :documentation "The members of the either."))
+  "A class representing a DOCOPT either.")
+
+(defun docopt-make-either (&rest members)
+  "Make a new DOCOPT argument using ARGS."
+  (make-instance 'docopt-either :members members))
+
 (defclass docopt-optionable ()
   ((optional
     :initarg :optional
@@ -32,6 +48,26 @@ When t, only allow \"=\" as the long option separator, otherwise
     :documentation "Whether the object is optional or not."))
   "A class representing a optional DOCOPT object.")
 
+(cl-defgeneric docopt-set-optional (object value))
+
+(cl-defmethod docopt-set-optional ((object docopt-optionable) value)
+  (oset object :optional value) object)
+
+(cl-defmethod docopt-set-optional ((objects list) value)
+  (docopt--flatten (seq-doseq (element objects) (docopt-set-optional element value))))
+
+(cl-defmethod docopt-set-optional ((either docopt-either) value)
+  (docopt-set-optional (docopt-either-members either) value)
+  either)
+
+(cl-defmethod docopt-set-optional ((object docopt-optionable) value)
+  (oset object :optional value)
+  object)
+
+(cl-defmethod docopt-set-optional (object value) object)
+
+;;; Repeatable
+
 (defclass docopt-repeatable ()
   ((repeated
     :initarg :repeated
@@ -39,6 +75,16 @@ When t, only allow \"=\" as the long option separator, otherwise
     :accessor docopt-repeated
     :documentation "Whether the object is repeatable or not."))
   "A class representing a repeatable DOCOPT object.")
+
+(cl-defgeneric docopt-set-repeatable (object value))
+
+(cl-defmethod docopt-set-repeatable ((object docopt-repeatable) value)
+  (oset object :repeated value) object)
+
+(cl-defmethod docopt-set-repeatable ((objects list) value)
+  (seq-doseq (object objects) (docopt-set-repeatable object value)))
+
+(cl-defmethod docopt-set-repeatable (object value) object)
 
 ;;; Argument
 
@@ -364,21 +410,6 @@ slots of the instance."
   "Parse the repeatable identifier."
   (parsec-str "..."))
 
-(defun docopt-repeatable--set-maybe (repeatable-obj value)
-  "Set the :repeated slot of REPEATABLE-OBJ to VALUE when supported."
-  (when (docopt-repeatable-child-p repeatable-obj)
-    (oset repeatable-obj :repeated value)))
-
-(defun docopt-repeatable--set-maybe-seq (seq value)
-  "Set the :repeated slot of the items in SEQ to VALUE when supported."
-  (seq-doseq (element seq) (docopt-repeatable--set-maybe element value)))
-
-(defun docopt--expr-set-repeatable (expr value)
-  "Set the :repeated slot of all items in EXPR to VALUE if they support it."
-  (cond
-   ((sequencep expr) (docopt-repeatable--set-maybe-seq expr value))
-   (t (docopt-repeatable--set-maybe expr value))))
-
 (defmacro docopt--parse-repeatable (parser)
   "Parse a repeatable expression with PARSER."
   (let ((object (make-symbol "object"))
@@ -386,32 +417,10 @@ slots of the instance."
     `(seq-let [,object ,ellipsis]
          (parsec-collect ,parser (parsec-optional (docopt--parse-ellipsis)))
        (when ,ellipsis
-         (docopt--expr-set-repeatable ,object t))
+         (docopt-set-repeatable ,object t))
        ,object)))
 
 ;; Usage Expression
-
-(defun docopt-optionable--set-maybe (optional-obj value)
-  "Set the :optional slot of OPTIONAL-OBJ to VALUE when supported."
-  (when (docopt-optionable-child-p optional-obj)
-    (oset optional-obj :optional value)))
-
-(defun docopt-optionable--set-maybe-seq (seq value)
-  "Set the :optional slot of the items in SEQ to VALUE when supported."
-  (seq-doseq (element seq) (docopt-optionable--set-maybe element value)))
-
-(defun docopt-optionable--set-maybe-seq-nested (nested-seq value)
-  "Set the :optional slot of the items in the NESTED-SEQ to VALUE when supported."
-  (seq-mapcat (lambda (seq) (docopt-optionable--set-maybe-seq seq value)) nested-seq))
-
-(defun docopt--expr-set-optional (expr value)
-  "Set the :optional slot of all items in EXPR to VALUE if they support it."
-  (cond
-   ((and (sequencep expr) (sequencep (car expr)))
-    (docopt-optionable--set-maybe-seq-nested expr value))
-   ((sequencep expr)
-    (docopt-optionable--set-maybe-seq expr value))
-   (t expr)))
 
 (defun docopt--parse-usage-expr-group (open close)
   "Parse an expression group between OPEN and CLOSE."
@@ -419,26 +428,26 @@ slots of the instance."
 
 (defun docopt--parse-optional-group ()
   "Parse a optional expression group."
-  (docopt--expr-set-optional (docopt--parse-usage-expr-group ?\[ ?\]) t))
+  (docopt-set-optional (docopt--parse-usage-expr-group ?\[ ?\]) t))
 
 (defun docopt--parse-required-group ()
   "Parse a required expression group."
-  (docopt--expr-set-optional (docopt--parse-usage-expr-group ?\( ?\)) nil))
+  (docopt-set-optional (docopt--parse-usage-expr-group ?\( ?\)) nil))
 
 (defun docopt--parse-usage-expr-atom ()
   "Parse an atom of a usage expression."
-  (parsec-or (docopt--parse-option)
-             (docopt--parse-argument)
-             (docopt--parse-usage-command)))
+  (list (parsec-or (docopt--parse-option)
+                   (docopt--parse-argument)
+                   (docopt--parse-usage-command))))
 
 (defun docopt--parse-either-end ()
   "Parse the end of an either expression."
-  (parsec-and (parsec-re "\s*|\s*") (docopt--parse-usage-expr-seq)))
+  (apply #'append (parsec-and (parsec-re "\s*|\s*") (docopt--parse-usage-expr-seq))))
 
 (defun docopt--parse-either-start (expr)
   "Parse the start of an either expression or return EXPR."
   (if-let ((sep (parsec-peek-p (parsec-re "\s*|\s*"))))
-      (cons expr (docopt--parse-either-end))
+      (list (apply #'docopt-make-either (seq-concatenate 'list expr (docopt--parse-either-end))))
     expr))
 
 (defun docopt--parse-usage-expr ()
@@ -466,7 +475,7 @@ slots of the instance."
 
 (defun docopt--parse-usage-line ()
   "Parse a usage line."
-  (parsec-and (docopt--parse-spaces) (docopt--parse-usage-expr-seq)))
+  (apply #'append (parsec-and (docopt--parse-spaces) (docopt--parse-usage-expr-seq))))
 
 (defun docopt--parse-usage-patterns ()
   "Parse the usage patterns."
