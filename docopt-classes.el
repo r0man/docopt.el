@@ -35,6 +35,10 @@ When t, only allow \"=\" as the long option separator, otherwise
   "Make a new Docopt argument using MEMBERS."
   (make-instance 'docopt-either :members members))
 
+(defun docopt-either-concat (&rest eithers)
+  "Return a new either made of the concatenation of the members of EITHERS."
+  (apply #'docopt-make-either (seq-mapcat #'docopt-either-members eithers)))
+
 (defclass docopt-optionable ()
   ((optional
     :initarg :optional
