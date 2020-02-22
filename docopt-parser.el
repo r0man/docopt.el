@@ -339,7 +339,10 @@
 
 (defun docopt--parse-program-title ()
   "Parse a Docopt program title."
-  (s-trim (docopt--parse-sentence)))
+  (s-trim (parsec-many-till-s
+           (parsec-any-ch)
+           (parsec-or (docopt--parse-eof-sentence)
+                      (parsec-newline)))))
 
 (defun docopt--parse-program-description ()
   "Parse a Docopt program desciption."

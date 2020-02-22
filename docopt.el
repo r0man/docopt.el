@@ -16,6 +16,7 @@
 (require 'docopt-parser)
 (require 'parsec)
 
+;;;###autoload
 (defun doctopt-parse-program (s)
   "Parse the Docopt program S."
   (parsec-with-input s (docopt--parse-program)))
