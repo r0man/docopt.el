@@ -81,7 +81,7 @@ When t, only allow \"=\" as the long option separator, otherwise
   (oset object :repeated value) object)
 
 (cl-defmethod docopt-set-repeatable ((objects list) value)
-  (seq-doseq (object objects) (docopt-set-repeatable object value)))
+  (docopt--flatten (seq-doseq (object objects) (docopt-set-repeatable object value))))
 
 (cl-defmethod docopt-set-repeatable (object _) object)
 

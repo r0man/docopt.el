@@ -33,9 +33,17 @@
   "Parse a group between OPEN and CLOSE using PARSER."
   `(parsec-between (parsec-ch ,open) (parsec-ch ,close) ,parser))
 
+(defun docopt--parse-blank-line ()
+  "Parse a blank line."
+  (parsec-and (docopt--parse-spaces) (parsec-eol)))
+
+(defun docopt--parse-optional-newline ()
+  "Parse an optional newline."
+  (parsec-optional (parsec-try (parsec-collect (docopt--parse-spaces) (parsec-eol)))))
+
 (defun docopt--parse-pipe ()
   "Parse a pipe."
-  (parsec-or (parsec-ch ?\|) (parsec-str "'|'")))
+  (parsec-re "\s*|\s*"))
 
 (defun docopt--parse-space ()
   "Parse a space character."
@@ -206,6 +214,12 @@
   "Parse an option lines."
   (parsec-many (docopt--parse-option-line)))
 
+(defun docopt--parse-options ()
+  "Parse the options."
+  (parsec-and (docopt--parse-options-str)
+              (docopt--parse-optional-newline)
+              (docopt--parse-option-lines)))
+
 ;; Repeatable
 
 (defun docopt--parse-ellipsis ()
@@ -224,46 +238,40 @@
 
 ;; Usage Expression
 
-(defun docopt--parse-usage-expr-group (open close)
+(defun docopt--parse-usage-group (open close)
   "Parse an expression group between OPEN and CLOSE."
-  (docopt--parse-group open close (docopt--parse-usage-expr-seq)))
+  (docopt--parse-group open close (docopt--parse-usage-expr)))
 
-(defun docopt--parse-optional-group ()
+(defun docopt--parse-usage-group-optional ()
   "Parse a optional expression group."
-  (docopt-set-optional (docopt--parse-usage-expr-group ?\[ ?\]) t))
+  (docopt-set-optional (docopt--parse-usage-group ?\[ ?\]) t))
 
-(defun docopt--parse-required-group ()
+(defun docopt--parse-usage-group-required ()
   "Parse a required expression group."
-  (docopt-set-optional (docopt--parse-usage-expr-group ?\( ?\)) nil))
+  (docopt-set-optional (docopt--parse-usage-group ?\( ?\)) nil))
 
-(defun docopt--parse-usage-expr-atom ()
-  "Parse an atom of a usage expression."
-  (list (parsec-or (docopt--parse-option)
-                   (docopt--parse-argument)
-                   (docopt--parse-usage-command))))
-
-(defun docopt--parse-either-end ()
-  "Parse the end of an either expression."
-  (apply #'append (parsec-and (parsec-re "\s*|\s*") (docopt--parse-usage-expr-seq))))
-
-(defun docopt--parse-either-start (expr)
-  "Parse the start of an either expression or return EXPR."
-  (if-let ((sep (parsec-peek-p (parsec-re "\s*|\s*"))))
-      (list (apply #'docopt-make-either (seq-concatenate 'list expr (docopt--parse-either-end))))
-    expr))
-
-(defun docopt--parse-usage-expr ()
+(defun docopt--parse-usage-atom ()
   "Parse an atom of a usage line expression."
   (docopt--parse-repeatable
-   (docopt--parse-either-start
-    (parsec-or (parsec-try (docopt--parse-short-options-stacked))
-               (docopt--parse-required-group)
-               (docopt--parse-optional-group)
-               (docopt--parse-usage-expr-atom)))))
+   (parsec-or (docopt--parse-usage-group-optional)
+              (docopt--parse-usage-group-required)
+              (docopt--parse-long-option)
+              (docopt--parse-short-options-stacked)
+              (docopt--parse-short-option)
+              (docopt--parse-argument)
+              (docopt--parse-usage-command))))
 
-(defun docopt--parse-usage-expr-seq ()
+(defun docopt--parse-usage-seq ()
   "Parse an expression sequence."
-  (parsec-sepby (docopt--parse-usage-expr) (docopt--parse-spaces)))
+  (docopt--parse-sep-by1
+   (parsec-return (docopt--parse-usage-atom)
+     ;; TODO: Get rid of this :/
+     (parsec-optional (docopt--parse-spaces)))
+   (docopt--parse-spaces)))
+
+(defun docopt--parse-usage-expr ()
+  "Parse an expression sequence."
+  (parsec-sepby (docopt--parse-usage-seq) (docopt--parse-pipe)))
 
 ;; Usage Section
 
@@ -277,19 +285,36 @@
 
 (defun docopt--parse-usage-line ()
   "Parse a usage line."
-  (apply #'append (parsec-and (docopt--parse-spaces) (docopt--parse-usage-expr-seq))))
+  (apply #'append (parsec-and
+                   (docopt--parse-space)
+                   (docopt--parse-spaces)
+                   (parsec-return (docopt--parse-usage-expr)
+                     (parsec-optional (docopt--parse-newlines))))))
 
-(defun docopt--parse-usage-patterns ()
-  "Parse the usage patterns."
-  (parsec-and (docopt--parse-usage-header)
-              (parsec-optional (parsec-eol))
-              (parsec-sepby (docopt--parse-usage-line) (parsec-eol))))
+(defun docopt--parse-usage ()
+  "Parse the Docopt usage patterns."
+  (parsec-and
+   (docopt--parse-usage-header)
+   (docopt--parse-optional-newline)
+   (parsec-many (docopt--parse-usage-line))))
+
+;; Sentence
+
+(defun docopt--parse-eof-sentence ()
+  "Parse the end of a sentence."
+  (parsec-or (parsec-ch ?\.)
+             (parsec-ch ?\?)
+             (parsec-ch ?\!)))
+
+(defun docopt--parse-sentence ()
+  "Parse a sentence."
+  (parsec-many-till-s (parsec-any-ch) (docopt--parse-eof-sentence)))
 
 ;; Program
 
 (defun docopt--parse-program-title ()
   "Parse a Docopt program title."
-  (s-trim (parsec-many-till-s (parsec-any-ch) (parsec-ch ?\.))))
+  (s-trim (docopt--parse-sentence)))
 
 (defun docopt--parse-program-description ()
   "Parse a Docopt program desciption."
@@ -300,15 +325,25 @@
     (unless (zerop (length description))
       description)))
 
+(defun docopt--parse-program-description ()
+  "Parse a Docopt program desciption."
+  (let ((description (s-trim (parsec-until-s (parsec-lookahead (docopt--parse-usage-header))))))
+    (unless (s-blank-p description)
+      description)))
+
 (defun docopt--parse-program ()
   "Parse a Docopt program."
-  (seq-let [title description]
+  (seq-let [title description usage options]
       (parsec-collect
        (docopt--parse-program-title)
-       (docopt--parse-program-description))
+       (docopt--parse-program-description)
+       (docopt--parse-usage)
+       (docopt--parse-options))
     (docopt-make-program
      :description description
-     :title title)))
+     :title title
+     :usage usage
+     :options options)))
 
 (provide 'docopt-parser)
 
