@@ -50,7 +50,7 @@ Options:
 "))
 
 (describe "Parsing naval fate"
-  :var ((program (doctopt-parse-program docopt-example-naval-fate)))
+  :var ((program (docopt-parse-program docopt-example-naval-fate)))
   (it "should parse the title"
     (expect (docopt-program-title program) :to-equal "Naval Fate"))
   (it "should parse the description"
