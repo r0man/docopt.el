@@ -3,10 +3,11 @@
 
 (package-file "docopt.el")
 
+(depends-on "parsec")
+(depends-on "s")
+
 (files "*.el" (:exclude ".dir-locals.el"))
 
 (development
  (depends-on "buttercup")
- (depends-on "elisp-lint")
- (depends-on "parsec")
- (depends-on "s"))
+ (depends-on "elisp-lint"))
