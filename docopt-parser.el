@@ -310,6 +310,31 @@
   "Parse a sentence."
   (parsec-many-till-s (parsec-any-ch) (docopt--parse-eof-sentence)))
 
+;; Examples
+
+(defun docopt--parse-examples-str ()
+  "Parse the \"Examples:\" string."
+  (parsec-str "Examples:"))
+
+(defun docopt--parse-example-line ()
+  "Parse a Docopt example line."
+  (s-trim (parsec-many-till-s (parsec-any-ch)
+                              (parsec-lookahead
+                               (parsec-or (parsec-eol)
+                                          (parsec-eof))))))
+
+(defun docopt--parse-example-lines ()
+  "Parse a Docopt example lines."
+  (seq-remove #'s-blank-p (parsec-sepby (docopt--parse-example-line) (parsec-eol))))
+
+(defun docopt--parse-examples ()
+  "Parse the Docopt examples."
+  (parsec-optional
+   (parsec-and
+    (docopt--parse-examples-str)
+    (docopt--parse-optional-newline)
+    (docopt--parse-example-lines))))
+
 ;; Program
 
 (defun docopt--parse-program-title ()
@@ -333,17 +358,19 @@
 
 (defun docopt--parse-program ()
   "Parse a Docopt program."
-  (seq-let [title description usage options]
+  (seq-let [title description usage options examples]
       (parsec-collect
        (docopt--parse-program-title)
        (docopt--parse-program-description)
        (docopt--parse-usage)
-       (docopt--parse-options))
+       (docopt--parse-options)
+       (docopt--parse-examples))
     (docopt-make-program
      :description description
+     :examples examples
+     :options options
      :title title
-     :usage usage
-     :options options)))
+     :usage usage)))
 
 (provide 'docopt-parser)
 

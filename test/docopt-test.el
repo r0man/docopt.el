@@ -60,6 +60,9 @@ Options:
             :to-equal docopt-naval-fate-usage-ast))
   (it "should parse the options"
     (expect (docopt-program-options program)
-            :to-equal docopt-naval-fate-options-ast)))
+            :to-equal docopt-naval-fate-options-ast))
+  (it "should parse the examples"
+    (expect (docopt-program-examples program)
+            :to-equal nil)))
 
 ;;; docopt-test.el ends here
