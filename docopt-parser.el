@@ -181,10 +181,10 @@
 
 (defun docopt--parse-option-line-description ()
   "Parse an option description."
-  (parsec-many-till-s
-   (parsec-any-ch)
-   (parsec-or (parsec-try (docopt--parse-option-line-separator))
-              (parsec-eof))))
+  (s-chomp (parsec-many-till-s
+            (parsec-any-ch)
+            (parsec-or (parsec-try (docopt--parse-option-line-separator))
+                       (parsec-eof)))))
 
 (defun docopt--parse-option-line ()
   "Parse an option line."

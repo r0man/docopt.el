@@ -11,7 +11,7 @@
 (require 'test-helper)
 
 (describe "Parsing naval fate"
-  :var ((program (docopt-parse-program docopt-example-naval-fate)))
+  :var ((program (docopt-parse-program docopt-naval-fate)))
   (it "should parse the title"
     (expect (docopt-program-title program) :to-equal "Naval Fate"))
   (it "should parse the description"
