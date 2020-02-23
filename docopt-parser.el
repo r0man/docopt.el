@@ -43,7 +43,7 @@
 
 (defun docopt--parse-section-header ()
   "Parse a Docopt section header."
-  (parsec-query (parsec-re "^\\([^:]+\\):") :group 1))
+  (parsec-query (parsec-re "^\\([[:alnum:]]+\\):") :group 1))
 
 (defun docopt--parse-pipe ()
   "Parse a pipe."
@@ -350,16 +350,7 @@
 
 (defun docopt--parse-program-description ()
   "Parse a Docopt program desciption."
-  (let ((description (s-trim (parsec-many-till-s
-                              (parsec-any-ch)
-                              (parsec-lookahead
-                               (docopt--parse-usage-header))))))
-    (unless (zerop (length description))
-      description)))
-
-(defun docopt--parse-program-description ()
-  "Parse a Docopt program desciption."
-  (let ((description (s-trim (parsec-until-s (parsec-lookahead (docopt--parse-usage-header))))))
+  (let ((description (s-trim (parsec-until-s (parsec-lookahead (docopt--parse-section-header))))))
     (unless (s-blank-p description)
       description)))
 
