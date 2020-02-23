@@ -289,7 +289,6 @@
   "Parse an expression sequence."
   (docopt--parse-sep-by1
    (parsec-return (docopt--parse-usage-atom)
-     ;; TODO: Get rid of this :/
      (parsec-optional (docopt--parse-spaces)))
    (docopt--parse-spaces)))
 
@@ -340,14 +339,21 @@
   "Parse the \"Examples:\" string."
   (parsec-str "Examples:"))
 
-(defun docopt--parse-example-line ()
-  "Parse a Docopt example line."
-  (let ((line (s-trim (parsec-many-till-s (parsec-any-ch)
-                                          (parsec-lookahead
-                                           (parsec-or (parsec-eol)
-                                                      (parsec-eof)))))))
+(defun docopt--split-line (line)
+  "Trim and split the LINE."
+  (let ((line (s-trim line)))
     (unless (s-blank-p line)
       (s-split "\s+" line ))))
+
+(defun docopt--parse-example-line ()
+  "Parse a Docopt example line."
+  (docopt--split-line
+   (parsec-many-till-s
+    (parsec-any-ch)
+    (parsec-lookahead
+     (parsec-or (parsec-eol)
+                (parsec-eof)
+                (docopt--parse-section-header))))))
 
 (defun docopt--parse-example-lines ()
   "Parse a Docopt example lines."
@@ -371,38 +377,29 @@
                       (parsec-newline)))))
 
 (defun docopt--parse-program-description ()
-  "Parse a Docopt program desciption."
+  "Parse a Docopt program description."
   (let ((description (s-trim (parsec-until-s (parsec-lookahead (docopt--parse-section-header))))))
     (unless (s-blank-p description)
       description)))
 
+(defun docopt--parse-program-sections (program)
+  "Parse and set the Docopt sections for the PROGRAM."
+  (parsec-many
+   (parsec-or
+    (oset program :usage (docopt--parse-usage))
+    (oset program :options (docopt--parse-options))
+    (oset program :examples (docopt--parse-examples)))))
+
 (defun docopt--parse-program ()
   "Parse a Docopt program."
-  (seq-let [title description usage options examples]
-      (parsec-collect
-       (docopt--parse-program-title)
-       (docopt--parse-program-description)
-       (docopt--parse-usage)
-       (docopt--parse-options)
-       (docopt--parse-examples))
-    (docopt-make-program
-     :description description
-     :examples examples
-     :options options
-     :title title
-     :usage usage)))
+  (let ((program (docopt-make-program)))
+    (seq-let [title description sections]
+        (parsec-collect
+         (docopt--parse-program-title)
+         (docopt--parse-program-description)
+         (docopt--parse-program-sections program))
+      (oset program :description description)
+      (oset program :title title)
+      program)))
 
 (provide 'docopt-parser)
-
-;;; docopt-parser.el ends here
-
-
-;; (parsec-with-input "  --drifting    Drifting mine.\n\nExamples:"
-;;   (parsec-collect (docopt--parse-option-line-description)
-;;                   (docopt--parse-section-header)))
-
-;; (parsec-with-input "Options:\n  --drifting    Drifting mine.\nExamples:\n naval_fate ship new SHIP-123"
-;;   (docopt--parse-options)
-;;   (docopt--parse-examples))
-
-;; (pp (docopt-program-examples (docopt-parse-program docopt-naval-fate)))
