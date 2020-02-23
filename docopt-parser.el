@@ -78,10 +78,6 @@
   "Parse the default value from S."
   (when s (nth 1 (s-match "\\[default:\s*\\([^] ]+\\)\s*\\]" s))))
 
-(defun docopt--parse-examples-str ()
-  "Return the \"Examples:\" string parser."
-  (parsec-str "Examples:"))
-
 (defun docopt--parse-options-shortcut ()
   "Parse the string \"[options]\", aka the options shortcut."
   (parsec-str "[options]"))

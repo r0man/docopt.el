@@ -49,7 +49,7 @@ version:
 	$(EMACS) --version
 
 test: version build
-	$(CASK) exec buttercup -L . -L ./test/utils/
+	$(CASK) exec buttercup -L . -L ./test
 
 lint: version elpa
 	$(CASK) exec $(EMACS) -Q --batch \
