@@ -41,6 +41,10 @@
   "Parse an optional newline."
   (parsec-optional (parsec-try (parsec-collect (docopt--parse-spaces) (parsec-eol)))))
 
+(defun docopt--parse-section-header ()
+  "Parse a Docopt section header."
+  (parsec-query (parsec-re "^\\([^:]+\\):") :group 1))
+
 (defun docopt--parse-pipe ()
   "Parse a pipe."
   (parsec-re "\s*|\s*"))

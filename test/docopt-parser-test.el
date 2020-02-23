@@ -71,7 +71,11 @@ Options:
 
   (it "should parse the \"--help-me\" long option name"
     (expect (parsec-with-input "--help-me" (docopt--parse-long-option-name))
-            :to-equal "help-me")))
+            :to-equal "help-me"))
+
+  (it "should parse a section header"
+    (expect (parsec-with-input "Examples:" (docopt--parse-section-header))
+            :to-equal "Examples")))
 
 (describe "The argument parser"
 
