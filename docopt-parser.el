@@ -210,6 +210,13 @@
   (parsec-or (docopt--parse-option-line-long-short-options)
              (docopt--parse-option-line-short-long-options)))
 
+(defun docopt-option--set-argument (option description default)
+  "Set the :description and :default slots of the OPTION argument to DESCRIPTION and DEFAULT."
+  (when option
+    (oset option :description description)
+    (when-let ((argument (docopt-option-argument option)))
+      (oset argument :default default))))
+
 (defun docopt--parse-option-line ()
   "Parse an option line."
   (seq-let [_ [long-option short-option] _ description]
@@ -219,14 +226,8 @@
        (docopt--parse-whitespaces)
        (docopt--parse-option-line-description))
     (let ((default (docopt--parse-default description)))
-      (when long-option
-        (oset long-option :description description)
-        (when-let ((argument (docopt-option-argument long-option)))
-          (oset argument :default default)))
-      (when short-option
-        (oset short-option :description description)
-        (when-let ((argument (docopt-option-argument short-option)))
-          (oset argument :default default)))
+      (docopt-option--set-argument long-option description default)
+      (docopt-option--set-argument short-option description default)
       (make-instance
        'docopt-option-line
        :description description
