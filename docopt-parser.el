@@ -173,16 +173,14 @@
 
 (defun docopt--parse-option-line-begin ()
   "Parse the beginning of an option line."
-  (parsec-and (parsec-re "\s*")
-              (parsec-lookahead (parsec-ch ?-))))
+  (parsec-and (parsec-re "\s*") (parsec-lookahead (parsec-ch ?-))))
 
 (defun docopt--parse-option-line-separator ()
-  "Parse the next option line."
-  (parsec-and (parsec-eol)
-              (docopt--parse-option-line-begin)))
+  "Parse an option line separator."
+  (parsec-and (parsec-eol) (docopt--parse-option-line-begin)))
 
 (defun docopt--parse-option-line-description ()
-  "Parse an option description."
+  "Parse an option line description."
   (s-trim (parsec-many-till-s
            (parsec-any-ch)
            (parsec-or (parsec-try (docopt--parse-option-line-separator))
@@ -193,17 +191,19 @@
   "Parse the option separator of a Docopt option line."
   (parsec-or (parsec-re "\s*,\s*") (parsec-re "\s+")))
 
+(defun docopt--parse-option-line-separated-options (option-1 option-2)
+  "Parse OPTION-1 and OPTION-2 as separated options."
+  (parsec-collect (funcall option-1)
+                  (parsec-optional (parsec-try (parsec-and (docopt--parse-option-line-option-separator)
+                                                           (funcall option-2))))))
+
 (defun docopt--parse-option-line-long-short-options ()
   "Parse the options of a Docopt option line where long options come first."
-  (parsec-collect (docopt--parse-long-option)
-                  (parsec-optional (parsec-try (parsec-and (docopt--parse-option-line-option-separator)
-                                                           (docopt--parse-short-option))))))
+  (docopt--parse-option-line-separated-options #'docopt--parse-long-option #'docopt--parse-short-option))
 
 (defun docopt--parse-option-line-short-long-options ()
   "Parse the options of a Docopt option line where short options come first."
-  (nreverse (parsec-collect (docopt--parse-short-option)
-                            (parsec-optional (parsec-try (parsec-and (docopt--parse-option-line-option-separator)
-                                                                     (docopt--parse-long-option)))))))
+  (nreverse (docopt--parse-option-line-separated-options #'docopt--parse-short-option #'docopt--parse-long-option)))
 
 (defun docopt--parse-option-line-options ()
   "Parse the options of a Docopt option line."
