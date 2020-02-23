@@ -49,9 +49,8 @@
 (defvar docopt-naval-fate
   (concat docopt-naval-fate-header
           docopt-naval-fate-usage "\n\n"
-          docopt-naval-fate-options
-          ;; docopt-naval-fate-examples "\n"
-          ))
+          docopt-naval-fate-options "\n\n"
+          docopt-naval-fate-examples "\n"))
 
 (provide 'test-helper)
 

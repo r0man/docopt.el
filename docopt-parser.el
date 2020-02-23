@@ -183,10 +183,11 @@
 
 (defun docopt--parse-option-line-description ()
   "Parse an option description."
-  (s-chomp (parsec-many-till-s
-            (parsec-any-ch)
-            (parsec-or (parsec-try (docopt--parse-option-line-separator))
-                       (parsec-eof)))))
+  (s-trim (parsec-many-till-s
+           (parsec-any-ch)
+           (parsec-or (parsec-try (docopt--parse-option-line-separator))
+                      (parsec-lookahead (parsec-try (docopt--parse-section-header)))
+                      (parsec-eof)))))
 
 (defun docopt--parse-option-line-option-separator ()
   "Parse the option separator of a Docopt option line."
@@ -340,14 +341,16 @@
 
 (defun docopt--parse-example-line ()
   "Parse a Docopt example line."
-  (s-trim (parsec-many-till-s (parsec-any-ch)
-                              (parsec-lookahead
-                               (parsec-or (parsec-eol)
-                                          (parsec-eof))))))
+  (let ((line (s-trim (parsec-many-till-s (parsec-any-ch)
+                                          (parsec-lookahead
+                                           (parsec-or (parsec-eol)
+                                                      (parsec-eof)))))))
+    (unless (s-blank-p line)
+      (s-split "\s+" line ))))
 
 (defun docopt--parse-example-lines ()
   "Parse a Docopt example lines."
-  (seq-remove #'s-blank-p (parsec-sepby (docopt--parse-example-line) (parsec-eol))))
+  (seq-remove #'null (parsec-sepby (docopt--parse-example-line) (parsec-eol))))
 
 (defun docopt--parse-examples ()
   "Parse the Docopt examples."
@@ -391,3 +394,14 @@
 (provide 'docopt-parser)
 
 ;;; docopt-parser.el ends here
+
+
+;; (parsec-with-input "  --drifting    Drifting mine.\n\nExamples:"
+;;   (parsec-collect (docopt--parse-option-line-description)
+;;                   (docopt--parse-section-header)))
+
+;; (parsec-with-input "Options:\n  --drifting    Drifting mine.\nExamples:\n naval_fate ship new SHIP-123"
+;;   (docopt--parse-options)
+;;   (docopt--parse-examples))
+
+;; (pp (docopt-program-examples (docopt-parse-program docopt-naval-fate)))
