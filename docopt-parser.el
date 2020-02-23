@@ -97,8 +97,10 @@
 
 (defun docopt--parse-argument-upper-case ()
   "Parse an upper case argument."
-  (let ((case-fold-search nil))
-    (docopt-make-argument :name (parsec-re "[A-Z0-9][A-Z0-9_-]*"))))
+  (let* ((case-fold-search nil)
+         (name (parsec-return (parsec-re "[A-Z0-9][A-Z0-9_-]*")
+                 (parsec-not-followed-by (parsec-re "[a-z0-9]"))) ))
+    (docopt-make-argument :name name)))
 
 (defun docopt--parse-argument ()
   "Parse an argument."
@@ -186,13 +188,33 @@
             (parsec-or (parsec-try (docopt--parse-option-line-separator))
                        (parsec-eof)))))
 
+(defun docopt--parse-option-line-option-separator ()
+  "Parse the option separator of a Docopt option line."
+  (parsec-or (parsec-re "\s*,\s*") (parsec-re "\s+")))
+
+(defun docopt--parse-option-line-long-short-options ()
+  "Parse the options of a Docopt option line where long options come first."
+  (parsec-collect (docopt--parse-long-option)
+                  (parsec-optional (parsec-try (parsec-and (docopt--parse-option-line-option-separator)
+                                                           (docopt--parse-short-option))))))
+
+(defun docopt--parse-option-line-short-long-options ()
+  "Parse the options of a Docopt option line where short options come first."
+  (nreverse (parsec-collect (docopt--parse-short-option)
+                            (parsec-optional (parsec-try (parsec-and (docopt--parse-option-line-option-separator)
+                                                                     (docopt--parse-long-option)))))))
+
+(defun docopt--parse-option-line-options ()
+  "Parse the options of a Docopt option line."
+  (parsec-or (docopt--parse-option-line-long-short-options)
+             (docopt--parse-option-line-short-long-options)))
+
 (defun docopt--parse-option-line ()
   "Parse an option line."
-  (seq-let [_ short-option long-option _ description]
+  (seq-let [_ [long-option short-option] _ description]
       (parsec-collect
        (docopt--parse-whitespaces)
-       (parsec-optional (docopt--parse-short-option))
-       (parsec-optional (docopt--parse-long-option))
+       (docopt--parse-option-line-options)
        (docopt--parse-whitespaces)
        (docopt--parse-option-line-description))
     (let ((default (docopt--parse-default description)))

@@ -152,12 +152,44 @@
               (docopt--parse-option-line-description))
             :to-equal "Show version.\n  More version help.")))
 
+(describe "The option line options parser"
+
+  (it "should parse short option only"
+    (expect (parsec-with-input "-h  Show this help." (docopt--parse-option-line-options))
+            :to-equal (list nil (docopt-make-short-option :name "h"))))
+
+  (it "should parse long option only"
+    (expect (parsec-with-input "--help  Show this help." (docopt--parse-option-line-options))
+            :to-equal (list (docopt-make-long-option :name "help") nil)))
+
+  (it "should parse short options first"
+    (expect (parsec-with-input "-h, --help  Show this help." (docopt--parse-option-line-options))
+            :to-equal (list (docopt-make-long-option :name "help")
+                            (docopt-make-short-option :name "h"))))
+
+  (it "should parse short options first with minimal spacing"
+    (expect (parsec-with-input "-h,--help Show this help." (docopt--parse-option-line-options))
+            :to-equal (parsec-with-input "-h,--help Show this help." (docopt--parse-option-line-options))))
+
+  (it "should parse long options first"
+    (expect (parsec-with-input "--help, -h  Show this help." (docopt--parse-option-line-options))
+            :to-equal (list (docopt-make-long-option :name "help")
+                            (docopt-make-short-option :name "h"))))
+
+  (it "should parse long options first with minimal spacing"
+    (expect (parsec-with-input "--help,-h Show this help." (docopt--parse-option-line-options))
+            :to-equal (list (docopt-make-long-option :name "help")
+                            (docopt-make-short-option :name "h")))))
 
 (describe "The option line parser"
 
   (it "should parse a short option without an argument"
     (expect (parsec-with-input "-h  Show this help." (docopt--parse-option-line))
             :to-equal (docopt-make-option-line :description "Show this help." :short-name "h")))
+
+  (it "should parse a short and long option without an argument"
+    (expect (parsec-with-input "-h, --help  Show this help." (docopt--parse-option-line))
+            :to-equal (docopt-make-option-line :description "Show this help." :long-name "help" :short-name "h")))
 
   (it "should parse a short option with a space separated argument"
     (expect (parsec-with-input "-p PATH  Path to files." (docopt--parse-option-line))
@@ -178,6 +210,13 @@
             :to-equal (docopt-make-option-line
                        :description "Show this help."
                        :long-name "help")))
+
+  (it "should parse a long and shortcut option without an argument"
+    (expect (parsec-with-input "--help, -h  Show this help." (docopt--parse-option-line))
+            :to-equal (docopt-make-option-line
+                       :description "Show this help."
+                       :long-name "help"
+                       :short-name "h")))
 
   (it "should parse a long option with an argument"
     (expect (parsec-with-input "--path PATH  Path to files." (docopt--parse-option-line))
