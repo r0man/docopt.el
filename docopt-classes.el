@@ -53,15 +53,7 @@ When t, only allow \"=\" as the long option separator, otherwise
   (oset object :optional value) object)
 
 (cl-defmethod docopt-set-optional ((objects list) value)
-  (docopt--flatten (seq-doseq (element objects) (docopt-set-optional element value))))
-
-(cl-defmethod docopt-set-optional ((either docopt-either) value)
-  (docopt-set-optional (docopt-either-members either) value)
-  either)
-
-(cl-defmethod docopt-set-optional ((object docopt-optionable) value)
-  (oset object :optional value)
-  object)
+  (seq-doseq (element objects) (docopt-set-optional element value)))
 
 (cl-defmethod docopt-set-optional (object _) object)
 
@@ -81,7 +73,7 @@ When t, only allow \"=\" as the long option separator, otherwise
   (oset object :repeated value) object)
 
 (cl-defmethod docopt-set-repeatable ((objects list) value)
-  (docopt--flatten (seq-doseq (object objects) (docopt-set-repeatable object value))))
+  (seq-doseq (object objects) (docopt-set-repeatable object value)))
 
 (cl-defmethod docopt-set-repeatable (object _) object)
 
