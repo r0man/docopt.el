@@ -268,11 +268,11 @@
 
 (defun docopt--parse-usage-group-optional ()
   "Parse a optional expression group."
-  (docopt-set-optional (docopt--parse-usage-group ?\[ ?\]) t))
+  (apply #'docopt-make-optional-group (docopt-set-optional (docopt--parse-usage-group ?\[ ?\]) t)))
 
 (defun docopt--parse-usage-group-required ()
   "Parse a required expression group."
-  (docopt-set-optional (docopt--parse-usage-group ?\( ?\)) nil))
+  (apply #'docopt-make-required-group (docopt-set-optional (docopt--parse-usage-group ?\( ?\)) nil)))
 
 (defun docopt--parse-usage-atom ()
   "Parse an atom of a usage line expression."
@@ -294,7 +294,16 @@
 
 (defun docopt--parse-usage-expr ()
   "Parse an expression sequence."
-  (parsec-sepby (docopt--parse-usage-seq) (docopt--parse-pipe)))
+  (let ((result (parsec-sepby (docopt--parse-usage-seq) (docopt--parse-pipe))))
+    (if (and (cl-every (lambda (x)
+                         (and (sequencep x)
+                              (= 1 (length x))))
+                       result))
+        (let ((members (apply #'append result)))
+          (if (> (length members) 1)
+              (list (apply #'docopt-make-either members))
+            members))
+      result)))
 
 ;; Usage Section
 

@@ -52,6 +52,10 @@ When t, only allow \"=\" as the long option separator, otherwise
 (cl-defmethod docopt-set-optional ((object docopt-optionable) value)
   (oset object :optional value) object)
 
+(cl-defmethod docopt-set-optional ((either docopt-either) value)
+  (docopt-set-optional (docopt-either-members either) value)
+  either)
+
 (cl-defmethod docopt-set-optional ((objects list) value)
   (seq-doseq (element objects) (docopt-set-optional element value)))
 
@@ -71,6 +75,10 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 (cl-defmethod docopt-set-repeatable ((object docopt-repeatable) value)
   (oset object :repeated value) object)
+
+(cl-defmethod docopt-set-repeatable ((either docopt-either) value)
+  (docopt-set-repeatable (docopt-either-members either) value)
+  either)
 
 (cl-defmethod docopt-set-repeatable ((objects list) value)
   (seq-doseq (object objects) (docopt-set-repeatable object value)))
@@ -238,6 +246,34 @@ slots of the instance."
 (defun docopt-make-program (&rest args)
   "Make a new Docopt program using ARGS."
   (apply 'make-instance 'docopt-program args))
+
+;; Group
+
+(defclass docopt-group ()
+  ((members
+    :initarg :members
+    :initform nil
+    :accessor docopt-group-members
+    :documentation "The argument of the option."))
+  "A class representing a Docopt group.")
+
+;;; Optional Group
+
+(defclass docopt-optional-group (docopt-group) ()
+  "A class representing a required Docopt group.")
+
+(defun docopt-make-optional-group (&rest members)
+  "Make a new optional Docopt group with MEMBERS."
+  (make-instance 'docopt-optional-group :members members))
+
+;;; Required Group
+
+(defclass docopt-required-group (docopt-group) ()
+  "A class representing a required Docopt group.")
+
+(defun docopt-make-required-group (&rest members)
+  "Make a new required Docopt group with MEMBERS."
+  (make-instance 'docopt-required-group :members members))
 
 (provide 'docopt-classes)
 
