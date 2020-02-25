@@ -12,6 +12,7 @@
 
 ;;; Code:
 
+(require 'docopt-argv)
 (require 'docopt-classes)
 (require 'docopt-parser)
 (require 'parsec)
@@ -20,6 +21,11 @@
 (defun docopt-parse-program (s)
   "Parse the Docopt program S."
   (parsec-with-input s (docopt--parse-program)))
+
+;;;###autoload
+(defun doctopt-parse-argv (program s)
+  "Parse the argument vector S of the Docopt PROGRAM."
+  (parsec-with-input s (docopt-argument-parser program)))
 
 (provide 'docopt)
 

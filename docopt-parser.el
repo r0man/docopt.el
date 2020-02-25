@@ -31,7 +31,10 @@
 
 (defmacro docopt--parse-group (open close parser)
   "Parse a group between OPEN and CLOSE using PARSER."
-  `(parsec-between (parsec-ch ,open) (parsec-ch ,close) ,parser))
+  `(parsec-between
+    (parsec-and (parsec-ch ,open) (docopt--parse-spaces))
+    (parsec-and (docopt--parse-spaces) (parsec-ch ,close))
+    ,parser))
 
 (defun docopt--parse-blank-line ()
   "Parse a blank line."
@@ -49,6 +52,10 @@
   "Parse a pipe."
   (parsec-re "\s*|\s*"))
 
+(defun docopt--parse-standard-input ()
+  "Parse the Docopt standard input."
+  (when (parsec-str "[-]") (docopt-make-standard-input)))
+
 (defun docopt--parse-space ()
   "Parse a space character."
   (parsec-ch ?\s))
@@ -56,6 +63,10 @@
 (defun docopt--parse-spaces ()
   "Parse many space characters."
   (parsec-many-s (docopt--parse-space)))
+
+(defun docopt--parse-spaces1 ()
+  "Parse 1 or more space characters."
+  (parsec-many1-s (docopt--parse-space)))
 
 (defun docopt--parse-whitespace ()
   "Parse a space character, newline or a CRLF."
@@ -69,18 +80,9 @@
   "Parse newlines."
   (parsec-many (parsec-newline)))
 
-(defun docopt--parse-parse-title ()
-  "Parse the title."
-  (docopt--parse-newlines)
-  (parsec-re "\\([^.]+\.\\)"))
-
 (defun docopt--parse-default (s)
   "Parse the default value from S."
   (when s (nth 1 (s-match "\\[default:\s*\\([^] ]+\\)\s*\\]" s))))
-
-(defun docopt--parse-options-shortcut ()
-  "Parse the string \"[options]\", aka the options shortcut."
-  (parsec-str "[options]"))
 
 (defun docopt--parse-command-name ()
   "Parse a command name."
@@ -93,19 +95,19 @@
   (docopt-make-argument
    :name (parsec-between
           (parsec-ch ?<) (parsec-ch ?>)
-          (parsec-re "[[:alnum:]][[:alnum:]-_]*"))))
+          (parsec-re "[[:alnum:]][[:alnum:]-_:/ ]*"))))
 
-(defun docopt--parse-argument-upper-case ()
-  "Parse an upper case argument."
-  (let* ((case-fold-search nil)
-         (name (parsec-return (parsec-re "[A-Z0-9][A-Z0-9_-]*")
-                 (parsec-not-followed-by (parsec-re "[a-z0-9]"))) ))
+(defun docopt--parse-argument-name (&optional case-insensitive)
+  "Parse an argument name CASE-INSENSITIVE."
+  (let* ((case-fold-search case-insensitive)
+         (name (parsec-return (parsec-re "[A-Z0-9][A-Z0-9/_-]*")
+                 (parsec-not-followed-by (parsec-re "[a-z0-9]")))))
     (docopt-make-argument :name name)))
 
-(defun docopt--parse-argument ()
-  "Parse an argument."
+(defun docopt--parse-argument (&optional case-insensitive)
+  "Parse an argument CASE-INSENSITIVE."
   (parsec-or (docopt--parse-argument-spaceship)
-             (docopt--parse-argument-upper-case)))
+             (docopt--parse-argument-name case-insensitive)))
 
 ;; Long Option
 
@@ -127,7 +129,7 @@
        (parsec-optional
         (parsec-try
          (parsec-and (docopt--parse-long-option-separator)
-                     (docopt--parse-argument)))))
+                     (docopt--parse-argument t)))))
     (docopt-make-long-option :name name :argument argument)))
 
 ;; Short Option
@@ -248,7 +250,7 @@
 
 (defun docopt--parse-ellipsis ()
   "Parse the repeatable identifier."
-  (parsec-str "..."))
+  (parsec-re "\s*\\.\\.\\."))
 
 (defmacro docopt--parse-repeatable (parser)
   "Parse a repeatable expression with PARSER."
@@ -264,7 +266,7 @@
 
 (defun docopt--parse-usage-group (open close)
   "Parse an expression group between OPEN and CLOSE."
-  (docopt--parse-group open close (docopt--parse-usage-expr)))
+  (docopt--flatten (docopt--parse-group open close (docopt--parse-usage-expr))))
 
 (defun docopt--parse-usage-group-optional ()
   "Parse a optional expression group."
@@ -274,10 +276,17 @@
   "Parse a required expression group."
   (apply #'docopt-make-required-group (docopt-set-optional (docopt--parse-usage-group ?\( ?\)) nil)))
 
+(defun docopt--parse-options-shortcut ()
+  "Parse the Docopt options shortcut."
+  (when (parsec-str "[options]")
+    (make-instance 'docopt-options-shortcut)))
+
 (defun docopt--parse-usage-atom ()
   "Parse an atom of a usage line expression."
   (docopt--parse-repeatable
-   (parsec-or (docopt--parse-usage-group-optional)
+   (parsec-or (docopt--parse-standard-input)
+              (docopt--parse-options-shortcut)
+              (docopt--parse-usage-group-optional)
               (docopt--parse-usage-group-required)
               (docopt--parse-long-option)
               (docopt--parse-short-options-stacked)
@@ -295,15 +304,14 @@
 (defun docopt--parse-usage-expr ()
   "Parse an expression sequence."
   (let ((result (parsec-sepby (docopt--parse-usage-seq) (docopt--parse-pipe))))
-    (if (and (cl-every (lambda (x)
-                         (and (sequencep x)
-                              (= 1 (length x))))
-                       result))
-        (let ((members (apply #'append result)))
-          (if (> (length members) 1)
-              (list (apply #'docopt-make-either members))
-            members))
-      result)))
+    (cond
+     ((and (= 1 (length result))
+           (sequencep (car result))
+           (= 1 (length (car result))))
+      (car result))
+     ((< 1 (length result))
+      (list (apply #'docopt-make-either result)))
+     (t result))))
 
 ;; Usage Section
 
@@ -317,11 +325,17 @@
 
 (defun docopt--parse-usage-line ()
   "Parse a usage line."
-  (apply #'append (parsec-and
-                   (docopt--parse-space)
-                   (docopt--parse-spaces)
-                   (parsec-return (docopt--parse-usage-expr)
-                     (parsec-optional (docopt--parse-newlines))))))
+  (seq-let [command exprs]
+      (parsec-and
+       (docopt--parse-spaces1)
+       (parsec-collect
+        (docopt--parse-usage-command)
+        (parsec-optional
+         (parsec-and
+          (docopt--parse-spaces1)
+          (parsec-return (docopt--parse-usage-expr)
+            (parsec-optional (docopt--parse-newlines)))))))
+    (apply #'docopt-make-usage-pattern command (docopt--flatten exprs))))
 
 (defun docopt--parse-usage ()
   "Parse the Docopt usage patterns."
@@ -370,26 +384,23 @@
 
 (defun docopt--parse-examples ()
   "Parse the Docopt examples."
-  (parsec-optional
-   (parsec-and
-    (docopt--parse-examples-str)
-    (docopt--parse-optional-newline)
-    (docopt--parse-example-lines))))
+  (parsec-and (docopt--parse-examples-str)
+              (docopt--parse-optional-newline)
+              (docopt--parse-example-lines)))
 
 ;; Program
 
-(defun docopt--parse-program-title ()
-  "Parse a Docopt program title."
-  (s-trim (parsec-many-till-s
-           (parsec-any-ch)
-           (parsec-or (docopt--parse-eof-sentence)
-                      (parsec-newline)))))
-
-(defun docopt--parse-program-description ()
+(defun docopt--parse-program-header ()
   "Parse a Docopt program description."
-  (let ((description (s-trim (parsec-until-s (parsec-lookahead (docopt--parse-section-header))))))
+  (let ((description (s-trim (parsec-until-s (parsec-lookahead (parsec-re "\\([[:alnum:]]+\\):"))))))
     (unless (s-blank-p description)
       description)))
+
+(defun docopt--parse-program-footer ()
+  "Parse a Docopt program footer."
+  (parsec-until-s (parsec-or
+                   (parsec-eof)
+                   (parsec-lookahead (docopt--parse-section-header)))))
 
 (defun docopt--parse-program-sections (program)
   "Parse and set the Docopt sections for the PROGRAM."
@@ -397,18 +408,19 @@
    (parsec-or
     (oset program :usage (docopt--parse-usage))
     (oset program :options (docopt--parse-options))
-    (oset program :examples (docopt--parse-examples)))))
+    (oset program :examples (docopt--parse-examples))
+    (oset program :footer (docopt--parse-program-footer)))))
 
 (defun docopt--parse-program ()
   "Parse a Docopt program."
   (let ((program (docopt-make-program)))
-    (seq-let [title description sections]
+    (seq-let [header]
         (parsec-collect
-         (docopt--parse-program-title)
-         (docopt--parse-program-description)
+         (docopt--parse-program-header)
          (docopt--parse-program-sections program))
-      (oset program :description description)
-      (oset program :title title)
+      (oset program :header header)
       program)))
 
 (provide 'docopt-parser)
+
+;;; docopt-parser.el ends here

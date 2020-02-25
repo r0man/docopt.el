@@ -4,6 +4,7 @@
 (package-file "docopt.el")
 
 (depends-on "parsec")
+(depends-on "f")
 (depends-on "s")
 
 (files "*.el" (:exclude ".dir-locals.el"))

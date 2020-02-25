@@ -21,7 +21,10 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 (defun docopt--flatten (list)
   "Flatten the LIST."
-  (mapcan (lambda (x) (if (listp x) x nil)) list))
+  (mapcan (lambda (x)
+            (if (listp x)
+                x (list x)))
+          list))
 
 (defclass docopt-either ()
   ((members
@@ -97,7 +100,12 @@ When t, only allow \"=\" as the long option separator, otherwise
     :initarg :name
     :initform nil
     :accessor docopt-argument-name
-    :documentation "The name of the argument."))
+    :documentation "The name of the argument.")
+   (value
+    :initarg :value
+    :initform nil
+    :accessor docopt-argument-value
+    :documentation "The value of the argument."))
   "A class representing a Docopt argument.")
 
 (defun docopt-make-argument (&rest args)
@@ -171,6 +179,15 @@ When t, only allow \"=\" as the long option separator, otherwise
   "Make a new Docopt short option using ARGS."
   (apply 'make-instance 'docopt-short-option args))
 
+;; Options Shortcut
+
+(defclass docopt-options-shortcut () ()
+  "A class representing a Docopt options shortcut.")
+
+(defun docopt-make-options-shortcut ()
+  "Make a new Docopt options shortcut."
+  (make-instance 'docopt-options-shortcut))
+
 ;; Option line
 
 (defclass docopt-option-line ()
@@ -216,21 +233,21 @@ slots of the instance."
 ;; Program
 
 (defclass docopt-program ()
-  ((description
-    :initarg :description
+  ((header
+    :initarg :header
     :initform nil
-    :accessor docopt-program-description
-    :documentation "The description of the program.")
+    :accessor docopt-program-header
+    :documentation "The header of the program.")
    (examples
     :initarg :examples
     :initform nil
     :accessor docopt-program-examples
     :documentation "The examples of the program.")
-   (title
-    :initarg :title
+   (footer
+    :initarg :footer
     :initform nil
-    :accessor docopt-program-title
-    :documentation "The title of the program.")
+    :accessor docopt-program-footer
+    :documentation "The footer of the program.")
    (usage
     :initarg :usage
     :initform nil
@@ -274,6 +291,34 @@ slots of the instance."
 (defun docopt-make-required-group (&rest members)
   "Make a new required Docopt group with MEMBERS."
   (make-instance 'docopt-required-group :members members))
+
+;;; Usage Pattern
+
+(defclass docopt-usage-pattern ()
+  ((command
+    :initarg :command
+    :initform nil
+    :accessor docopt-usage-pattern-command
+    :documentation "The command of the usage pattern.")
+   (expressions
+    :initarg :expressions
+    :initform nil
+    :accessor docopt-usage-pattern-expressions
+    :documentation "The expressions of the usage pattern."))
+  "A class representing a Docopt usage pattern.")
+
+(defun docopt-make-usage-pattern (command &rest expressions)
+  "Make a new Docopt usage pattern with COMMAND and EXPRESSIONS."
+  (make-instance 'docopt-usage-pattern :command command :expressions expressions))
+
+;;; Standard Input
+
+(defclass docopt-standard-input () ()
+  "A class representing the Docopt standard input.")
+
+(defun docopt-make-standard-input ()
+  "Make a new Docopt standard input."
+  (make-instance 'docopt-standard-input))
 
 (provide 'docopt-classes)
 
