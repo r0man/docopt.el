@@ -5,7 +5,7 @@
 ;; Author: r0man <roman@burningswell.com>
 ;; Maintainer: r0man <roman@burningswell.com>
 ;; Created: 29 Feb 2020
-;; Keywords: docopt, command line argument
+;; Keywords: docopt, tools, processes
 ;; Homepage: https://github.com/r0man/docopt.el
 
 ;; This file is not part of GNU Emacs.
@@ -165,15 +165,17 @@
 
 (defun docopt--parse-short-option ()
   "Parse a short option."
-  (seq-let [name argument]
-      (parsec-collect
-       (docopt--parse-short-option-name)
-       (parsec-optional
-        (parsec-try
-         (parsec-and
-          (parsec-optional (docopt--parse-short-option-separator))
-          (docopt--parse-argument)))))
-    (docopt-make-short-option :name name :argument argument)))
+  (parsec-with-error-message
+      (format "Short option parse error: %s" (cdr parsec-last-error-message))
+    (seq-let [name argument]
+        (parsec-collect
+         (docopt--parse-short-option-name)
+         (parsec-optional
+          (parsec-try
+           (parsec-and
+            (parsec-optional (docopt--parse-short-option-separator))
+            (docopt--parse-argument)))))
+      (docopt-make-short-option :name name :argument argument))))
 
 (defun docopt--parse-short-options-stacked ()
   "Parse stacked short options."
@@ -279,9 +281,9 @@
         (ellipsis (make-symbol "ellipsis")))
     `(seq-let [,object ,ellipsis]
          (parsec-collect ,parser (parsec-optional (docopt--parse-ellipsis)))
-       (when ,ellipsis
-         (docopt-set-repeatable ,object t))
-       ,object)))
+       (if ,ellipsis
+           (docopt-make-repeated ,object)
+         ,object))))
 
 ;; Usage Expression
 
@@ -289,13 +291,21 @@
   "Parse an expression group between OPEN and CLOSE."
   (docopt--flatten (docopt--parse-group open close (docopt--parse-usage-expr))))
 
+;; (defun docopt--parse-usage-group-optional ()
+;;   "Parse a optional expression group."
+;;   (apply #'docopt-make-optional-group (docopt-set-optional (docopt--parse-usage-group ?\[ ?\]) t)))
+
+;; (defun docopt--parse-usage-group-required ()
+;;   "Parse a required expression group."
+;;   (apply #'docopt-make-required-group (docopt-set-optional (docopt--parse-usage-group ?\( ?\)) nil)))
+
 (defun docopt--parse-usage-group-optional ()
   "Parse a optional expression group."
-  (apply #'docopt-make-optional-group (docopt-set-optional (docopt--parse-usage-group ?\[ ?\]) t)))
+  (apply #'docopt-make-optional-group (docopt--parse-usage-group ?\[ ?\])))
 
 (defun docopt--parse-usage-group-required ()
   "Parse a required expression group."
-  (apply #'docopt-make-required-group (docopt-set-optional (docopt--parse-usage-group ?\( ?\)) nil)))
+  (apply #'docopt-make-required-group (docopt--parse-usage-group ?\( ?\))))
 
 (defun docopt--parse-options-shortcut ()
   "Parse the Docopt options shortcut."
@@ -358,12 +368,16 @@
             (parsec-optional (docopt--parse-newlines)))))))
     (apply #'docopt-make-usage-pattern command (docopt--flatten exprs))))
 
+(defun docopt--parse-usage-lines ()
+  "Parse Docopt usage lines."
+  (parsec-many (docopt--parse-usage-line)))
+
 (defun docopt--parse-usage ()
   "Parse the Docopt usage patterns."
   (parsec-and
    (docopt--parse-usage-header)
    (docopt--parse-optional-newline)
-   (parsec-many (docopt--parse-usage-line))))
+   (docopt--parse-usage-lines)))
 
 ;; Sentence
 
@@ -411,36 +425,45 @@
 
 ;; Program
 
-(defun docopt--parse-program-header ()
-  "Parse a Docopt program description."
-  (let ((description (s-trim (parsec-until-s (parsec-lookahead (parsec-re "\\([[:alnum:]]+\\):"))))))
-    (unless (s-blank-p description)
-      description)))
+(defun docopt--parse-program-header (program)
+  "Parse and set the Docopt PROGRAM header."
+  (let ((header (s-trim (parsec-until-s (parsec-lookahead (parsec-re "\\([[:alnum:]]+\\):"))))))
+    (unless (s-blank-p header)
+      (oset program :header header))))
 
-(defun docopt--parse-program-footer ()
-  "Parse a Docopt program footer."
-  (parsec-until-s (parsec-or
-                   (parsec-eof)
-                   (parsec-lookahead (docopt--parse-section-header)))))
+(defun docopt--parse-program-examples (program)
+  "Parse and set the Docopt PROGRAM examples."
+  (oset program :examples (docopt--parse-examples)))
+
+(defun docopt--parse-program-footer (program)
+  "Parse and set the Docopt PROGRAM footer."
+  (oset program :footer (parsec-until-s
+                         (parsec-or
+                          (parsec-eof)
+                          (parsec-lookahead (docopt--parse-section-header))))))
+
+(defun docopt--parse-program-options (program)
+  "Parse and set the Docopt PROGRAM options."
+  (oset program :options (docopt--parse-options)))
+
+(defun docopt--parse-program-usage (program)
+  "Parse and set the Docopt PROGRAM usage."
+  (oset program :usage (docopt--parse-usage)))
 
 (defun docopt--parse-program-sections (program)
   "Parse and set the Docopt sections for the PROGRAM."
-  (parsec-many
-   (parsec-or
-    (oset program :usage (docopt--parse-usage))
-    (oset program :options (docopt--parse-options))
-    (oset program :examples (docopt--parse-examples))
-    (oset program :footer (docopt--parse-program-footer)))))
+  (parsec-many (parsec-or (docopt--parse-program-usage program)
+                          (docopt--parse-program-options program)
+                          (docopt--parse-program-examples program)
+                          (docopt--parse-program-footer program))))
 
 (defun docopt--parse-program ()
   "Parse a Docopt program."
   (let ((program (docopt-make-program)))
-    (seq-let [header]
-        (parsec-collect
-         (docopt--parse-program-header)
-         (docopt--parse-program-sections program))
-      (oset program :header header)
-      program)))
+    (parsec-and (docopt--parse-program-header program)
+                (docopt--parse-program-sections program))
+    (docopt-set-shortcut-options program (docopt-program-options-list program))
+    program))
 
 (provide 'docopt-parser)
 

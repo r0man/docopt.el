@@ -5,7 +5,7 @@
 ;; Author: r0man <roman@burningswell.com>
 ;; Maintainer: r0man <roman@burningswell.com>
 ;; Created: 29 Feb 2020
-;; Keywords: docopt, command line argument
+;; Keywords: docopt, tools, processes
 ;; Homepage: https://github.com/r0man/docopt.el
 
 ;; This file is not part of GNU Emacs.
@@ -33,9 +33,54 @@
 (require 'cl-lib)
 (require 'docopt-classes)
 (require 'docopt-parser)
+(require 'eieio)
 (require 'json)
 (require 'parsec)
 (require 's)
+
+(defclass docopt-testcase-example ()
+  ((ast
+    :initarg :ast
+    :initform nil
+    :accessor docopt-testcase-example-ast
+    :documentation "The argument vector of the testcase example.")
+   (argv
+    :initarg :argv
+    :initform nil
+    :accessor docopt-testcase-example-argv
+    :documentation "The argument vector of the testcase example.")
+   (actual
+    :initarg :actual
+    :initform nil
+    :accessor docopt-testcase-example-actual
+    :documentation "The actual result of the testcase example.")
+   (expected
+    :initarg :expected
+    :initform nil
+    :accessor docopt-testcase-example-expected
+    :documentation "The expected result of the testcase example."))
+  "A class representing a Docopt testcase example.")
+
+(defun docopt-make-testcase-example (&rest args)
+  "Make a new Docopt testcase example using ARGS."
+  (apply 'make-instance 'docopt-testcase-example args))
+
+(defclass docopt-testcase ()
+  ((program
+    :initarg :program
+    :initform nil
+    :accessor docopt-testcase-program
+    :documentation "The program of the testcase.")
+   (examples
+    :initarg :examples
+    :initform nil
+    :accessor docopt-testcase-examples
+    :documentation "The examples of the testcase."))
+  "A class representing a Docopt testcase.")
+
+(defun docopt-make-testcase (&rest args)
+  "Make a new Docopt testcase using ARGS."
+  (apply 'make-instance 'docopt-testcase args))
 
 (defun docopt--parse-testcase-comment ()
   "Parse a Docopt testcase comment."
@@ -115,16 +160,30 @@
                   (docopt--parse-testcase-expected))
     (docopt--parse-whitespaces)))
 
+(defun docopt--parse-testcase-example ()
+  "Parse a Docopt testcase example."
+  (seq-let [argv expected]
+      (parsec-return (parsec-collect
+                      (docopt--parse-testcase-argv)
+                      (docopt--parse-testcase-expected))
+        (docopt--parse-whitespaces))
+    (make-instance 'docopt-testcase-example :argv argv :expected expected)))
+
+(parsec-with-input "$ prog\n{\"-a\": false}\n"
+  (docopt--parse-testcase-example))
+
 (defun docopt--parse-testcase-examples ()
   "Parse Docopt testcase examples."
   (parsec-many1 (docopt--parse-testcase-example)))
 
 (defun docopt--parse-testcase ()
   "Parse a Docopt testcase."
-  (parsec-collect
-   (parsec-try (docopt--parse-testcase-blank-lines))
-   (docopt--parse-testcase-usage)
-   (docopt--parse-testcase-examples)))
+  (seq-let [program examples]
+      (parsec-collect
+       (parsec-and (parsec-try (docopt--parse-testcase-blank-lines))
+                   (docopt--parse-testcase-program))
+       (docopt--parse-testcase-examples))
+    (docopt-make-testcase :program program :examples examples)))
 
 (defun docopt--parse-testcases ()
   "Parse Docopt testcases."
@@ -133,6 +192,49 @@
 (defun docopt-parse-testcases (s)
   "Parse Docopt testcases from the string S."
   (parsec-with-input s (docopt--parse-testcases)))
+
+(defun docopt--equal-set (s1 s2)
+  "Return t if the association lists S1 and S2 are set equal."
+  (equal (cl-sort s1 #'string< :key #'car)
+         (cl-sort s2 #'string< :key #'car)))
+
+(defun docopt--testcase-parse-error-p (result)
+  "Return t if RESULT is a parse error."
+  (cond
+   ((and (sequencep result)
+         (sequencep (car result)))
+    (docopt--testcase-parse-error-p (car result)))
+   ((and (sequencep result)
+         (equal 'parsec-error (car result)))
+    t)))
+
+(defun docopt--testcase-test-example (program example)
+  "Test the Docopt EXAMPLE of the PROGRAM."
+  (let ((argv (docopt-testcase-example-argv example)))
+    (condition-case nil
+        (let* ((ast (docopt--parse-argv program argv))
+               (expected (docopt-testcase-example-expected example)))
+          (oset example :ast ast)
+          (if (docopt--testcase-parse-error-p ast)
+              (progn (message "Test \"%s\": FAILED" argv)
+                     (pp ast))
+            (let ((actual (docopt--argv-to-alist ast)))
+              (oset example :actual actual)
+              (if (equal actual expected)
+                  (message "Test \"%s\": OK" argv)
+                (progn (message "Test \"%s\": FAILED" argv)
+                       (message "- Expected: %s" expected)
+                       (message "- Actual: %s" actual)
+                       (pp ast))))))
+      (error (message "Test \"%s\": FAILED" argv)))
+    example))
+
+(defun docopt-testcase-test (testcase)
+  "Test the Docopt examples of TESTCASE."
+  (let ((program (docopt-testcase-program testcase)))
+    (seq-map (lambda (example)
+               (docopt--testcase-test-example program example))
+             (docopt-testcase-examples testcase))))
 
 (provide 'docopt-testcase)
 

@@ -5,7 +5,7 @@
 ;; Author: r0man <roman@burningswell.com>
 ;; Maintainer: r0man <roman@burningswell.com>
 ;; Created: 29 Feb 2020
-;; Keywords: docopt, command line argument
+;; Keywords: docopt, tools, processes
 ;; Homepage: https://github.com/r0man/docopt.el
 
 ;; This file is not part of GNU Emacs.

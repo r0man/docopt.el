@@ -1,16 +1,13 @@
-;;; docopt.el --- The Docopt Emacs mode -*- lexical-binding: t -*-
-
-;; URL: https://github.com/r0man/docopt.el
-;; Keywords: docopt
-;; Version: 0.1.0
+;;; docopt.el --- A Docopt implementation in Elisp -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019-2020 r0man
 
 ;; Author: r0man <roman@burningswell.com>
 ;; Maintainer: r0man <roman@burningswell.com>
 ;; Created: 29 Feb 2020
-;; Keywords: docopt, command line argument
+;; Keywords: docopt, tools, processes
 ;; Homepage: https://github.com/r0man/docopt.el
+;; Version: 0.1.0
 
 ;; This file is not part of GNU Emacs.
 
@@ -29,7 +26,7 @@
 
 ;;; Commentary:
 
-;; Docopt for Elisp
+;; A Docopt implementation in Elisp
 
 ;;; Code:
 
@@ -40,13 +37,18 @@
 
 ;;;###autoload
 (defun docopt-parse-program (s)
-  "Parse the Docopt program S."
+  "Parse the Docopt program from S."
   (parsec-with-input s (docopt--parse-program)))
 
 ;;;###autoload
-(defun doctopt-parse-argv (program s)
-  "Parse the argument vector S of the Docopt PROGRAM."
-  (parsec-with-input s (docopt-argument-parser program)))
+(defun docopt-parse-argv (program s)
+  "Parse the argument vector from S using the Docopt PROGRAM."
+  (docopt--parse-argv program s))
+
+;;;###autoload
+(defun docopt-parse-argv-alist (program s)
+  "Parse the argument vector from S using the Docopt PROGRAM."
+  (docopt--argv-to-alist (docopt--parse-argv program s)))
 
 (provide 'docopt)
 

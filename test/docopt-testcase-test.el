@@ -5,7 +5,7 @@
 ;; Author: r0man <roman@burningswell.com>
 ;; Maintainer: r0man <roman@burningswell.com>
 ;; Created: 29 Feb 2020
-;; Keywords: docopt, command line argument
+;; Keywords: docopt, tools, processes
 ;; Homepage: https://github.com/r0man/docopt.el
 
 ;; This file is not part of GNU Emacs.
@@ -38,27 +38,35 @@
   (it "should parse a single line JSON result"
     (expect (parsec-with-input "$ prog\n{\"-a\": false}\n"
               (docopt--parse-testcase-example))
-            :to-equal '("prog" ((-a . :json-false)))))
+            :to-equal (docopt-make-testcase-example
+                       :argv "prog"
+                       :expected '((-a . :json-false)))))
 
   (it "should parse a multi line JSON result"
     (expect (parsec-with-input "$ prog\n{\"-a\": false,\n \"-b\": true}\n"
               (docopt--parse-testcase-example))
-            :to-equal '("prog" ((-a . :json-false) (-b . t)))))
+            :to-equal (docopt-make-testcase-example
+                       :argv "prog"
+                       :expected '((-a . :json-false) (-b . t)))))
 
   (it "should parse a multi line nested JSON result"
     (expect (parsec-with-input "$ prog\n{\"-a\": false,\n \"-b\": {\"c\": 1}}\n"
               (docopt--parse-testcase-example))
-            :to-equal '("prog" ((-a . :json-false) (-b (c . 1))))))
+            :to-equal (docopt-make-testcase-example
+                       :argv "prog"
+                       :expected '((-a . :json-false) (-b (c . 1))))))
 
   (it "should parse a multi line nested JSON result with spaces"
     (expect (parsec-with-input "$ prog\n {\"-a\": false,\n \"-b\": {\"c\": 1 } }\n"
               (docopt--parse-testcase-example))
-            :to-equal '("prog" ((-a . :json-false) (-b (c . 1))))))
+            :to-equal (docopt-make-testcase-example
+                       :argv "prog"
+                       :expected '((-a . :json-false) (-b (c . 1))))))
 
   (it "should parse a user error"
     (expect (parsec-with-input "$ prog --xxx\n\"user-error\""
               (docopt--parse-testcase-example))
-            :to-equal (list "prog --xxx" 'user-error))))
+            :to-equal (docopt-make-testcase-example :argv "prog --xxx" :expected 'user-error))))
 
 (describe "The `docopt-testcase-program` parser"
 
@@ -73,10 +81,13 @@
             :to-equal (docopt-parse-program "Usage: prog [options]\n\nOptions: -a  All.\n\n"))))
 
 (describe "Parsing the Docopt test cases"
-  :var ((test-cases (docopt-parse-testcases (f-read-text "test/testcases.docopt"))))
+  :var ((testcases (docopt-parse-testcases (f-read-text "test/testcases.docopt"))))
 
   (it "should return 81 test cases"
-    (expect (length test-cases)
-            :to-equal 81)))
+    (expect (length testcases) :to-equal 81))
+
+  (it "should test all test cases"
+    (seq-doseq (testcase testcases)
+      (docopt-testcase-test testcase))))
 
 ;;; docopt-testcase-test.el ends here

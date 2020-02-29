@@ -5,7 +5,7 @@
 ;; Author: r0man <roman@burningswell.com>
 ;; Maintainer: r0man <roman@burningswell.com>
 ;; Created: 29 Feb 2020
-;; Keywords: docopt, command line argument
+;; Keywords: docopt, tools, processes
 ;; Homepage: https://github.com/r0man/docopt.el
 
 ;; This file is not part of GNU Emacs.
@@ -47,6 +47,24 @@ When t, only allow \"=\" as the long option separator, otherwise
                 x (list x)))
           list))
 
+;;; Repeatable
+
+(defclass docopt-repeated ()
+  ((object
+    :initarg :object
+    :initform nil
+    :accessor docopt-repeated-object
+    :documentation "The repeated object."))
+  "A class representing a repeatable Docopt object.")
+
+(defun docopt-make-repeated (object)
+  "Make a new Docopt argument using OBJECT."
+  (make-instance 'docopt-repeated :object object))
+
+;; (parsec-with-input "ARG..." (docopt--parse-usage-expr))
+
+;; Either
+
 (defclass docopt-either ()
   ((members
     :initarg :members
@@ -56,62 +74,16 @@ When t, only allow \"=\" as the long option separator, otherwise
   "A class representing a Docopt either.")
 
 (defun docopt-make-either (&rest members)
-  "Make a new Docopt argument using MEMBERS."
+  "Make a new Docopt argument using MEMBERS and OPTIONAL."
   (make-instance 'docopt-either :members members))
 
 (defun docopt-either-concat (&rest eithers)
   "Return a new either made of the concatenation of the members of EITHERS."
   (apply #'docopt-make-either (seq-mapcat #'docopt-either-members eithers)))
 
-(defclass docopt-optionable ()
-  ((optional
-    :initarg :optional
-    :initform nil
-    :accessor docopt-optional
-    :documentation "Whether the object is optional or not."))
-  "A class representing a optional Docopt object.")
-
-(cl-defgeneric docopt-set-optional (object value))
-
-(cl-defmethod docopt-set-optional ((object docopt-optionable) value)
-  (oset object :optional value) object)
-
-(cl-defmethod docopt-set-optional ((either docopt-either) value)
-  (docopt-set-optional (docopt-either-members either) value)
-  either)
-
-(cl-defmethod docopt-set-optional ((objects list) value)
-  (seq-doseq (element objects) (docopt-set-optional element value)))
-
-(cl-defmethod docopt-set-optional (object _) object)
-
-;;; Repeatable
-
-(defclass docopt-repeatable ()
-  ((repeated
-    :initarg :repeated
-    :initform nil
-    :accessor docopt-repeated
-    :documentation "Whether the object is repeatable or not."))
-  "A class representing a repeatable Docopt object.")
-
-(cl-defgeneric docopt-set-repeatable (object value))
-
-(cl-defmethod docopt-set-repeatable ((object docopt-repeatable) value)
-  (oset object :repeated value) object)
-
-(cl-defmethod docopt-set-repeatable ((either docopt-either) value)
-  (docopt-set-repeatable (docopt-either-members either) value)
-  either)
-
-(cl-defmethod docopt-set-repeatable ((objects list) value)
-  (seq-doseq (object objects) (docopt-set-repeatable object value)))
-
-(cl-defmethod docopt-set-repeatable (object _) object)
-
 ;;; Argument
 
-(defclass docopt-argument (docopt-optionable docopt-repeatable)
+(defclass docopt-argument ()
   ((default
      :initarg :default
      :initform nil
@@ -164,7 +136,7 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 ;;; Base Option
 
-(defclass docopt-option-base (docopt-optionable docopt-repeatable)
+(defclass docopt-option-base ()
   ((argument
     :initarg :argument
     :initform nil
@@ -199,15 +171,6 @@ When t, only allow \"=\" as the long option separator, otherwise
 (defun docopt-make-short-option (&rest args)
   "Make a new Docopt short option using ARGS."
   (apply 'make-instance 'docopt-short-option args))
-
-;; Options Shortcut
-
-(defclass docopt-options-shortcut () ()
-  "A class representing a Docopt options shortcut.")
-
-(defun docopt-make-options-shortcut ()
-  "Make a new Docopt options shortcut."
-  (make-instance 'docopt-options-shortcut))
 
 ;; Option line
 
@@ -285,6 +248,13 @@ slots of the instance."
   "Make a new Docopt program using ARGS."
   (apply 'make-instance 'docopt-program args))
 
+(defun docopt-program-options-list (program)
+  "Return a list of long/short option pairs of the Docopt PROGRAM."
+  (seq-map (lambda (option-line)
+             (list (docopt-option-line-long-option option-line)
+                   (docopt-option-line-short-option option-line)))
+           (docopt-program-options program)))
+
 ;; Group
 
 (defclass docopt-group ()
@@ -340,6 +310,50 @@ slots of the instance."
 (defun docopt-make-standard-input ()
   "Make a new Docopt standard input."
   (make-instance 'docopt-standard-input))
+
+;; Options Shortcut
+
+(defclass docopt-options-shortcut ()
+  ((options
+    :initarg :options
+    :initform nil
+    :accessor docopt-options-shortcut-options
+    :documentation "The options of the options shortcut."))
+  "A class representing a Docopt options shortcut.")
+
+(defun docopt-make-options-shortcut (&rest options)
+  "Make a new Docopt options shortcut using OPTIONS."
+  (make-instance 'docopt-options-shortcut :options options))
+
+(cl-defgeneric docopt-set-shortcut-options (object options)
+  "Set the options shortcut in OBJECT to OPTIONS.")
+
+(cl-defmethod docopt-set-shortcut-options ((group docopt-group) options)
+  "Set the options shortcut in GROUP to OPTIONS."
+  (docopt-set-shortcut-options (docopt-group-members group) options))
+
+(cl-defmethod docopt-set-shortcut-options ((either docopt-either) options)
+  "Set the options shortcut in EITHER to OPTIONS."
+  (docopt-set-shortcut-options (docopt-either-members either) options))
+
+(cl-defmethod docopt-set-shortcut-options ((lst list) options)
+  "Set the options shortcut of the elements in LST to OPTIONS."
+  (seq-doseq (element lst) (docopt-set-shortcut-options element options)))
+
+(cl-defmethod docopt-set-shortcut-options ((pattern docopt-usage-pattern) options)
+  "Set the options shortcut in PATTERN to OPTIONS."
+  (docopt-set-shortcut-options (docopt-usage-pattern-expressions pattern) options))
+
+(cl-defmethod docopt-set-shortcut-options ((program docopt-program) options)
+  "Set the options shortcut in PROGRAM to OPTIONS."
+  (docopt-set-shortcut-options (docopt-program-usage program) options))
+
+(cl-defmethod docopt-set-shortcut-options ((shortcut docopt-options-shortcut) options)
+  "Set the options shortcut in SHORTCUT to OPTIONS."
+  (oset shortcut :options options))
+
+(cl-defmethod docopt-set-shortcut-options (object options)
+  "Set the options shortcut in OBJECT to OPTIONS.")
 
 (provide 'docopt-classes)
 
