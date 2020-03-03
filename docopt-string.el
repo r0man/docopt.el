@@ -33,21 +33,37 @@
 (require 'docopt-classes)
 (require 's)
 
+(cl-defgeneric docopt-string (object)
+  "Convert the Docopt OBJECT to a string.")
+
 (defun docopt-string--example (example)
   "Convert the Docopt EXAMPLE to a string."
   (string-join example " "))
 
+(defun docopt-string--join (separator elements)
+  "Apply `docopt-string' on ELEMENTS and join them with SEPARATOR."
+  (string-join (seq-map #'docopt-string elements) separator))
+
+(defun docopt-string--section (header content)
+  "Convert the Docopt section HEADER and CONTENT to a string."
+  (concat header ":\n  " (string-join content "\n  ")))
+
 (defun docopt-string--examples (examples)
   "Convert the Docopt EXAMPLES to a string."
-  (concat "Examples:\n  " (string-join (seq-map #'docopt-string--example examples) "\n  ")))
+  (docopt-string--section "Examples" (seq-map #'docopt-string--example examples)))
 
 (defun docopt-string--usage (usage)
   "Convert the Docopt USAGE to a string."
-  (concat "Usage:\n  " (string-join (seq-map #'docopt-string usage) "\n  ")))
+  (docopt-string--section "Usage" (seq-map #'docopt-string usage)))
+
+(defun docopt-string--option-argument (option)
+  "Convert the Docopt OPTION argument to a string."
+  (when-let ((argument (docopt-option-argument option)))
+    (concat "=" (docopt-string argument))))
 
 (defun docopt-string--options (options)
   "Convert the Docopt OPTIONS to a string."
-  (concat "Options:\n  " (string-join (seq-map #'docopt-string options) "\n  ")))
+  (docopt-string--section "Options" (seq-map #'docopt-string options)))
 
 (defun docopt-string--option-line-options (option-line)
   "Convert the options of the OPTION-LINE to a string."
@@ -56,13 +72,6 @@
     (seq-remove #'null)
     (seq-map #'docopt-string)
     (s-join ", ")))
-
-(defun docopt-string-join (separator elements)
-  "Apply `docopt-string' on ELEMENTS and join them with SEPARATOR."
-  (string-join (seq-map #'docopt-string elements) separator))
-
-(cl-defgeneric docopt-string (object)
-  "Convert the Docopt OBJECT to a string.")
 
 (cl-defmethod docopt-string ((argument docopt-argument))
   "Convert the Docopt usage ARGUMENT to a string."
@@ -74,27 +83,23 @@
 
 (cl-defmethod docopt-string ((either docopt-either))
   "Convert the Docopt EITHER to a string."
-  (docopt-string-join " | " (docopt-either-members either)))
+  (docopt-string--join " | " (docopt-either-members either)))
 
 (cl-defmethod docopt-string ((lst list))
   "Convert the list LST to a string."
-  (docopt-string-join " " lst))
+  (docopt-string--join " " lst))
 
 (cl-defmethod docopt-string ((option docopt-long-option))
   "Convert the Docopt long OPTION to a string."
-  (concat "--" (docopt-option-name option)
-          (when-let ((argument (docopt-option-argument option)))
-            (concat "=" (docopt-string argument)))))
+  (concat "--" (docopt-option-name option) (docopt-string--option-argument option)))
 
 (cl-defmethod docopt-string ((option docopt-short-option))
   "Convert the Docopt short OPTION to a string."
-  (concat "-" (docopt-option-name option)
-          (when-let ((argument (docopt-option-argument option)))
-            (concat "=" (docopt-string argument)))))
+  (concat "-" (docopt-option-name option) (docopt-string--option-argument option)))
 
 (cl-defmethod docopt-string ((group docopt-optional-group))
   "Convert the Docopt usage GROUP to a string."
-  (concat "[" (docopt-string-join " " (docopt-group-members group)) "]"))
+  (concat "[" (docopt-string--join " " (docopt-group-members group)) "]"))
 
 (cl-defmethod docopt-string ((program docopt-program))
   "Convert the Docopt PROGRAM to a string."
@@ -110,7 +115,7 @@
 
 (cl-defmethod docopt-string ((group docopt-required-group))
   "Convert the Docopt required GROUP to a string."
-  (concat "(" (docopt-string-join " " (docopt-group-members group)) ")"))
+  (concat "(" (docopt-string--join " " (docopt-group-members group)) ")"))
 
 (cl-defmethod docopt-string ((line docopt-option-line))
   "Convert the Docopt option LINE to a string."
@@ -131,7 +136,7 @@
 (cl-defmethod docopt-string ((pattern docopt-usage-pattern))
   "Convert the Docopt usage PATTERN to a string."
   (concat (docopt-string (docopt-usage-pattern-command pattern)) " "
-          (docopt-string-join " " (docopt-usage-pattern-expressions pattern))))
+          (docopt-string--join " " (docopt-usage-pattern-expressions pattern))))
 
 (provide 'docopt-string)
 
