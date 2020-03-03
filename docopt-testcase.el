@@ -232,6 +232,7 @@
 (defun docopt-testcase-test (testcase)
   "Test the Docopt examples of TESTCASE."
   (let ((program (docopt-testcase-program testcase)))
+    (message "Testing program:\n%s" (docopt-to-string program))
     (seq-map (lambda (example)
                (docopt--testcase-test-example program example))
              (docopt-testcase-examples testcase))))
