@@ -33,6 +33,11 @@
 (require 'docopt-classes)
 (require 's)
 
+(defcustom docopt-string-option-line-pattern "%-20s %s"
+  "The Docopt option line string format pattern."
+  :type 'string
+  :group 'docopt)
+
 (cl-defgeneric docopt-string (object)
   "Convert the Docopt OBJECT to a string.")
 
@@ -119,11 +124,9 @@
 
 (cl-defmethod docopt-string ((line docopt-option-line))
   "Convert the Docopt option LINE to a string."
-  (let ((long-option (docopt-option-line-long-option line))
-        (short-option (docopt-option-line-short-option line)))
-    (format "%-20s %s"
-            (docopt-string--option-line-options line)
-            (docopt-option-line-description line))))
+  (format docopt-string-option-line-pattern
+          (docopt-string--option-line-options line)
+          (docopt-option-line-description line)))
 
 (cl-defmethod docopt-string ((shortcut docopt-options-shortcut))
   "Convert the Docopt options SHORTCUT to a string."
