@@ -1,4 +1,4 @@
-;;; docopt-printer.el --- The Docopt printer -*- lexical-binding: t -*-
+;;; docopt-string.el --- The Docopt string functions -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019-2020 r0man
 
@@ -25,7 +25,7 @@
 
 ;;; Commentary:
 
-;; The Docopt printer
+;; The Docopt string functions
 
 ;;; Code:
 
@@ -33,106 +33,106 @@
 (require 'docopt-classes)
 (require 's)
 
-(defun docopt-to-string--example (example)
+(defun docopt-string--example (example)
   "Convert the Docopt EXAMPLE to a string."
   (string-join example " "))
 
-(defun docopt-to-string--examples (examples)
+(defun docopt-string--examples (examples)
   "Convert the Docopt EXAMPLES to a string."
-  (concat "Examples:\n  " (string-join (seq-map #'docopt-to-string--example examples) "\n  ")))
+  (concat "Examples:\n  " (string-join (seq-map #'docopt-string--example examples) "\n  ")))
 
-(defun docopt-to-string--usage (usage)
+(defun docopt-string--usage (usage)
   "Convert the Docopt USAGE to a string."
-  (concat "Usage:\n  " (string-join (seq-map #'docopt-to-string usage) "\n  ")))
+  (concat "Usage:\n  " (string-join (seq-map #'docopt-string usage) "\n  ")))
 
-(defun docopt-to-string--options (options)
+(defun docopt-string--options (options)
   "Convert the Docopt OPTIONS to a string."
-  (concat "Options:\n  " (string-join (seq-map #'docopt-to-string options) "\n  ")))
+  (concat "Options:\n  " (string-join (seq-map #'docopt-string options) "\n  ")))
 
-(defun docopt-to-string--option-line-options (option-line)
+(defun docopt-string--option-line-options (option-line)
   "Convert the options of the OPTION-LINE to a string."
   (thread-last (list (docopt-option-line-short-option option-line)
                      (docopt-option-line-long-option option-line))
     (seq-remove #'null)
-    (seq-map #'docopt-to-string)
+    (seq-map #'docopt-string)
     (s-join ", ")))
 
-(defun docopt-to-string-join (separator elements)
-  "Apply `docopt-to-string' on ELEMENTS and join them with SEPARATOR."
-  (string-join (seq-map #'docopt-to-string elements) separator))
+(defun docopt-string-join (separator elements)
+  "Apply `docopt-string' on ELEMENTS and join them with SEPARATOR."
+  (string-join (seq-map #'docopt-string elements) separator))
 
-(cl-defgeneric docopt-to-string (object)
+(cl-defgeneric docopt-string (object)
   "Convert the Docopt OBJECT to a string.")
 
-(cl-defmethod docopt-to-string ((argument docopt-argument))
+(cl-defmethod docopt-string ((argument docopt-argument))
   "Convert the Docopt usage ARGUMENT to a string."
   (concat "<" (docopt-argument-name argument) ">"))
 
-(cl-defmethod docopt-to-string ((command docopt-command))
+(cl-defmethod docopt-string ((command docopt-command))
   "Convert the Docopt usage COMMAND to a string."
   (docopt-command-name command))
 
-(cl-defmethod docopt-to-string ((either docopt-either))
+(cl-defmethod docopt-string ((either docopt-either))
   "Convert the Docopt EITHER to a string."
-  (docopt-to-string-join " | " (docopt-either-members either)))
+  (docopt-string-join " | " (docopt-either-members either)))
 
-(cl-defmethod docopt-to-string ((lst list))
+(cl-defmethod docopt-string ((lst list))
   "Convert the list LST to a string."
-  (docopt-to-string-join " " lst))
+  (docopt-string-join " " lst))
 
-(cl-defmethod docopt-to-string ((option docopt-long-option))
+(cl-defmethod docopt-string ((option docopt-long-option))
   "Convert the Docopt long OPTION to a string."
   (concat "--" (docopt-option-name option)
           (when-let ((argument (docopt-option-argument option)))
-            (concat "=" (docopt-to-string argument)))))
+            (concat "=" (docopt-string argument)))))
 
-(cl-defmethod docopt-to-string ((option docopt-short-option))
+(cl-defmethod docopt-string ((option docopt-short-option))
   "Convert the Docopt short OPTION to a string."
   (concat "-" (docopt-option-name option)
           (when-let ((argument (docopt-option-argument option)))
-            (concat "=" (docopt-to-string argument)))))
+            (concat "=" (docopt-string argument)))))
 
-(cl-defmethod docopt-to-string ((group docopt-optional-group))
+(cl-defmethod docopt-string ((group docopt-optional-group))
   "Convert the Docopt usage GROUP to a string."
-  (concat "[" (docopt-to-string-join " " (docopt-group-members group)) "]"))
+  (concat "[" (docopt-string-join " " (docopt-group-members group)) "]"))
 
-(cl-defmethod docopt-to-string ((program docopt-program))
+(cl-defmethod docopt-string ((program docopt-program))
   "Convert the Docopt PROGRAM to a string."
   (string-join (list (docopt-program-header program)
-                     (docopt-to-string--usage (docopt-program-usage program))
-                     (docopt-to-string--options (docopt-program-options program))
-                     (docopt-to-string--examples (docopt-program-examples program)))
+                     (docopt-string--usage (docopt-program-usage program))
+                     (docopt-string--options (docopt-program-options program))
+                     (docopt-string--examples (docopt-program-examples program)))
                "\n\n"))
 
-(cl-defmethod docopt-to-string ((repeated docopt-repeated))
+(cl-defmethod docopt-string ((repeated docopt-repeated))
   "Convert the Docopt usage REPEATED to a string."
-  (concat (docopt-to-string (docopt-repeated-object repeated)) "..."))
+  (concat (docopt-string (docopt-repeated-object repeated)) "..."))
 
-(cl-defmethod docopt-to-string ((group docopt-required-group))
+(cl-defmethod docopt-string ((group docopt-required-group))
   "Convert the Docopt required GROUP to a string."
-  (concat "(" (docopt-to-string-join " " (docopt-group-members group)) ")"))
+  (concat "(" (docopt-string-join " " (docopt-group-members group)) ")"))
 
-(cl-defmethod docopt-to-string ((pattern docopt-usage-pattern))
-  "Convert the Docopt usage PATTERN to a string."
-  (concat (docopt-to-string (docopt-usage-pattern-command pattern)) " "
-          (docopt-to-string-join " " (docopt-usage-pattern-expressions pattern))))
-
-(cl-defmethod docopt-to-string ((line docopt-option-line))
+(cl-defmethod docopt-string ((line docopt-option-line))
   "Convert the Docopt option LINE to a string."
   (let ((long-option (docopt-option-line-long-option line))
         (short-option (docopt-option-line-short-option line)))
     (format "%-20s %s"
-            (docopt-to-string--option-line-options line)
+            (docopt-string--option-line-options line)
             (docopt-option-line-description line))))
 
-(cl-defmethod docopt-to-string ((shortcut docopt-options-shortcut))
+(cl-defmethod docopt-string ((shortcut docopt-options-shortcut))
   "Convert the Docopt options SHORTCUT to a string."
   "[options]")
 
-(cl-defmethod docopt-to-string ((shortcut docopt-standard-input))
+(cl-defmethod docopt-string ((shortcut docopt-standard-input))
   "Convert the Docopt options SHORTCUT to a string."
   "[-]")
 
-(provide 'docopt-printer)
+(cl-defmethod docopt-string ((pattern docopt-usage-pattern))
+  "Convert the Docopt usage PATTERN to a string."
+  (concat (docopt-string (docopt-usage-pattern-command pattern)) " "
+          (docopt-string-join " " (docopt-usage-pattern-expressions pattern))))
 
-;;; docopt-printer.el ends here
+(provide 'docopt-string)
+
+;;; docopt-string.el ends here

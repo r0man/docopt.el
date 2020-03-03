@@ -1,4 +1,4 @@
-;;; docopt-printer-test.el --- The Docopt printer tests -*- lexical-binding: t -*-
+;;; docopt-string-test.el --- The Docopt string function tests -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019-2020 r0man
 
@@ -25,19 +25,19 @@
 
 ;;; Commentary:
 
-;; The Docopt printer tests
+;; The Docopt string function tests
 
 ;;; Code:
 
 (require 'buttercup)
 (require 'docopt)
-(require 'docopt-printer)
+(require 'docopt-string)
 (require 'test-helper)
 
 (describe "Printing naval fate"
   :var ((program (docopt-parse-program docopt-naval-fate)))
   (it "and parsing it should return the same program"
-    (expect (docopt-parse-program (docopt-to-string (docopt-parse-program docopt-naval-fate)))
+    (expect (docopt-parse-program (docopt-string (docopt-parse-program docopt-naval-fate)))
             :to-equal program)))
 
-;;; docopt-printer-test.el ends here
+;;; docopt-string-test.el ends here
