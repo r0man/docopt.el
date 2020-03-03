@@ -33,9 +33,9 @@
 (require 'docopt-classes)
 (require 's)
 
-(defcustom docopt-string-option-line-pattern "%-20s %s"
-  "The Docopt option line string format pattern."
-  :type 'string
+(defcustom docopt-string-options-width 20
+  "The width of the options on a Docopt options line."
+  :type 'number
   :group 'docopt)
 
 (cl-defgeneric docopt-string (object)
@@ -124,7 +124,7 @@
 
 (cl-defmethod docopt-string ((line docopt-option-line))
   "Convert the Docopt option LINE to a string."
-  (format docopt-string-option-line-pattern
+  (format (concat "%-" (number-to-string docopt-string-options-width) "s %s")
           (docopt-string--option-line-options line)
           (docopt-option-line-description line)))
 
