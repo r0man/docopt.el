@@ -108,11 +108,12 @@
 
 (cl-defmethod docopt-string ((program docopt-program))
   "Convert the Docopt PROGRAM to a string."
-  (string-join (list (docopt-program-header program)
+  (thread-last (list (docopt-program-header program)
                      (docopt-string--usage (docopt-program-usage program))
                      (docopt-string--options (docopt-program-options program))
                      (docopt-string--examples (docopt-program-examples program)))
-               "\n\n"))
+    (seq-remove #'s-blank-p)
+    (s-join "\n\n")))
 
 (cl-defmethod docopt-string ((repeated docopt-repeated))
   "Convert the Docopt usage REPEATED to a string."
