@@ -31,7 +31,7 @@
 
 (require 'eieio)
 
-(defclass docopt-option-base ()
+(defclass docopt-option ()
   ((argument
     :initarg :argument
     :initform nil
@@ -51,7 +51,7 @@
 
 ;;; Long Option
 
-(defclass docopt-long-option (docopt-option-base) ()
+(defclass docopt-long-option (docopt-option) ()
   "A class representing a Docopt long option.")
 
 (defun docopt-make-long-option (&rest args)
@@ -60,7 +60,7 @@
 
 ;;; Short option
 
-(defclass docopt-short-option (docopt-option-base) ()
+(defclass docopt-short-option (docopt-option) ()
   "A class representing a Docopt short option.")
 
 (defun docopt-make-short-option (&rest args)

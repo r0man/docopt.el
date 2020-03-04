@@ -87,7 +87,7 @@
     (oset argument :value value)
     argument))
 
-(cl-defmethod docopt-argv-parser ((option docopt-option-base))
+(cl-defmethod docopt-argv-parser ((option docopt-option))
   "Return an argument vector parser for the long OPTION."
   (parsec-collect (parsec-str (concat (cond
                                        ((docopt-long-option-p option) "--")
@@ -178,7 +178,7 @@
   "Return the alist cons for the COMMAND."
   (cons (docopt--argv-symbol command) t))
 
-(cl-defmethod docopt--argv-alist-element ((option docopt-option-base))
+(cl-defmethod docopt--argv-alist-element ((option docopt-option))
   "Return the alist cons for the OPTION."
   (cons (docopt--argv-symbol option)
         (if-let (argument (docopt-option-argument option))
