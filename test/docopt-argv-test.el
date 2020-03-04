@@ -184,7 +184,7 @@
                             (docopt-make-long-option :name "aa")))))
 
 (describe "The `docopt-parse-argv-alist` function"
-  :var ((program (docopt-parse-program docopt-naval-fate-str)))
+  :var ((program (docopt-parse docopt-naval-fate-str)))
 
   (it "should parse \"naval_fate mine set 1 2 --moored\""
     (expect (docopt-parse-argv-alist program "naval_fate mine set 1 2 --moored")
@@ -220,7 +220,7 @@
 
 (describe "Parsing a program without arguments"
   (it "should return just the program"
-    (expect (docopt-parse-argv-alist (docopt-parse-program "Usage: prog") "prog")
+    (expect (docopt-parse-argv-alist (docopt-parse "Usage: prog") "prog")
             :to-equal '())))
 
 ;; (docopt--parse-argv-simple-list*

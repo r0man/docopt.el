@@ -35,7 +35,7 @@
 (require 'parsec)
 
 ;;;###autoload
-(defun docopt-parse-program (s)
+(defun docopt-parse (s)
   "Parse the Docopt program from S."
   (parsec-with-input s (docopt--parse-program)))
 

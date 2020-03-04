@@ -34,7 +34,7 @@
 (require 'test-helper)
 
 (describe "Parsing naval fate"
-  :var ((program (docopt-parse-program docopt-naval-fate-str)))
+  :var ((program (docopt-parse docopt-naval-fate-str)))
 
   (it "should parse the header"
     (expect (docopt-program-header program) :to-equal "Naval Fate."))
@@ -53,7 +53,7 @@
                         ("naval_fate" "ship" "SHIP-123" "move" "1" "2" "--speed=10"))))
 
   (it "should parse program sections: examples, options, usage"
-    (expect (docopt-parse-program
+    (expect (docopt-parse
              (concat docopt-naval-fate-header-str
                      docopt-naval-fate-examples-str "\n"
                      docopt-naval-fate-options-str "\n"
@@ -61,7 +61,7 @@
             :to-equal program))
 
   (it "should parse program sections: options, examples, usage"
-    (expect (docopt-parse-program
+    (expect (docopt-parse
              (concat docopt-naval-fate-header-str
                      docopt-naval-fate-options-str "\n"
                      docopt-naval-fate-examples-str "\n"
@@ -69,7 +69,7 @@
             :to-equal program))
 
   (it "should parse program sections: options, usage, examples"
-    (expect (docopt-parse-program
+    (expect (docopt-parse
              (concat docopt-naval-fate-header-str
                      docopt-naval-fate-options-str "\n"
                      docopt-naval-fate-usage-str "\n"
@@ -77,7 +77,7 @@
             :to-equal program))
 
   (it "should parse program sections: usage, options, examples"
-    (expect (docopt-parse-program
+    (expect (docopt-parse
              (concat docopt-naval-fate-header-str
                      docopt-naval-fate-usage-str "\n"
                      docopt-naval-fate-options-str "\n"
@@ -85,7 +85,7 @@
             :to-equal program)))
 
 (describe "Parsing naval fate argument vectors"
-  :var ((program (docopt-parse-program docopt-naval-fate-str)))
+  :var ((program (docopt-parse docopt-naval-fate-str)))
 
   (it "should parse \"naval_fate --help\""
     (expect (docopt-parse-argv program "naval_fate --help")

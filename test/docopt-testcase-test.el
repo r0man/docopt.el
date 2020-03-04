@@ -73,12 +73,12 @@
   (it "should parse a single line string"
     (expect (parsec-with-input "r\"\"\"Usage: prog [<arg>]\n\n\"\"\""
               (docopt--parse-testcase-program))
-            :to-equal (docopt-parse-program "Usage: prog [<arg>]\n\n")))
+            :to-equal (docopt-parse "Usage: prog [<arg>]\n\n")))
 
   (it "should parse a multi line string"
     (expect (parsec-with-input "r\"\"\"Usage: prog [options]\n\nOptions: -a  All.\n\n\"\"\""
               (docopt--parse-testcase-program))
-            :to-equal (docopt-parse-program "Usage: prog [options]\n\nOptions: -a  All.\n\n"))))
+            :to-equal (docopt-parse "Usage: prog [options]\n\nOptions: -a  All.\n\n"))))
 
 (describe "Parsing the Docopt test cases"
   :var ((testcases (docopt-parse-testcases (f-read-text "test/testcases.docopt"))))

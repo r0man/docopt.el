@@ -76,7 +76,7 @@
           docopt-naval-fate-examples-str "\n"))
 
 (defvar docopt-naval-fate
-  (docopt-parse-program docopt-naval-fate-str))
+  (docopt-parse docopt-naval-fate-str))
 
 (provide 'test-helper)
 
