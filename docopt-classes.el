@@ -214,6 +214,25 @@ slots of the instance."
                       :description description
                       :name short-name)))))
 
+(cl-defgeneric docopt-option-line-matches-p (option-line object)
+  "Return t if OBJECT does match OPTION-LINE.")
+
+(cl-defmethod docopt-option-line-matches-p (option-line (description string))
+  "Return t if the DESCRIPTION does match with the one in OPTION-LINE."
+  (equal (docopt-option-line-description option-line) description))
+
+(cl-defmethod docopt-option-line-matches-p (option-line (option docopt-long-option))
+  "Return t if the long OPTION does match with the one in OPTION-LINE."
+  (when-let ((long-option (docopt-option-line-long-option option-line)))
+    (equal (docopt-option-name long-option)
+           (docopt-option-name option))))
+
+(cl-defmethod docopt-option-line-matches-p (option-line (option docopt-short-option))
+  "Return t if the short OPTION does match with the one in OPTION-LINE."
+  (when-let ((short-option (docopt-option-line-short-option option-line)))
+    (equal (docopt-option-name short-option)
+           (docopt-option-name option))))
+
 ;; Program
 
 (defclass docopt-program ()
@@ -254,6 +273,11 @@ slots of the instance."
              (list (docopt-option-line-long-option option-line)
                    (docopt-option-line-short-option option-line)))
            (docopt-program-options program)))
+
+(defun docopt-program-find-option-line (program object)
+  "Find the option line in PROGRAM for the given OBJECT (description, long or short option)."
+  (seq-find (lambda (option-line) (docopt-option-line-matches-p option-line object))
+            (docopt-program-options program)))
 
 ;; Group
 

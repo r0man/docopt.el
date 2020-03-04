@@ -31,6 +31,7 @@
 
 (require 'buttercup)
 (require 'docopt-classes)
+(require 'test-helper)
 
 (describe "Concatenate the members of eithers"
   (it "should concatenate the members"
@@ -45,5 +46,32 @@
              (docopt-make-argument "B")
              (docopt-make-argument "C")
              (docopt-make-argument "D")))))
+
+(describe "Find an option line by"
+  :var ((option-line (docopt-make-option-line :short-name "h" :long-name "help" :description "Show this screen.")))
+
+  (it "description should return nil when not found"
+    (expect (docopt-program-find-option-line docopt-naval-fate "UNKNOWN")
+            :to-equal nil))
+
+  (it "long option should return nil when not found"
+    (expect (docopt-program-find-option-line docopt-naval-fate (docopt-make-long-option :name "UNKNOWN"))
+            :to-equal nil))
+
+  (it "short option should return nil when not found"
+    (expect (docopt-program-find-option-line docopt-naval-fate (docopt-make-short-option :name "UNKNOWN"))
+            :to-equal nil))
+
+  (it "description should return the option line when found by long option"
+    (expect (docopt-program-find-option-line docopt-naval-fate (docopt-option-line-description option-line))
+            :to-equal option-line))
+
+  (it "long option should return the option line when found by long option"
+    (expect (docopt-program-find-option-line docopt-naval-fate (docopt-option-line-long-option option-line))
+            :to-equal option-line))
+
+  (it "short option should return the option line when found by short option"
+    (expect (docopt-program-find-option-line docopt-naval-fate (docopt-option-line-short-option option-line))
+            :to-equal option-line)))
 
 ;;; docopt-classes-test.el ends here
