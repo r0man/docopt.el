@@ -1,4 +1,4 @@
-;;; docopt.el --- A Docopt implementation in Elisp -*- lexical-binding: t -*-
+;;; docopt-either.el --- The Docopt either class -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019-2020 r0man
 
@@ -7,7 +7,6 @@
 ;; Created: 29 Feb 2020
 ;; Keywords: docopt, tools, processes
 ;; Homepage: https://github.com/r0man/docopt.el
-;; Version: 0.1.0
 
 ;; This file is not part of GNU Emacs.
 
@@ -26,29 +25,26 @@
 
 ;;; Commentary:
 
-;; A Docopt implementation in Elisp
+;; The Docopt either class
 
 ;;; Code:
 
-(require 'docopt-argv)
-(require 'docopt-parser)
-(require 'parsec)
+(defclass docopt-either ()
+  ((members
+    :initarg :members
+    :initform nil
+    :accessor docopt-either-members
+    :documentation "The members of the either."))
+  "A class representing a Docopt either.")
 
-;;;###autoload
-(defun docopt-parse-program (s)
-  "Parse the Docopt program from S."
-  (parsec-with-input s (docopt--parse-program)))
+(defun docopt-make-either (&rest members)
+  "Make a new Docopt argument using MEMBERS and OPTIONAL."
+  (make-instance 'docopt-either :members members))
 
-;;;###autoload
-(defun docopt-parse-argv (program s)
-  "Parse the argument vector from S using the Docopt PROGRAM."
-  (docopt--parse-argv program s))
+(defun docopt-either-concat (&rest eithers)
+  "Return a new either made of the concatenation of the members of EITHERS."
+  (apply #'docopt-make-either (seq-mapcat #'docopt-either-members eithers)))
 
-;;;###autoload
-(defun docopt-parse-argv-alist (program s)
-  "Parse the argument vector from S using the Docopt PROGRAM."
-  (docopt--argv-to-alist (docopt--parse-argv program s)))
+(provide 'docopt-either)
 
-(provide 'docopt)
-
-;;; docopt.el ends here
+;;; docopt-either.el ends here

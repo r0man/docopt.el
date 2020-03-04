@@ -30,11 +30,20 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'docopt-argument)
+(require 'docopt-command)
+(require 'docopt-either)
+(require 'docopt-group)
+(require 'docopt-option)
+(require 'docopt-option-line)
+(require 'docopt-options-shortcut)
+(require 'docopt-repeated)
+(require 'docopt-standard-input)
+(require 'docopt-usage-pattern)
 (require 'eieio)
 (require 'parsec)
 (require 's)
 (require 'seq)
-(require 'docopt-classes)
 (require 'subr-x)
 
 (defmacro docopt--parse-sep-end-by1 (parser sep)
@@ -135,6 +144,11 @@
 (defun docopt--parse-long-option-name ()
   "Parse a long option name."
   (substring (parsec-re "--[[:alnum:]-_]+") 2))
+
+(defvar docopt-strict-long-options nil
+  "Whether to parse long options in strict mode or not.
+When t, only allow \"=\" as the long option separator, otherwise
+\"=\" and \" \" are allowed.")
 
 (defun docopt--parse-long-option-separator ()
   "Parse a long option separator."

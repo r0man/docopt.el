@@ -1,4 +1,4 @@
-;;; docopt.el --- A Docopt implementation in Elisp -*- lexical-binding: t -*-
+;;; docopt-standard-input.el --- The Docopt standard input class -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019-2020 r0man
 
@@ -7,7 +7,6 @@
 ;; Created: 29 Feb 2020
 ;; Keywords: docopt, tools, processes
 ;; Homepage: https://github.com/r0man/docopt.el
-;; Version: 0.1.0
 
 ;; This file is not part of GNU Emacs.
 
@@ -26,29 +25,19 @@
 
 ;;; Commentary:
 
-;; A Docopt implementation in Elisp
+;; The Docopt standard input class
 
 ;;; Code:
 
-(require 'docopt-argv)
-(require 'docopt-parser)
-(require 'parsec)
+(require 'eieio)
 
-;;;###autoload
-(defun docopt-parse-program (s)
-  "Parse the Docopt program from S."
-  (parsec-with-input s (docopt--parse-program)))
+(defclass docopt-standard-input () ()
+  "A class representing the Docopt standard input.")
 
-;;;###autoload
-(defun docopt-parse-argv (program s)
-  "Parse the argument vector from S using the Docopt PROGRAM."
-  (docopt--parse-argv program s))
+(defun docopt-make-standard-input ()
+  "Make a new Docopt standard input."
+  (make-instance 'docopt-standard-input))
 
-;;;###autoload
-(defun docopt-parse-argv-alist (program s)
-  "Parse the argument vector from S using the Docopt PROGRAM."
-  (docopt--argv-to-alist (docopt--parse-argv program s)))
+(provide 'docopt-standard-input)
 
-(provide 'docopt)
-
-;;; docopt.el ends here
+;;; docopt-standard-input.el ends here

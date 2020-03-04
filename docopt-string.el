@@ -30,7 +30,16 @@
 ;;; Code:
 
 (require 'cl-lib)
-(require 'docopt-classes)
+(require 'docopt-argument)
+(require 'docopt-command)
+(require 'docopt-either)
+(require 'docopt-group)
+(require 'docopt-option)
+(require 'docopt-option-line)
+(require 'docopt-options-shortcut)
+(require 'docopt-repeated)
+(require 'docopt-standard-input)
+(require 'docopt-usage-pattern)
 (require 's)
 
 (defcustom docopt-string-options-width 20

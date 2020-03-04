@@ -30,9 +30,9 @@
 ;;; Code:
 
 (require 'cl-lib)
-(require 'parsec)
-(require 'docopt-classes)
 (require 'docopt-parser)
+(require 'docopt-util)
+(require 'parsec)
 
 (defun docopt--parsec-error-p (result)
   "Return t if the car of RESULT is a 'parsec-error."

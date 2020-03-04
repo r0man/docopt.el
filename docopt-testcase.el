@@ -31,7 +31,6 @@
 
 
 (require 'cl-lib)
-(require 'docopt-classes)
 (require 'docopt-parser)
 (require 'eieio)
 (require 'json)

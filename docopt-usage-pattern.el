@@ -1,4 +1,4 @@
-;;; docopt.el --- A Docopt implementation in Elisp -*- lexical-binding: t -*-
+;;; docopt-usage-pattern.el --- The Docopt usage pattern class -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019-2020 r0man
 
@@ -7,7 +7,6 @@
 ;; Created: 29 Feb 2020
 ;; Keywords: docopt, tools, processes
 ;; Homepage: https://github.com/r0man/docopt.el
-;; Version: 0.1.0
 
 ;; This file is not part of GNU Emacs.
 
@@ -26,29 +25,29 @@
 
 ;;; Commentary:
 
-;; A Docopt implementation in Elisp
+;; The Docopt usage pattern class
 
 ;;; Code:
 
-(require 'docopt-argv)
-(require 'docopt-parser)
-(require 'parsec)
+(require 'eieio)
 
-;;;###autoload
-(defun docopt-parse-program (s)
-  "Parse the Docopt program from S."
-  (parsec-with-input s (docopt--parse-program)))
+(defclass docopt-usage-pattern ()
+  ((command
+    :initarg :command
+    :initform nil
+    :accessor docopt-usage-pattern-command
+    :documentation "The command of the usage pattern.")
+   (expressions
+    :initarg :expressions
+    :initform nil
+    :accessor docopt-usage-pattern-expressions
+    :documentation "The expressions of the usage pattern."))
+  "A class representing a Docopt usage pattern.")
 
-;;;###autoload
-(defun docopt-parse-argv (program s)
-  "Parse the argument vector from S using the Docopt PROGRAM."
-  (docopt--parse-argv program s))
+(defun docopt-make-usage-pattern (command &rest expressions)
+  "Make a new Docopt usage pattern with COMMAND and EXPRESSIONS."
+  (make-instance 'docopt-usage-pattern :command command :expressions expressions))
 
-;;;###autoload
-(defun docopt-parse-argv-alist (program s)
-  "Parse the argument vector from S using the Docopt PROGRAM."
-  (docopt--argv-to-alist (docopt--parse-argv program s)))
+(provide 'docopt-usage-pattern)
 
-(provide 'docopt)
-
-;;; docopt.el ends here
+;;; docopt-usage-pattern.el ends here

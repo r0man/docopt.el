@@ -1,4 +1,4 @@
-;;; docopt.el --- A Docopt implementation in Elisp -*- lexical-binding: t -*-
+;;; docopt-util.el --- The Docopt utility functions -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019-2020 r0man
 
@@ -7,7 +7,6 @@
 ;; Created: 29 Feb 2020
 ;; Keywords: docopt, tools, processes
 ;; Homepage: https://github.com/r0man/docopt.el
-;; Version: 0.1.0
 
 ;; This file is not part of GNU Emacs.
 
@@ -26,29 +25,17 @@
 
 ;;; Commentary:
 
-;; A Docopt implementation in Elisp
+;; The Docopt utility functions
 
 ;;; Code:
 
-(require 'docopt-argv)
-(require 'docopt-parser)
-(require 'parsec)
+(defun docopt--flatten (list)
+  "Flatten the LIST."
+  (mapcan (lambda (x)
+            (if (listp x)
+                x (list x)))
+          list))
 
-;;;###autoload
-(defun docopt-parse-program (s)
-  "Parse the Docopt program from S."
-  (parsec-with-input s (docopt--parse-program)))
+(provide 'docopt-util)
 
-;;;###autoload
-(defun docopt-parse-argv (program s)
-  "Parse the argument vector from S using the Docopt PROGRAM."
-  (docopt--parse-argv program s))
-
-;;;###autoload
-(defun docopt-parse-argv-alist (program s)
-  "Parse the argument vector from S using the Docopt PROGRAM."
-  (docopt--argv-to-alist (docopt--parse-argv program s)))
-
-(provide 'docopt)
-
-;;; docopt.el ends here
+;;; docopt-util.el ends here
