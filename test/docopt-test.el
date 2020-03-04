@@ -34,7 +34,7 @@
 (require 'test-helper)
 
 (describe "Parsing naval fate"
-  :var ((program (docopt-parse-program docopt-naval-fate)))
+  :var ((program (docopt-parse-program docopt-naval-fate-str)))
 
   (it "should parse the header"
     (expect (docopt-program-header program) :to-equal "Naval Fate."))
@@ -54,38 +54,38 @@
 
   (it "should parse program sections: examples, options, usage"
     (expect (docopt-parse-program
-             (concat docopt-naval-fate-header
-                     docopt-naval-fate-examples "\n"
-                     docopt-naval-fate-options "\n"
-                     docopt-naval-fate-usage "\n"))
+             (concat docopt-naval-fate-header-str
+                     docopt-naval-fate-examples-str "\n"
+                     docopt-naval-fate-options-str "\n"
+                     docopt-naval-fate-usage-str "\n"))
             :to-equal program))
 
   (it "should parse program sections: options, examples, usage"
     (expect (docopt-parse-program
-             (concat docopt-naval-fate-header
-                     docopt-naval-fate-options "\n"
-                     docopt-naval-fate-examples "\n"
-                     docopt-naval-fate-usage "\n"))
+             (concat docopt-naval-fate-header-str
+                     docopt-naval-fate-options-str "\n"
+                     docopt-naval-fate-examples-str "\n"
+                     docopt-naval-fate-usage-str "\n"))
             :to-equal program))
 
   (it "should parse program sections: options, usage, examples"
     (expect (docopt-parse-program
-             (concat docopt-naval-fate-header
-                     docopt-naval-fate-options "\n"
-                     docopt-naval-fate-usage "\n"
-                     docopt-naval-fate-examples "\n"))
+             (concat docopt-naval-fate-header-str
+                     docopt-naval-fate-options-str "\n"
+                     docopt-naval-fate-usage-str "\n"
+                     docopt-naval-fate-examples-str "\n"))
             :to-equal program))
 
   (it "should parse program sections: usage, options, examples"
     (expect (docopt-parse-program
-             (concat docopt-naval-fate-header
-                     docopt-naval-fate-usage "\n"
-                     docopt-naval-fate-options "\n"
-                     docopt-naval-fate-examples "\n"))
+             (concat docopt-naval-fate-header-str
+                     docopt-naval-fate-usage-str "\n"
+                     docopt-naval-fate-options-str "\n"
+                     docopt-naval-fate-examples-str "\n"))
             :to-equal program)))
 
 (describe "Parsing naval fate argument vectors"
-  :var ((program (docopt-parse-program docopt-naval-fate)))
+  :var ((program (docopt-parse-program docopt-naval-fate-str)))
 
   (it "should parse \"naval_fate --help\""
     (expect (docopt-parse-argv program "naval_fate --help")

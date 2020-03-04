@@ -184,7 +184,7 @@
                             (docopt-make-long-option :name "aa")))))
 
 (describe "The `docopt-parse-argv-alist` function"
-  :var ((program (docopt-parse-program docopt-naval-fate)))
+  :var ((program (docopt-parse-program docopt-naval-fate-str)))
 
   (it "should parse \"naval_fate mine set 1 2 --moored\""
     (expect (docopt-parse-argv-alist program "naval_fate mine set 1 2 --moored")

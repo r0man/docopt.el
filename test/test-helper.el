@@ -32,10 +32,10 @@
 (require 'parsec)
 (require 's)
 
-(defvar docopt-naval-fate-header
+(defvar docopt-naval-fate-header-str
   "Naval Fate.\n\n")
 
-(defvar docopt-naval-fate-usage
+(defvar docopt-naval-fate-usage-str
   "Usage:
   naval_fate ship new <name>...
   naval_fate ship <name> move <x> <y> [--speed=<kn>]
@@ -44,7 +44,7 @@
   naval_fate -h | --help
   naval_fate --version")
 
-(defvar docopt-naval-fate-options
+(defvar docopt-naval-fate-options-str
   "Options:
   -h --help     Show this screen.
   --version     Show version.
@@ -52,28 +52,31 @@
   --moored      Moored (anchored) mine.
   --drifting    Drifting mine.")
 
-(defvar docopt-naval-fate-examples
+(defvar docopt-naval-fate-examples-str
   "Examples:
   naval_fate ship new SHIP-123
   naval_fate ship SHIP-123 move 1 2 --speed=10")
 
 (defvar docopt-naval-fate-usage-ast
-  (parsec-with-input docopt-naval-fate-usage
+  (parsec-with-input docopt-naval-fate-usage-str
     (docopt--parse-usage)))
 
 (defvar docopt-naval-fate-options-ast
-  (parsec-with-input docopt-naval-fate-options
+  (parsec-with-input docopt-naval-fate-options-str
     (docopt--parse-options)))
 
 (defvar docopt-naval-fate-examples-ast
-  (parsec-with-input docopt-naval-fate-examples
+  (parsec-with-input docopt-naval-fate-examples-str
     (docopt--parse-examples)))
 
+(defvar docopt-naval-fate-str
+  (concat docopt-naval-fate-header-str
+          docopt-naval-fate-usage-str "\n\n"
+          docopt-naval-fate-options-str "\n\n"
+          docopt-naval-fate-examples-str "\n"))
+
 (defvar docopt-naval-fate
-  (concat docopt-naval-fate-header
-          docopt-naval-fate-usage "\n\n"
-          docopt-naval-fate-options "\n\n"
-          docopt-naval-fate-examples "\n"))
+  (docopt-parse-program docopt-naval-fate-str))
 
 (provide 'test-helper)
 

@@ -35,9 +35,9 @@
 (require 'test-helper)
 
 (describe "Printing naval fate"
-  :var ((program (docopt-parse-program docopt-naval-fate)))
+  :var ((program (docopt-parse-program docopt-naval-fate-str)))
   (it "and parsing it should return the same program"
-    (expect (docopt-parse-program (docopt-string (docopt-parse-program docopt-naval-fate)))
+    (expect (docopt-parse-program (docopt-string (docopt-parse-program docopt-naval-fate-str)))
             :to-equal program)))
 
 ;;; docopt-string-test.el ends here
