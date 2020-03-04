@@ -183,11 +183,11 @@
                             (docopt-make-long-option :name "bb")
                             (docopt-make-long-option :name "aa")))))
 
-(describe "The `docopt-parse-argv-alist` function"
+(describe "The `docopt-eval` function"
   :var ((program (docopt-parse docopt-naval-fate-str)))
 
   (it "should parse \"naval_fate mine set 1 2 --moored\""
-    (expect (docopt-parse-argv-alist program "naval_fate mine set 1 2 --moored")
+    (expect (docopt-eval program "naval_fate mine set 1 2 --moored")
             :to-equal '((mine . t)
                         (set . t)
                         (<x> . "1")
@@ -195,14 +195,14 @@
                         (--moored . t))))
 
   (it "should parse \"naval_fate mine set 1 2\""
-    (expect (docopt-parse-argv-alist program "naval_fate mine set 1 2")
+    (expect (docopt-eval program "naval_fate mine set 1 2")
             :to-equal '((mine . t)
                         (set . t)
                         (<x> . "1")
                         (<y> . "2"))))
 
   (it "should parse \"naval_fate mine set 1 2 --drifting\""
-    (expect (docopt-parse-argv-alist program "naval_fate mine set 1 2 --drifting")
+    (expect (docopt-eval program "naval_fate mine set 1 2 --drifting")
             :to-equal '((mine . t)
                         (set . t)
                         (<x> . "1")
@@ -210,7 +210,7 @@
                         (--drifting . t))))
 
   (it "should parse \"naval_fate ship SHIP-123 move 1 2 --speed=10\""
-    (expect (docopt-parse-argv-alist program "naval_fate ship SHIP-123 move 1 2 --speed=10")
+    (expect (docopt-eval program "naval_fate ship SHIP-123 move 1 2 --speed=10")
             :to-equal '((ship . t)
                         (<name> . "SHIP-123")
                         (move . t)
@@ -220,7 +220,7 @@
 
 (describe "Parsing a program without arguments"
   (it "should return just the program"
-    (expect (docopt-parse-argv-alist (docopt-parse "Usage: prog") "prog")
+    (expect (docopt-eval (docopt-parse "Usage: prog") "prog")
             :to-equal '())))
 
 ;; (docopt--parse-argv-simple-list*

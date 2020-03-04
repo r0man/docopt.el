@@ -88,11 +88,11 @@
   :var ((program (docopt-parse docopt-naval-fate-str)))
 
   (it "should parse \"naval_fate --help\""
-    (expect (docopt-parse-argv program "naval_fate --help")
+    (expect (docopt-eval-ast program "naval_fate --help")
             :to-equal (list (docopt-make-long-option :name "help"))))
 
   (it "should parse \"naval_fate ship SHIP-123 move 1 2 --speed=10\""
-    (expect (docopt-parse-argv program "naval_fate ship SHIP-123 move 1 2 --speed=10")
+    (expect (docopt-eval-ast program "naval_fate ship SHIP-123 move 1 2 --speed=10")
             :to-equal (list (docopt-make-command :name "ship")
                             (docopt-make-argument :name "name" :value "SHIP-123")
                             (docopt-make-command :name "move")

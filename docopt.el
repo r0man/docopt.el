@@ -40,12 +40,12 @@
   (parsec-with-input s (docopt--parse-program)))
 
 ;;;###autoload
-(defun docopt-parse-argv (program s)
+(defun docopt-eval-ast (program s)
   "Parse the argument vector from S using the Docopt PROGRAM."
   (docopt--parse-argv program s))
 
 ;;;###autoload
-(defun docopt-parse-argv-alist (program s)
+(defun docopt-eval (program s)
   "Parse the argument vector from S using the Docopt PROGRAM."
   (docopt--argv-to-alist (docopt--parse-argv program s)))
 
