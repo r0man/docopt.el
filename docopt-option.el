@@ -29,6 +29,7 @@
 
 ;;; Code:
 
+(require 'docopt-generic)
 (require 'docopt-argument)
 (require 'eieio)
 (require 'eieio-base)
@@ -63,6 +64,9 @@
 
 (defclass docopt-short-option (docopt-option) ()
   "A class representing a Docopt short option.")
+
+(cl-defmethod docopt-collect-arguments ((_ docopt-option))
+  "Collect the arguments from the Docopt OPTION." nil)
 
 (defun docopt-option-set-default (option default)
   "Set the default argument value of OPTION to DEFAULT."

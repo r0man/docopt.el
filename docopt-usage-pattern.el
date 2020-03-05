@@ -29,6 +29,7 @@
 
 ;;; Code:
 
+(require 'docopt-generic)
 (require 'eieio)
 
 (defclass docopt-usage-pattern ()
@@ -46,9 +47,19 @@
     :type (or list null)))
   "A class representing a Docopt usage pattern.")
 
+(cl-defmethod docopt-collect-arguments ((usage-pattern docopt-usage-pattern))
+  "Collect the arguments from the Docopt USAGE-PATTERN."
+  (delete-dups (docopt-collect-arguments (docopt-usage-pattern-expressions usage-pattern))))
+
 (defun docopt-make-usage-pattern (command &rest expressions)
   "Make a new Docopt usage pattern with COMMAND and EXPRESSIONS."
   (make-instance 'docopt-usage-pattern :command command :expressions expressions))
+
+(defun docopt-usage-pattern-options (usage-pattern)
+  "Return the options of the USAGE-PATTERN."
+  (seq-mapcat (lambda (expr)
+                (docopt-usage-pattern-expr-option expr))
+              (docopt-usage-pattern-expressions usage-pattern)))
 
 (provide 'docopt-usage-pattern)
 

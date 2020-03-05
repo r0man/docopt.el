@@ -29,11 +29,15 @@
 
 ;;; Code:
 
+(require 'docopt-generic)
 (require 'eieio)
 (require 'eieio-base)
 
 (defclass docopt-command (eieio-named) ()
   "A class representing a Docopt command.")
+
+(cl-defmethod docopt-collect-arguments ((_ docopt-command))
+  "Collect the arguments from the Docopt COMMAND." nil)
 
 (provide 'docopt-command)
 

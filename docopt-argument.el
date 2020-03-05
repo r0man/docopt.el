@@ -29,6 +29,7 @@
 
 ;;; Code:
 
+(require 'docopt-generic)
 (require 'eieio)
 (require 'eieio-base)
 
@@ -46,6 +47,14 @@
     :initform nil
     :type (or string null)))
   "A class representing a Docopt argument.")
+
+(cl-defmethod docopt-collect-arguments ((argument docopt-argument))
+  "Collect the arguments from the Docopt ARGUMENT."
+  (list argument))
+
+(cl-defmethod docopt-collect-arguments ((lst list))
+  "Collect the arguments from the list LST."
+  (delete-dups (docopt--flatten (seq-map #'docopt-collect-arguments lst))))
 
 (provide 'docopt-argument)
 

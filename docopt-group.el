@@ -29,6 +29,7 @@
 
 ;;; Code:
 
+(require 'docopt-generic)
 (require 'eieio)
 
 (defclass docopt-group ()
@@ -57,6 +58,10 @@
 (defun docopt-make-required-group (&rest members)
   "Make a new required Docopt group with MEMBERS."
   (make-instance 'docopt-required-group :members members))
+
+(cl-defmethod docopt-collect-arguments ((group docopt-group))
+  "Collect the arguments from the Docopt GROUP."
+  (docopt-collect-arguments (docopt-group-members group)))
 
 (provide 'docopt-group)
 

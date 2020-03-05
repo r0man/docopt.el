@@ -29,12 +29,19 @@
 
 ;;; Code:
 
+(require 'docopt-generic)
 (require 'docopt-option)
 (require 'eieio)
 (require 'seq)
 
 (defclass docopt-program ()
-  ((header
+  ((arguments
+    :accessor docopt-program-arguments
+    :documentation "The arguments of the program."
+    :initarg :arguments
+    :initform nil
+    :type (or list null))
+   (header
     :accessor docopt-program-header
     :documentation "The header of the program."
     :initarg :header
@@ -65,6 +72,10 @@
     :initform nil
     :type (or list null)))
   "A class representing a Docopt program.")
+
+(cl-defmethod docopt-collect-arguments ((program docopt-program))
+  "Collect the arguments from the Docopt PROGRAM."
+  (delete-dups (seq-mapcat #'docopt-collect-arguments (docopt-program-usage program))))
 
 (defun docopt-program-option (program name)
   "Return the long or short option of PROGRAM by NAME."

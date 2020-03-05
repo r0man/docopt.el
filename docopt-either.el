@@ -29,6 +29,7 @@
 
 ;;; Code:
 
+(require 'docopt-generic)
 (require 'eieio)
 (require 'seq)
 
@@ -48,6 +49,10 @@
 (defun docopt-either-concat (&rest eithers)
   "Return a new either made of the concatenation of the members of EITHERS."
   (apply #'docopt-make-either (seq-mapcat #'docopt-either-members eithers)))
+
+(cl-defmethod docopt-collect-arguments ((either docopt-either))
+  "Collect the arguments from the Docopt EITHER."
+  (delete-dups (seq-mapcat #'docopt-collect-arguments (docopt-either-members either))))
 
 (provide 'docopt-either)
 

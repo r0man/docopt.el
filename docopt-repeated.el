@@ -29,6 +29,7 @@
 
 ;;; Code:
 
+(require 'docopt-generic)
 (require 'eieio)
 
 (defclass docopt-repeated ()
@@ -42,6 +43,10 @@
 (defun docopt-make-repeated (object)
   "Make a new Docopt argument using OBJECT."
   (make-instance 'docopt-repeated :object object))
+
+(cl-defmethod docopt-collect-arguments ((repeated docopt-repeated))
+  "Collect the arguments from the Docopt REPEATED."
+  (docopt-collect-arguments (docopt-repeated-object repeated)))
 
 (provide 'docopt-repeated)
 

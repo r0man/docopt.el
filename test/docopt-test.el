@@ -36,6 +36,12 @@
 (describe "Parsing naval fate"
   :var ((program (docopt-parse docopt-naval-fate-str)))
 
+  (it "should parse the arguments"
+    (expect (docopt-program-arguments program)
+            :to-equal (list (docopt-argument :object-name "name")
+                            (docopt-argument :object-name "x")
+                            (docopt-argument :object-name "y"))))
+
   (it "should parse the header"
     (expect (docopt-program-header program) :to-equal "Naval Fate."))
 

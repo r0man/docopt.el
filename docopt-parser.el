@@ -33,6 +33,7 @@
 (require 'docopt-argument)
 (require 'docopt-command)
 (require 'docopt-either)
+(require 'docopt-generic)
 (require 'docopt-group)
 (require 'docopt-option)
 (require 'docopt-options-shortcut)
@@ -462,6 +463,7 @@ When t, only allow \"=\" as the long option separator, otherwise
     (parsec-and (docopt--parse-program-header program)
                 (docopt--parse-program-sections program))
     (docopt-set-shortcut-options program (docopt-program-options program))
+    (oset program :arguments (docopt-collect-arguments program))
     program))
 
 (provide 'docopt-parser)

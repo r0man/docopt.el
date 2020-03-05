@@ -1,4 +1,4 @@
-;;; docopt-standard-input.el --- The Docopt standard input class -*- lexical-binding: t -*-
+;;; docopt-generic.el --- The Docopt generic functions -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019-2020 r0man
 
@@ -25,19 +25,15 @@
 
 ;;; Commentary:
 
-;; The Docopt standard input class
+;; The Docopt generic functions
 
 ;;; Code:
 
-(require 'docopt-generic)
-(require 'eieio)
+(require 'cl-lib)
 
-(defclass docopt-standard-input () ()
-  "A class representing the Docopt standard input.")
+(cl-defgeneric docopt-collect-arguments (object)
+  "Collect the arguments from the Docopt OBJECT.")
 
-(cl-defmethod docopt-collect-arguments ((_ docopt-standard-input))
-  "Collect the arguments from the Docopt shortcut." nil)
+(provide 'docopt-generic)
 
-(provide 'docopt-standard-input)
-
-;;; docopt-standard-input.el ends here
+;;; docopt-generic.el ends here
