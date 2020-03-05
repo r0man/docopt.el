@@ -31,8 +31,9 @@
 
 (require 'docopt-argument)
 (require 'eieio)
+(require 'eieio-base)
 
-(defclass docopt-option ()
+(defclass docopt-option (eieio-named)
   ((argument
     :accessor docopt-option-argument
     :documentation "The argument of the option."
@@ -44,23 +45,17 @@
     :documentation "The description of the option."
     :initarg :description
     :initform nil
-    :type (or string null))
-   (name
-    :accessor docopt-option-name
-    :documentation "The long name of the option."
-    :initarg :name
-    :initform nil
     :type (or string null)))
   "A class representing a Docopt base option.")
 
 ;;; Long Option
 
-(defclass docopt-long-option (docopt-option) ()
+(defclass docopt-long-option (eieio-named docopt-option) ()
   "A class representing a Docopt long option.")
 
 ;;; Short option
 
-(defclass docopt-short-option (docopt-option) ()
+(defclass docopt-short-option (eieio-named docopt-option) ()
   "A class representing a Docopt short option.")
 
 (defun docopt-option-set-default (option default)

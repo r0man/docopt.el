@@ -122,7 +122,7 @@
 
 (defun docopt--parse-argument-spaceship ()
   "Parse a spaceship argument."
-  (docopt-argument :name (parsec-between
+  (docopt-argument :object-name (parsec-between
                           (parsec-ch ?<) (parsec-ch ?>)
                           (parsec-re "[[:alnum:]][[:alnum:]-_:/ ]*"))))
 
@@ -131,7 +131,7 @@
   (let* ((case-fold-search case-insensitive)
          (name (parsec-return (parsec-re "[A-Z0-9][A-Z0-9/_-]*")
                  (parsec-not-followed-by (parsec-re "[a-z0-9]")))))
-    (docopt-argument :name name)))
+    (docopt-argument :object-name name)))
 
 (defun docopt--parse-argument (&optional case-insensitive)
   "Parse an argument CASE-INSENSITIVE."
@@ -164,7 +164,7 @@ When t, only allow \"=\" as the long option separator, otherwise
         (parsec-try
          (parsec-and (docopt--parse-long-option-separator)
                      (docopt--parse-argument t)))))
-    (docopt-long-option :name name :argument argument)))
+    (docopt-long-option :object-name name :argument argument)))
 
 ;; Short Option
 
@@ -188,12 +188,12 @@ When t, only allow \"=\" as the long option separator, otherwise
            (parsec-and
             (parsec-optional (docopt--parse-short-option-separator))
             (docopt--parse-argument)))))
-      (docopt-short-option :name name :argument argument))))
+      (docopt-short-option :object-name name :argument argument))))
 
 (defun docopt--parse-short-options-stacked ()
   "Parse stacked short options."
   (seq-map (lambda (short-char)
-             (docopt-short-option :name (char-to-string short-char)))
+             (docopt-short-option :object-name (char-to-string short-char)))
            (substring (parsec-re "-[[:alnum:]][[:alnum:]]+") 1)))
 
 ;; Options
@@ -354,7 +354,7 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 (defun docopt--parse-usage-command ()
   "Parse a command in a usage pattern."
-  (docopt-command :name (docopt--parse-command-name)))
+  (docopt-command :object-name (docopt--parse-command-name)))
 
 (defun docopt--parse-usage-header ()
   "Parse the \"Usage:\" header."

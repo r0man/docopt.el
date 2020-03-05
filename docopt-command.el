@@ -30,14 +30,9 @@
 ;;; Code:
 
 (require 'eieio)
+(require 'eieio-base)
 
-(defclass docopt-command ()
-  ((name
-    :accessor docopt-command-name
-    :documentation "The name of the command."
-    :initarg :name
-    :initform nil
-    :type (or string null)))
+(defclass docopt-command (eieio-named) ()
   "A class representing a Docopt command.")
 
 (provide 'docopt-command)

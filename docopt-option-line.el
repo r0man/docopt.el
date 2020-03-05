@@ -61,20 +61,19 @@ slots of the instance."
   (let ((argument (cond
                    ((and argument
                          (object-of-class-p argument 'docopt-argument)) argument)
-                   (argument-name (docopt-argument :name argument-name)))))
-    (make-instance
-     'docopt-option-line
+                   (argument-name (docopt-argument :object-name argument-name)))))
+    (docopt-option-line
      :description description
      :long-option (when long-name
                     (docopt-long-option
+                     long-name
                      :argument argument
-                     :description description
-                     :name long-name))
+                     :description description))
      :short-option (when short-name
                      (docopt-short-option
+                      short-name
                       :argument argument
-                      :description description
-                      :name short-name)))))
+                      :description description)))))
 
 (cl-defgeneric docopt-option-line-matches-p (option-line object)
   "Return t if OBJECT does match OPTION-LINE.")
@@ -86,14 +85,14 @@ slots of the instance."
 (cl-defmethod docopt-option-line-matches-p (option-line (option docopt-long-option))
   "Return t if the long OPTION does match with the one in OPTION-LINE."
   (when-let ((long-option (docopt-option-line-long-option option-line)))
-    (equal (docopt-option-name long-option)
-           (docopt-option-name option))))
+    (equal (oref long-option object-name)
+           (oref option object-name))))
 
 (cl-defmethod docopt-option-line-matches-p (option-line (option docopt-short-option))
   "Return t if the short OPTION does match with the one in OPTION-LINE."
   (when-let ((short-option (docopt-option-line-short-option option-line)))
-    (equal (docopt-option-name short-option)
-           (docopt-option-name option))))
+    (equal (oref short-option object-name)
+           (oref option object-name))))
 
 (provide 'docopt-option-line)
 

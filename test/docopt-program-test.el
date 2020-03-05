@@ -41,11 +41,11 @@
             :to-equal nil))
 
   (it "long option should return nil when not found"
-    (expect (docopt-program-find-option-line docopt-naval-fate (docopt-long-option :name "UNKNOWN"))
+    (expect (docopt-program-find-option-line docopt-naval-fate (docopt-long-option :object-name "UNKNOWN"))
             :to-equal nil))
 
   (it "short option should return nil when not found"
-    (expect (docopt-program-find-option-line docopt-naval-fate (docopt-short-option :name "UNKNOWN"))
+    (expect (docopt-program-find-option-line docopt-naval-fate (docopt-short-option :object-name "UNKNOWN"))
             :to-equal nil))
 
   (it "description should return the option line when found by long option"

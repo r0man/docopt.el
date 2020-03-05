@@ -30,20 +30,15 @@
 ;;; Code:
 
 (require 'eieio)
+(require 'eieio-base)
 
-(defclass docopt-argument ()
+(defclass docopt-argument (eieio-named)
   ((default
      :accessor docopt-argument-default
      :documentation "The default of the argument."
      :initarg :default
      :initform nil
      :type (or string null))
-   (name
-    :accessor docopt-argument-name
-    :documentation "The name of the argument."
-    :initarg :name
-    :initform nil
-    :type (or string null))
    (value
     :accessor docopt-argument-value
     :documentation "The value of the argument."

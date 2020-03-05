@@ -89,17 +89,15 @@
 
   (it "should parse \"naval_fate --help\""
     (expect (docopt-eval-ast program "naval_fate --help")
-            :to-equal (list (docopt-long-option :name "help"))))
+            :to-equal (list (docopt-long-option :object-name "help"))))
 
   (it "should parse \"naval_fate ship SHIP-123 move 1 2 --speed=10\""
     (expect (docopt-eval-ast program "naval_fate ship SHIP-123 move 1 2 --speed=10")
-            :to-equal (list (docopt-command :name "ship")
-                            (docopt-argument :name "name" :value "SHIP-123")
-                            (docopt-command :name "move")
-                            (docopt-argument :name "x" :value "1")
-                            (docopt-argument :name "y" :value "2")
-                            (docopt-long-option
-                             :name "speed"
-                             :argument (docopt-argument :name "kn" :value "10"))))))
+            :to-equal (list (docopt-command :object-name "ship")
+                            (docopt-argument :object-name "name" :value "SHIP-123")
+                            (docopt-command :object-name "move")
+                            (docopt-argument :object-name "x" :value "1")
+                            (docopt-argument :object-name "y" :value "2")
+                            (docopt-long-option :object-name "speed" :argument (docopt-argument :object-name "kn" :value "10"))))))
 
 ;;; docopt-test.el ends here

@@ -92,13 +92,13 @@
   (parsec-collect (parsec-str (concat (cond
                                        ((docopt-long-option-p option) "--")
                                        ((docopt-short-option-p option) "-"))
-                                      (docopt-option-name option)))
+                                      (oref option object-name)))
                   (docopt--parse-argv-option-argument option))
   option)
 
 (cl-defmethod docopt-argv-parser ((command docopt-command))
   "Return an argument vector parser for the COMMAND."
-  (when (parsec-str (docopt-command-name command))
+  (when (parsec-str (oref command object-name))
     command))
 
 (cl-defmethod docopt-argv-parser ((either docopt-either))
@@ -151,19 +151,19 @@
 
 (cl-defmethod docopt--argv-symbol ((argument docopt-argument))
   "Return the symbol for the ARGUMENT in an alist."
-  (intern (concat "<" (docopt-argument-name argument) ">")))
+  (intern (concat "<" (oref argument object-name) ">")))
 
 (cl-defmethod docopt--argv-symbol ((command docopt-command))
   "Return the symbol for the COMMAND in an alist."
-  (intern (docopt-command-name command)))
+  (intern (oref command object-name)))
 
 (cl-defmethod docopt--argv-symbol ((option docopt-long-option))
   "Return the symbol for the long OPTION in an alist."
-  (intern (concat "--" (docopt-option-name option))))
+  (intern (concat "--" (oref option object-name))))
 
 (cl-defmethod docopt--argv-symbol ((option docopt-short-option))
   "Return the symbol for the short OPTION in an alist."
-  (intern (concat "-" (docopt-option-name option))))
+  (intern (concat "-" (oref option object-name))))
 
 ;; alist element
 

@@ -89,11 +89,11 @@
 
 (cl-defmethod docopt-string ((argument docopt-argument))
   "Convert the Docopt usage ARGUMENT to a string."
-  (concat "<" (docopt-argument-name argument) ">"))
+  (concat "<" (oref argument object-name) ">"))
 
 (cl-defmethod docopt-string ((command docopt-command))
   "Convert the Docopt usage COMMAND to a string."
-  (docopt-command-name command))
+  (oref command object-name))
 
 (cl-defmethod docopt-string ((either docopt-either))
   "Convert the Docopt EITHER to a string."
@@ -105,11 +105,11 @@
 
 (cl-defmethod docopt-string ((option docopt-long-option))
   "Convert the Docopt long OPTION to a string."
-  (concat "--" (docopt-option-name option) (docopt-string--option-argument option)))
+  (concat "--" (oref option object-name) (docopt-string--option-argument option)))
 
 (cl-defmethod docopt-string ((option docopt-short-option))
   "Convert the Docopt short OPTION to a string."
-  (concat "-" (docopt-option-name option) (docopt-string--option-argument option)))
+  (concat "-" (oref option object-name) (docopt-string--option-argument option)))
 
 (cl-defmethod docopt-string ((group docopt-optional-group))
   "Convert the Docopt usage GROUP to a string."
