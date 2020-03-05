@@ -50,12 +50,12 @@
 
 ;;; Long Option
 
-(defclass docopt-long-option (eieio-named docopt-option) ()
+(defclass docopt-long-option (docopt-option) ()
   "A class representing a Docopt long option.")
 
 ;;; Short option
 
-(defclass docopt-short-option (eieio-named docopt-option) ()
+(defclass docopt-short-option (docopt-option) ()
   "A class representing a Docopt short option.")
 
 (defun docopt-option-set-default (option default)

@@ -66,12 +66,12 @@ slots of the instance."
      :description description
      :long-option (when long-name
                     (docopt-long-option
-                     long-name
+                     :object-name long-name
                      :argument argument
                      :description description))
      :short-option (when short-name
                      (docopt-short-option
-                      short-name
+                      :object-name short-name
                       :argument argument
                       :description description)))))
 

@@ -123,8 +123,8 @@
 (defun docopt--parse-argument-spaceship ()
   "Parse a spaceship argument."
   (docopt-argument :object-name (parsec-between
-                          (parsec-ch ?<) (parsec-ch ?>)
-                          (parsec-re "[[:alnum:]][[:alnum:]-_:/ ]*"))))
+                                 (parsec-ch ?<) (parsec-ch ?>)
+                                 (parsec-re "[[:alnum:]][[:alnum:]-_:/ ]*"))))
 
 (defun docopt--parse-argument-name (&optional case-insensitive)
   "Parse an argument name CASE-INSENSITIVE."
