@@ -39,25 +39,29 @@
 
 (defclass docopt-testcase-example ()
   ((ast
+    :accessor docopt-testcase-example-ast
+    :documentation "The argument vector of the testcase example."
     :initarg :ast
     :initform nil
-    :accessor docopt-testcase-example-ast
-    :documentation "The argument vector of the testcase example.")
+    :type (or list null))
    (argv
+    :accessor docopt-testcase-example-argv
+    :documentation "The argument vector of the testcase example."
     :initarg :argv
     :initform nil
-    :accessor docopt-testcase-example-argv
-    :documentation "The argument vector of the testcase example.")
+    :type (or string null))
    (actual
+    :accessor docopt-testcase-example-actual
+    :documentation "The actual result of the testcase example."
     :initarg :actual
     :initform nil
-    :accessor docopt-testcase-example-actual
-    :documentation "The actual result of the testcase example.")
+    :type (or list null))
    (expected
+    :accessor docopt-testcase-example-expected
+    :documentation "The expected result of the testcase example."
     :initarg :expected
     :initform nil
-    :accessor docopt-testcase-example-expected
-    :documentation "The expected result of the testcase example."))
+    :type (or list symbol null)))
   "A class representing a Docopt testcase example.")
 
 (defun docopt-make-testcase-example (&rest args)
@@ -66,15 +70,17 @@
 
 (defclass docopt-testcase ()
   ((program
+    :accessor docopt-testcase-program
+    :documentation "The program of the testcase."
     :initarg :program
     :initform nil
-    :accessor docopt-testcase-program
-    :documentation "The program of the testcase.")
+    :type (or docopt-program null))
    (examples
+    :accessor docopt-testcase-examples
+    :documentation "The examples of the testcase."
     :initarg :examples
     :initform nil
-    :accessor docopt-testcase-examples
-    :documentation "The examples of the testcase."))
+    :type (or list null)))
   "A class representing a Docopt testcase.")
 
 (defun docopt-make-testcase (&rest args)

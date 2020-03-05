@@ -44,10 +44,11 @@
 
 (defclass docopt-options-shortcut ()
   ((options
+    :accessor docopt-options-shortcut-options
+    :documentation "The options of the options shortcut."
     :initarg :options
     :initform nil
-    :accessor docopt-options-shortcut-options
-    :documentation "The options of the options shortcut."))
+    :type (or list null)))
   "A class representing a Docopt options shortcut.")
 
 (defun docopt-make-options-shortcut (&rest options)

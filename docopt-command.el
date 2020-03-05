@@ -32,26 +32,12 @@
 (require 'eieio)
 
 (defclass docopt-command ()
-  ((arguments
-    :initarg :arguments
-    :initform nil
-    :accessor docopt-command-arguments
-    :documentation "The arguments of the command.")
-   (name
+  ((name
+    :accessor docopt-command-name
+    :documentation "The name of the command."
     :initarg :name
     :initform nil
-    :accessor docopt-command-name
-    :documentation "The name of the command.")
-   (long-options
-    :initarg :long-options
-    :initform nil
-    :accessor docopt-command-long-options
-    :documentation "The long-options of the command.")
-   (short-options
-    :initarg :short-options
-    :initform nil
-    :accessor docopt-command-short-options
-    :documentation "The short-options of the command."))
+    :type (or string null)))
   "A class representing a Docopt command.")
 
 (defun docopt-make-command (&rest args)

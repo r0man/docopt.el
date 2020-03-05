@@ -33,20 +33,23 @@
 
 (defclass docopt-argument ()
   ((default
+     :accessor docopt-argument-default
+     :documentation "The default of the argument."
      :initarg :default
      :initform nil
-     :accessor docopt-argument-default
-     :documentation "The default of the argument.")
+     :type (or string null))
    (name
+    :accessor docopt-argument-name
+    :documentation "The name of the argument."
     :initarg :name
     :initform nil
-    :accessor docopt-argument-name
-    :documentation "The name of the argument.")
+    :type (or string null))
    (value
+    :accessor docopt-argument-value
+    :documentation "The value of the argument."
     :initarg :value
     :initform nil
-    :accessor docopt-argument-value
-    :documentation "The value of the argument."))
+    :type (or string null)))
   "A class representing a Docopt argument.")
 
 (defun docopt-make-argument (&rest args)

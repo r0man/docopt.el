@@ -34,20 +34,23 @@
 
 (defclass docopt-option ()
   ((argument
+    :accessor docopt-option-argument
+    :documentation "The argument of the option."
     :initarg :argument
     :initform nil
-    :accessor docopt-option-argument
-    :documentation "The argument of the option.")
+    :type (or docopt-argument null))
    (description
+    :accessor docopt-option-description
+    :documentation "The description of the option."
     :initarg :description
     :initform nil
-    :accessor docopt-option-description
-    :documentation "The description of the option.")
+    :type (or string null))
    (name
+    :accessor docopt-option-name
+    :documentation "The long name of the option."
     :initarg :name
     :initform nil
-    :accessor docopt-option-name
-    :documentation "The long name of the option."))
+    :type (or string null)))
   "A class representing a Docopt base option.")
 
 ;;; Long Option

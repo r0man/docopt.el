@@ -29,12 +29,16 @@
 
 ;;; Code:
 
+(require 'eieio)
+(require 'seq)
+
 (defclass docopt-either ()
   ((members
+    :accessor docopt-either-members
+    :documentation "The members of the either."
     :initarg :members
     :initform nil
-    :accessor docopt-either-members
-    :documentation "The members of the either."))
+    :type (or list null)))
   "A class representing a Docopt either.")
 
 (defun docopt-make-either (&rest members)

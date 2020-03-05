@@ -30,24 +30,28 @@
 ;;; Code:
 
 (require 'docopt-argument)
+(require 'docopt-option)
 (require 'eieio)
 
 (defclass docopt-option-line ()
   ((description
+    :accessor docopt-option-line-description
+    :documentation "The description of the option-line."
     :initarg :description
     :initform nil
-    :accessor docopt-option-line-description
-    :documentation "The description of the option-line.")
+    :type (or string null))
    (long-option
+    :accessor docopt-option-line-long-option
+    :documentation "The long name of the option line."
     :initarg :long-option
     :initform nil
-    :accessor docopt-option-line-long-option
-    :documentation "The long name of the option line.")
+    :type (or docopt-long-option null))
    (short-option
+    :accessor docopt-option-line-short-option
+    :documentation "The short name of the option line."
     :initarg :short-option
     :initform nil
-    :accessor docopt-option-line-short-option
-    :documentation "The short name of the option line."))
+    :type (or docopt-short-option null)))
   "A class representing a Docopt option line.")
 
 (cl-defun docopt-make-option-line (&key description long-name short-name argument argument-name)

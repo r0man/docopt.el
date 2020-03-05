@@ -35,30 +35,35 @@
 
 (defclass docopt-program ()
   ((header
+    :accessor docopt-program-header
+    :documentation "The header of the program."
     :initarg :header
     :initform nil
-    :accessor docopt-program-header
-    :documentation "The header of the program.")
+    :type (or string null))
    (examples
+    :accessor docopt-program-examples
+    :documentation "The examples of the program."
     :initarg :examples
     :initform nil
-    :accessor docopt-program-examples
-    :documentation "The examples of the program.")
+    :type (or list null))
    (footer
+    :accessor docopt-program-footer
+    :documentation "The footer of the program."
     :initarg :footer
     :initform nil
-    :accessor docopt-program-footer
-    :documentation "The footer of the program.")
+    :type (or string null))
    (usage
+    :accessor docopt-program-usage
+    :documentation "The usage information of the program."
     :initarg :usage
     :initform nil
-    :accessor docopt-program-usage
-    :documentation "The usage information of the program.")
+    :type (or list null))
    (options
+    :accessor docopt-program-options
+    :documentation "The options of the program."
     :initarg :options
     :initform nil
-    :accessor docopt-program-options
-    :documentation "The options of the program."))
+    :type (or list null)))
   "A class representing a Docopt program.")
 
 (defun docopt-make-program (&rest args)

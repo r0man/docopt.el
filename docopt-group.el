@@ -33,10 +33,11 @@
 
 (defclass docopt-group ()
   ((members
+    :accessor docopt-group-members
+    :documentation "The argument of the option."
     :initarg :members
     :initform nil
-    :accessor docopt-group-members
-    :documentation "The argument of the option."))
+    :type (or list null)))
   "A class representing a Docopt group.")
 
 ;;; Optional Group

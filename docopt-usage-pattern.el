@@ -33,15 +33,17 @@
 
 (defclass docopt-usage-pattern ()
   ((command
+    :accessor docopt-usage-pattern-command
+    :documentation "The command of the usage pattern."
     :initarg :command
     :initform nil
-    :accessor docopt-usage-pattern-command
-    :documentation "The command of the usage pattern.")
+    :type (or docopt-command null))
    (expressions
+    :accessor docopt-usage-pattern-expressions
+    :documentation "The expressions of the usage pattern."
     :initarg :expressions
     :initform nil
-    :accessor docopt-usage-pattern-expressions
-    :documentation "The expressions of the usage pattern."))
+    :type (or list null)))
   "A class representing a Docopt usage pattern.")
 
 (defun docopt-make-usage-pattern (command &rest expressions)
