@@ -249,13 +249,6 @@ When t, only allow \"=\" as the long option separator, otherwise
   (parsec-or (docopt--parse-option-line-long-short-options)
              (docopt--parse-option-line-short-long-options)))
 
-(defun docopt--parse-option-line-set-option (option description default)
-  "Set the :description and :default slots of the OPTION argument to DESCRIPTION and DEFAULT."
-  (when option
-    (oset option :description description)
-    (when-let ((argument (docopt-option-argument option)))
-      (oset argument :default default))))
-
 (defun docopt--parse-option-line ()
   "Parse an option line."
   (seq-let [_ [long-option short-option] _ description]
@@ -265,8 +258,8 @@ When t, only allow \"=\" as the long option separator, otherwise
        (docopt--parse-whitespaces)
        (docopt--parse-option-line-description))
     (let ((default (docopt--parse-default description)))
-      (docopt--parse-option-line-set-option long-option description default)
-      (docopt--parse-option-line-set-option short-option description default)
+      (docopt-option-set-description-and-default long-option description default)
+      (docopt-option-set-description-and-default short-option description default)
       (make-instance
        'docopt-option-line
        :description description

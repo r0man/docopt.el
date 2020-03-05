@@ -29,6 +29,7 @@
 
 ;;; Code:
 
+(require 'docopt-argument)
 (require 'eieio)
 
 (defclass docopt-option ()
@@ -66,6 +67,17 @@
 (defun docopt-make-short-option (&rest args)
   "Make a new Docopt short option using ARGS."
   (apply 'make-instance 'docopt-short-option args))
+
+(defun docopt-option-set-default (option default)
+  "Set the default argument value of OPTION to DEFAULT."
+  (when-let ((argument (docopt-option-argument option)))
+    (oset argument :default default)))
+
+(defun docopt-option-set-description-and-default (option description default)
+  "Set the DESCRIPTION and DEFAULT of the OPTION."
+  (when option
+    (oset option :description description)
+    (docopt-option-set-default option default)))
 
 (provide 'docopt-option)
 
