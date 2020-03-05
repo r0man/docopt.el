@@ -40,10 +40,6 @@
     :type (or string null)))
   "A class representing a Docopt command.")
 
-(defun docopt-make-command (&rest args)
-  "Make a new Docopt command using ARGS."
-  (apply 'make-instance 'docopt-command args))
-
 (provide 'docopt-command)
 
 ;;; docopt-command.el ends here

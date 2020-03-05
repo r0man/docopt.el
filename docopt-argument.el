@@ -52,10 +52,6 @@
     :type (or string null)))
   "A class representing a Docopt argument.")
 
-(defun docopt-make-argument (&rest args)
-  "Make a new Docopt argument using ARGS."
-  (apply 'make-instance 'docopt-argument args))
-
 (provide 'docopt-argument)
 
 ;;; docopt-argument.el ends here

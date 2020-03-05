@@ -38,35 +38,35 @@
   (it "should parse a single line JSON result"
     (expect (parsec-with-input "$ prog\n{\"-a\": false}\n"
               (docopt--parse-testcase-example))
-            :to-equal (docopt-make-testcase-example
+            :to-equal (docopt-testcase-example
                        :argv "prog"
                        :expected '((-a . :json-false)))))
 
   (it "should parse a multi line JSON result"
     (expect (parsec-with-input "$ prog\n{\"-a\": false,\n \"-b\": true}\n"
               (docopt--parse-testcase-example))
-            :to-equal (docopt-make-testcase-example
+            :to-equal (docopt-testcase-example
                        :argv "prog"
                        :expected '((-a . :json-false) (-b . t)))))
 
   (it "should parse a multi line nested JSON result"
     (expect (parsec-with-input "$ prog\n{\"-a\": false,\n \"-b\": {\"c\": 1}}\n"
               (docopt--parse-testcase-example))
-            :to-equal (docopt-make-testcase-example
+            :to-equal (docopt-testcase-example
                        :argv "prog"
                        :expected '((-a . :json-false) (-b (c . 1))))))
 
   (it "should parse a multi line nested JSON result with spaces"
     (expect (parsec-with-input "$ prog\n {\"-a\": false,\n \"-b\": {\"c\": 1 } }\n"
               (docopt--parse-testcase-example))
-            :to-equal (docopt-make-testcase-example
+            :to-equal (docopt-testcase-example
                        :argv "prog"
                        :expected '((-a . :json-false) (-b (c . 1))))))
 
   (it "should parse a user error"
     (expect (parsec-with-input "$ prog --xxx\n\"user-error\""
               (docopt--parse-testcase-example))
-            :to-equal (docopt-make-testcase-example :argv "prog --xxx" :expected 'user-error))))
+            :to-equal (docopt-testcase-example :argv "prog --xxx" :expected 'user-error))))
 
 (describe "The `docopt-testcase-program` parser"
 

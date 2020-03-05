@@ -58,18 +58,10 @@
 (defclass docopt-long-option (docopt-option) ()
   "A class representing a Docopt long option.")
 
-(defun docopt-make-long-option (&rest args)
-  "Make a new Docopt long option using ARGS."
-  (apply 'make-instance 'docopt-long-option args))
-
 ;;; Short option
 
 (defclass docopt-short-option (docopt-option) ()
   "A class representing a Docopt short option.")
-
-(defun docopt-make-short-option (&rest args)
-  "Make a new Docopt short option using ARGS."
-  (apply 'make-instance 'docopt-short-option args))
 
 (defun docopt-option-set-default (option default)
   "Set the default argument value of OPTION to DEFAULT."

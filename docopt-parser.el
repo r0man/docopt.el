@@ -84,7 +84,7 @@
 
 (defun docopt--parse-standard-input ()
   "Parse the Docopt standard input."
-  (when (parsec-str "[-]") (docopt-make-standard-input)))
+  (when (parsec-str "[-]") (docopt-standard-input)))
 
 (defun docopt--parse-space ()
   "Parse a space character."
@@ -122,17 +122,16 @@
 
 (defun docopt--parse-argument-spaceship ()
   "Parse a spaceship argument."
-  (docopt-make-argument
-   :name (parsec-between
-          (parsec-ch ?<) (parsec-ch ?>)
-          (parsec-re "[[:alnum:]][[:alnum:]-_:/ ]*"))))
+  (docopt-argument :name (parsec-between
+                          (parsec-ch ?<) (parsec-ch ?>)
+                          (parsec-re "[[:alnum:]][[:alnum:]-_:/ ]*"))))
 
 (defun docopt--parse-argument-name (&optional case-insensitive)
   "Parse an argument name CASE-INSENSITIVE."
   (let* ((case-fold-search case-insensitive)
          (name (parsec-return (parsec-re "[A-Z0-9][A-Z0-9/_-]*")
                  (parsec-not-followed-by (parsec-re "[a-z0-9]")))))
-    (docopt-make-argument :name name)))
+    (docopt-argument :name name)))
 
 (defun docopt--parse-argument (&optional case-insensitive)
   "Parse an argument CASE-INSENSITIVE."
@@ -165,7 +164,7 @@ When t, only allow \"=\" as the long option separator, otherwise
         (parsec-try
          (parsec-and (docopt--parse-long-option-separator)
                      (docopt--parse-argument t)))))
-    (docopt-make-long-option :name name :argument argument)))
+    (docopt-long-option :name name :argument argument)))
 
 ;; Short Option
 
@@ -189,12 +188,12 @@ When t, only allow \"=\" as the long option separator, otherwise
            (parsec-and
             (parsec-optional (docopt--parse-short-option-separator))
             (docopt--parse-argument)))))
-      (docopt-make-short-option :name name :argument argument))))
+      (docopt-short-option :name name :argument argument))))
 
 (defun docopt--parse-short-options-stacked ()
   "Parse stacked short options."
   (seq-map (lambda (short-char)
-             (docopt-make-short-option :name (char-to-string short-char)))
+             (docopt-short-option :name (char-to-string short-char)))
            (substring (parsec-re "-[[:alnum:]][[:alnum:]]+") 1)))
 
 ;; Options
@@ -355,7 +354,7 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 (defun docopt--parse-usage-command ()
   "Parse a command in a usage pattern."
-  (docopt-make-command :name (docopt--parse-command-name)))
+  (docopt-command :name (docopt--parse-command-name)))
 
 (defun docopt--parse-usage-header ()
   "Parse the \"Usage:\" header."
@@ -466,7 +465,7 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 (defun docopt--parse-program ()
   "Parse a Docopt program."
-  (let ((program (docopt-make-program)))
+  (let ((program (docopt-program)))
     (parsec-and (docopt--parse-program-header program)
                 (docopt--parse-program-sections program))
     (docopt-set-shortcut-options program (docopt-program-options-list program))

@@ -34,10 +34,6 @@
 (defclass docopt-standard-input () ()
   "A class representing the Docopt standard input.")
 
-(defun docopt-make-standard-input ()
-  "Make a new Docopt standard input."
-  (make-instance 'docopt-standard-input))
-
 (provide 'docopt-standard-input)
 
 ;;; docopt-standard-input.el ends here

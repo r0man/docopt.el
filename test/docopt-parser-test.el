@@ -85,19 +85,19 @@
 
   (it "should parse a spaceship argument"
     (expect (parsec-with-input "<host>" (docopt--parse-argument))
-            :to-equal (docopt-make-argument :name "host")))
+            :to-equal (docopt-argument :name "host")))
 
   (it "should parse a spaceship argument containing a slash"
     (expect (parsec-with-input "<km/h>" (docopt--parse-argument))
-            :to-equal (docopt-make-argument :name "km/h")))
+            :to-equal (docopt-argument :name "km/h")))
 
   (it "should parse an upper case argument"
     (expect (parsec-with-input "HOST" (docopt--parse-argument))
-            :to-equal (docopt-make-argument :name "HOST")))
+            :to-equal (docopt-argument :name "HOST")))
 
   (it "should parse a upper case argument containing a slash"
     (expect (parsec-with-input "KM/H" (docopt--parse-argument))
-            :to-equal (docopt-make-argument :name "KM/H"))))
+            :to-equal (docopt-argument :name "KM/H"))))
 
 (describe "The default parser"
 
@@ -124,36 +124,36 @@
 
   (it "should parse an option without an argument"
     (expect (parsec-with-input "--help" (docopt--parse-long-option))
-            :to-equal (docopt-make-long-option :name "help")))
+            :to-equal (docopt-long-option :name "help")))
 
   (it "should parse an option with a space separated argument"
     (expect (parsec-with-input "--path PATH" (docopt--parse-long-option))
-            :to-equal (docopt-make-long-option
-                       :argument (docopt-make-argument :name "PATH")
+            :to-equal (docopt-long-option
+                       :argument (docopt-argument :name "PATH")
                        :name "path")))
 
   (it "should parse an option with a space separated spaceship argument"
     (expect (parsec-with-input "--path <path>" (docopt--parse-long-option))
-            :to-equal (docopt-make-long-option
-                       :argument (docopt-make-argument :name "path")
+            :to-equal (docopt-long-option
+                       :argument (docopt-argument :name "path")
                        :name "path")))
 
   (it "should parse an option with a \"=\" separated upper case argument"
     (expect (parsec-with-input "--path=PATH" (docopt--parse-long-option))
-            :to-equal (docopt-make-long-option
-                       :argument (docopt-make-argument :name "PATH")
+            :to-equal (docopt-long-option
+                       :argument (docopt-argument :name "PATH")
                        :name "path")))
 
   (it "should parse an option with a \"=\" separated lower case argument"
     (expect (parsec-with-input "--path=path" (docopt--parse-long-option))
-            :to-equal (docopt-make-long-option
-                       :argument (docopt-make-argument :name "path")
+            :to-equal (docopt-long-option
+                       :argument (docopt-argument :name "path")
                        :name "path")))
 
   (it "should parse an option with a \"=\" separated spaceship argument"
     (expect (parsec-with-input "--path=<path>" (docopt--parse-long-option))
-            :to-equal (docopt-make-long-option
-                       :argument (docopt-make-argument :name "path")
+            :to-equal (docopt-long-option
+                       :argument (docopt-argument :name "path")
                        :name "path"))))
 
 
@@ -161,18 +161,18 @@
 
   (it "should parse an option without an argument"
     (expect (parsec-with-input "-h" (docopt--parse-short-option))
-            :to-equal (docopt-make-short-option :name "h")))
+            :to-equal (docopt-short-option :name "h")))
 
   (it "should parse an option with a space separated argument"
     (expect (parsec-with-input "-p PATH" (docopt--parse-short-option))
-            :to-equal (docopt-make-short-option
-                       :argument (docopt-make-argument :name "PATH")
+            :to-equal (docopt-short-option
+                       :argument (docopt-argument :name "PATH")
                        :name "p")))
 
   (it "should parse an option with a not separated argument"
     (expect (parsec-with-input "-pPATH" (docopt--parse-short-option))
-            :to-equal (docopt-make-short-option
-                       :argument (docopt-make-argument :name "PATH")
+            :to-equal (docopt-short-option
+                       :argument (docopt-argument :name "PATH")
                        :name "p"))))
 
 (describe "The option line description parser"
@@ -193,16 +193,16 @@
 
   (it "should parse short option only"
     (expect (parsec-with-input "-h  Show this help." (docopt--parse-option-line-options))
-            :to-equal (list nil (docopt-make-short-option :name "h"))))
+            :to-equal (list nil (docopt-short-option :name "h"))))
 
   (it "should parse long option only"
     (expect (parsec-with-input "--help  Show this help." (docopt--parse-option-line-options))
-            :to-equal (list (docopt-make-long-option :name "help") nil)))
+            :to-equal (list (docopt-long-option :name "help") nil)))
 
   (it "should parse short options first"
     (expect (parsec-with-input "-h, --help  Show this help." (docopt--parse-option-line-options))
-            :to-equal (list (docopt-make-long-option :name "help")
-                            (docopt-make-short-option :name "h"))))
+            :to-equal (list (docopt-long-option :name "help")
+                            (docopt-short-option :name "h"))))
 
   (it "should parse short options first with minimal spacing"
     (expect (parsec-with-input "-h,--help Show this help." (docopt--parse-option-line-options))
@@ -210,13 +210,13 @@
 
   (it "should parse long options first"
     (expect (parsec-with-input "--help, -h  Show this help." (docopt--parse-option-line-options))
-            :to-equal (list (docopt-make-long-option :name "help")
-                            (docopt-make-short-option :name "h"))))
+            :to-equal (list (docopt-long-option :name "help")
+                            (docopt-short-option :name "h"))))
 
   (it "should parse long options first with minimal spacing"
     (expect (parsec-with-input "--help,-h Show this help." (docopt--parse-option-line-options))
-            :to-equal (list (docopt-make-long-option :name "help")
-                            (docopt-make-short-option :name "h")))))
+            :to-equal (list (docopt-long-option :name "help")
+                            (docopt-short-option :name "h")))))
 
 (describe "The option line parser"
 
@@ -265,14 +265,14 @@
   (it "should parse a short option with a default argument"
     (expect (parsec-with-input "-c K  The K coefficient [default: 2.95]" (docopt--parse-option-line))
             :to-equal (docopt-make-option-line
-                       :argument (docopt-make-argument :name "K" :default "2.95")
+                       :argument (docopt-argument :name "K" :default "2.95")
                        :description "The K coefficient [default: 2.95]"
                        :short-name "c")))
 
   (it "should parse a long option with a default argument"
     (expect (parsec-with-input "--coefficient=K  The K coefficient [default: 2.95]" (docopt--parse-option-line))
             :to-equal (docopt-make-option-line
-                       :argument (docopt-make-argument :name "K" :default "2.95")
+                       :argument (docopt-argument :name "K" :default "2.95")
                        :description "The K coefficient [default: 2.95]"
                        :long-name "coefficient"))))
 
@@ -311,71 +311,71 @@
 (describe "Parsing stacked short options"
   (it "should return a list of short options"
     (expect (parsec-with-input "-abc" (docopt--parse-short-options-stacked))
-            :to-equal (list (docopt-make-short-option :name "a")
-                            (docopt-make-short-option :name "b")
-                            (docopt-make-short-option :name "c")))))
+            :to-equal (list (docopt-short-option :name "a")
+                            (docopt-short-option :name "b")
+                            (docopt-short-option :name "c")))))
 
 (describe "The usage pattern expression parser"
 
   (it "should parse standard input"
     (expect (parsec-with-input "[-]" (docopt--parse-usage-expr))
-            :to-equal (list (docopt-make-standard-input))))
+            :to-equal (list (docopt-standard-input))))
 
   (it "should parse an upper case argument"
     (expect (parsec-with-input "ARG" (docopt--parse-usage-expr))
-            :to-equal (list (docopt-make-argument :name "ARG"))))
+            :to-equal (list (docopt-argument :name "ARG"))))
 
   (it "should parse a spaceship argument"
     (expect (parsec-with-input "<ARG>" (docopt--parse-usage-expr))
-            :to-equal (list (docopt-make-argument :name "ARG"))))
+            :to-equal (list (docopt-argument :name "ARG"))))
 
   (it "should parse a spaceship argument with double colon"
     (expect (parsec-with-input "<host:port>" (docopt--parse-usage-expr))
-            :to-equal (list (docopt-make-argument :name "host:port"))))
+            :to-equal (list (docopt-argument :name "host:port"))))
 
   (it "should parse a spaceship argument with whitespace"
     (expect (parsec-with-input "<input file>" (docopt--parse-usage-expr))
-            :to-equal (list (docopt-make-argument :name "input file"))))
+            :to-equal (list (docopt-argument :name "input file"))))
 
   (it "should parse a repeatable argument"
     (expect (parsec-with-input "ARG..." (docopt--parse-usage-expr))
-            :to-equal (list (docopt-make-repeated (docopt-make-argument :name "ARG")))))
+            :to-equal (list (docopt-make-repeated (docopt-argument :name "ARG")))))
 
   (it "should parse a repeatable argument with whitespace"
     (expect (parsec-with-input "ARG ..." (docopt--parse-usage-expr))
-            :to-equal (list (docopt-make-repeated (docopt-make-argument :name "ARG")))))
+            :to-equal (list (docopt-make-repeated (docopt-argument :name "ARG")))))
 
   (it "should parse an optional spaceship argument"
     (expect (parsec-with-input "[<ARG>]" (docopt--parse-usage-expr))
-            :to-equal (list (docopt-make-optional-group (docopt-make-argument :name "ARG")))))
+            :to-equal (list (docopt-make-optional-group (docopt-argument :name "ARG")))))
 
   (it "should parse a required spaceship argument"
     (expect (parsec-with-input "(<ARG>)" (docopt--parse-usage-expr))
-            :to-equal (list (docopt-make-required-group (docopt-make-argument :name "ARG")))))
+            :to-equal (list (docopt-make-required-group (docopt-argument :name "ARG")))))
 
   (it "should parse an optional upper case argument"
     (expect (parsec-with-input "[ARG]" (docopt--parse-usage-expr))
-            :to-equal (list (docopt-make-optional-group (docopt-make-argument :name "ARG")))))
+            :to-equal (list (docopt-make-optional-group (docopt-argument :name "ARG")))))
 
   (it "should parse an optional with multiple members"
     (expect (parsec-with-input "[ARG-1 ARG-2]" (docopt--parse-usage-expr))
             :to-equal (list (docopt-make-optional-group
-                             (docopt-make-argument :name "ARG-1")
-                             (docopt-make-argument :name "ARG-2")))))
+                             (docopt-argument :name "ARG-1")
+                             (docopt-argument :name "ARG-2")))))
 
   (it "should parse a required group with upper case argument"
     (expect (parsec-with-input "(ARG)" (docopt--parse-usage-expr))
-            :to-equal (list (docopt-make-required-group (docopt-make-argument :name "ARG")))))
+            :to-equal (list (docopt-make-required-group (docopt-argument :name "ARG")))))
 
   (it "should parse a required group with upper case argument and whitespace"
     (expect (parsec-with-input "(  ARG  )" (docopt--parse-usage-expr))
-            :to-equal (list (docopt-make-required-group (docopt-make-argument :name "ARG")))))
+            :to-equal (list (docopt-make-required-group (docopt-argument :name "ARG")))))
 
   (it "should parse a required group with multiple members"
     (expect (parsec-with-input "(ARG-1 ARG-2)" (docopt--parse-usage-expr))
             :to-equal (list (docopt-make-required-group
-                             (docopt-make-argument :name "ARG-1")
-                             (docopt-make-argument :name "ARG-2")))))
+                             (docopt-argument :name "ARG-1")
+                             (docopt-argument :name "ARG-2")))))
 
   (it "should parse stacked short options"
     (expect (parsec-with-input "-abc" (docopt--parse-usage-expr))
@@ -392,55 +392,55 @@
   (it "should parse an optional long option"
     (expect (parsec-with-input "[--help TOPIC]" (docopt--parse-usage-expr))
             :to-equal (list (docopt-make-optional-group
-                             (docopt-make-long-option
-                              :argument (docopt-make-argument :name "TOPIC")
+                             (docopt-long-option
+                              :argument (docopt-argument :name "TOPIC")
                               :name "help"
                               )))))
 
   (it "should parse a required long option"
     (expect (parsec-with-input "(--help TOPIC)" (docopt--parse-usage-expr))
             :to-equal (list (docopt-make-required-group
-                             (docopt-make-long-option
-                              :argument (docopt-make-argument :name "TOPIC")
+                             (docopt-long-option
+                              :argument (docopt-argument :name "TOPIC")
                               :name "help")))))
 
   (it "should parse a repeatable long option"
     (expect (parsec-with-input "--help TOPIC..." (docopt--parse-usage-expr))
             :to-equal (list (docopt-make-repeated
-                             (docopt-make-long-option
-                              :argument (docopt-make-argument :name "TOPIC")
+                             (docopt-long-option
+                              :argument (docopt-argument :name "TOPIC")
                               :name "help")))))
 
   (it "should parse an optional short option"
     (expect (parsec-with-input "[-h]" (docopt--parse-usage-expr))
             :to-equal (list (docopt-make-optional-group
-                             (docopt-make-short-option :name "h")))))
+                             (docopt-short-option :name "h")))))
 
   (it "should parse a required short option"
     (expect (parsec-with-input "(-h)" (docopt--parse-usage-expr))
             :to-equal (list (docopt-make-required-group
-                             (docopt-make-short-option :name "h")))))
+                             (docopt-short-option :name "h")))))
 
   (it "should parse mutually exclusive options"
     (expect (parsec-with-input "-h | --help" (docopt--parse-usage-expr))
             :to-equal (list (docopt-make-either
-                             (list (docopt-make-short-option :name "h"))
-                             (list (docopt-make-long-option :name "help"))))))
+                             (list (docopt-short-option :name "h"))
+                             (list (docopt-long-option :name "help"))))))
 
   (it "should parse nested expressions"
     (expect (parsec-with-input "(N [M | (K | L)] | O P)" (docopt--parse-usage-expr))
             :to-equal (list (docopt-make-required-group
                              (docopt-make-either
-                              (list (docopt-make-argument :name "N")
+                              (list (docopt-argument :name "N")
                                     (docopt-make-optional-group
                                      (docopt-make-either
-                                      (list (docopt-make-argument :name "M"))
+                                      (list (docopt-argument :name "M"))
                                       (list (docopt-make-required-group
                                              (docopt-make-either
-                                              (list (docopt-make-argument :name "K"))
-                                              (list (docopt-make-argument :name "L"))))))))
-                              (list (docopt-make-argument :name "O")
-                                    (docopt-make-argument :name "P"))))))))
+                                              (list (docopt-argument :name "K"))
+                                              (list (docopt-argument :name "L"))))))))
+                              (list (docopt-argument :name "O")
+                                    (docopt-argument :name "P"))))))))
 
 (describe "The usage pattern parser"
 
@@ -448,13 +448,13 @@
     (expect (parsec-with-input "Usage: prog"
               (docopt--parse-usage))
             :to-equal (list (docopt-make-usage-pattern
-                             (docopt-make-command :name "prog")))))
+                             (docopt-command :name "prog")))))
 
   (it "should parse the options shortcut"
     (expect (parsec-with-input "Usage: prog [options]"
               (docopt--parse-usage))
             :to-equal (list (docopt-make-usage-pattern
-                             (docopt-make-command :name "prog")
+                             (docopt-command :name "prog")
                              (docopt-make-options-shortcut)))))
 
   (it "should parse a spaceship argument"
@@ -463,20 +463,20 @@
                         "       naval_fate ship <name> move <x> <y> [--speed=<kn>]")
               (docopt--parse-usage))
             :to-equal (list (docopt-make-usage-pattern
-                             (docopt-make-command :name "naval_fate")
-                             (docopt-make-command :name "ship")
-                             (docopt-make-command :name "new")
-                             (docopt-make-repeated (docopt-make-argument :name "name")))
+                             (docopt-command :name "naval_fate")
+                             (docopt-command :name "ship")
+                             (docopt-command :name "new")
+                             (docopt-make-repeated (docopt-argument :name "name")))
                             (docopt-make-usage-pattern
-                             (docopt-make-command :name "naval_fate")
-                             (docopt-make-command :name "ship")
-                             (docopt-make-argument :name "name")
-                             (docopt-make-command :name "move")
-                             (docopt-make-argument :name "x")
-                             (docopt-make-argument :name "y")
+                             (docopt-command :name "naval_fate")
+                             (docopt-command :name "ship")
+                             (docopt-argument :name "name")
+                             (docopt-command :name "move")
+                             (docopt-argument :name "x")
+                             (docopt-argument :name "y")
                              (docopt-make-optional-group
-                              (docopt-make-long-option
-                               :argument (docopt-make-argument :name "kn")
+                              (docopt-long-option
+                               :argument (docopt-argument :name "kn")
                                :name "speed"
                                ))))))
 
@@ -484,7 +484,7 @@
     (expect (parsec-with-input "Usage: naval_fate -h | --help"
               (docopt--parse-usage))
             :to-equal (list (docopt-make-usage-pattern
-                             (docopt-make-command :name "naval_fate")
+                             (docopt-command :name "naval_fate")
                              (docopt-make-either
                               (list (docopt-short-option :name "h"))
                               (list (docopt-long-option :name "help")))))))
@@ -493,58 +493,58 @@
     (expect (parsec-with-input "Usage: naval_fate mine (set many | remove all) <x> <y> [--moored|--drifting]"
               (docopt--parse-usage))
             :to-equal (list (docopt-make-usage-pattern
-                             (docopt-make-command :name "naval_fate")
-                             (docopt-make-command :name "mine")
+                             (docopt-command :name "naval_fate")
+                             (docopt-command :name "mine")
                              (docopt-make-required-group
                               (docopt-make-either
-                               (list (docopt-make-command :name "set")
-                                     (docopt-make-command :name "many"))
-                               (list (docopt-make-command :name "remove")
-                                     (docopt-make-command :name "all"))))
-                             (docopt-make-argument :name "x")
-                             (docopt-make-argument :name "y")
+                               (list (docopt-command :name "set")
+                                     (docopt-command :name "many"))
+                               (list (docopt-command :name "remove")
+                                     (docopt-command :name "all"))))
+                             (docopt-argument :name "x")
+                             (docopt-argument :name "y")
                              (docopt-make-optional-group
                               (docopt-make-either
-                               (list (docopt-make-long-option :name "moored"))
-                               (list (docopt-make-long-option :name "drifting"))))))))
+                               (list (docopt-long-option :name "moored"))
+                               (list (docopt-long-option :name "drifting"))))))))
 
   (it "should parse \"Usage: naval_fate mine (set|remove) <x> <y> [--moored|--drifting]"
     (expect (parsec-with-input "Usage: naval_fate mine (set|remove) <x> <y> [--moored|--drifting]"
               (docopt--parse-usage))
             :to-equal (list (docopt-make-usage-pattern
-                             (docopt-make-command :name "naval_fate")
-                             (docopt-make-command :name "mine")
+                             (docopt-command :name "naval_fate")
+                             (docopt-command :name "mine")
                              (docopt-make-required-group
                               (docopt-make-either
-                               (list (docopt-make-command :name "set"))
-                               (list (docopt-make-command :name "remove"))))
-                             (docopt-make-argument :name "x")
-                             (docopt-make-argument :name "y")
+                               (list (docopt-command :name "set"))
+                               (list (docopt-command :name "remove"))))
+                             (docopt-argument :name "x")
+                             (docopt-argument :name "y")
                              (docopt-make-optional-group
                               (docopt-make-either
-                               (list (docopt-make-long-option :name "moored"))
-                               (list (docopt-make-long-option :name "drifting")))))))))
+                               (list (docopt-long-option :name "moored"))
+                               (list (docopt-long-option :name "drifting")))))))))
 
 (describe "The program parser"
 
   (it "should parse \"PROGRAM Usage: prog --foo\""
     (expect (parsec-with-input "PROGRAM Usage: prog --foo"
               (docopt--parse-program))
-            :to-equal (docopt-make-program
+            :to-equal (docopt-program
                        :header "PROGRAM"
                        :usage (list (docopt-make-usage-pattern
-                                     (docopt-make-command :name "prog")
-                                     (docopt-make-long-option :name "foo"))))))
+                                     (docopt-command :name "prog")
+                                     (docopt-long-option :name "foo"))))))
 
   (it "should parse \"Usage: prog [options]\n\nOptions: -a,--all  All.\""
     (expect (parsec-with-input "Usage: prog [options]\n\nOptions: -a,--all  All."
               (docopt--parse-program))
-            :to-equal (docopt-make-program
+            :to-equal (docopt-program
                        :usage (list (docopt-make-usage-pattern
-                                     (docopt-make-command :name "prog")
+                                     (docopt-command :name "prog")
                                      (docopt-make-options-shortcut
-                                      (list (docopt-make-long-option :name "all" :description "All.")
-                                            (docopt-make-short-option :name "a" :description "All.")))))
+                                      (list (docopt-long-option :name "all" :description "All.")
+                                            (docopt-short-option :name "a" :description "All.")))))
                        :options (list (docopt-make-option-line
                                        :description "All."
                                        :short-name "a"

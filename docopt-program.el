@@ -66,10 +66,6 @@
     :type (or list null)))
   "A class representing a Docopt program.")
 
-(defun docopt-make-program (&rest args)
-  "Make a new Docopt program using ARGS."
-  (apply 'make-instance 'docopt-program args))
-
 (defun docopt-program-options-list (program)
   "Return a list of long/short option pairs of the Docopt PROGRAM."
   (seq-map (lambda (option-line)

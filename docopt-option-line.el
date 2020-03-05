@@ -61,17 +61,17 @@ slots of the instance."
   (let ((argument (cond
                    ((and argument
                          (object-of-class-p argument 'docopt-argument)) argument)
-                   (argument-name (docopt-make-argument :name argument-name)))))
+                   (argument-name (docopt-argument :name argument-name)))))
     (make-instance
      'docopt-option-line
      :description description
      :long-option (when long-name
-                    (docopt-make-long-option
+                    (docopt-long-option
                      :argument argument
                      :description description
                      :name long-name))
      :short-option (when short-name
-                     (docopt-make-short-option
+                     (docopt-short-option
                       :argument argument
                       :description description
                       :name short-name)))))

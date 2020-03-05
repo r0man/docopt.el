@@ -64,10 +64,6 @@
     :type (or list symbol null)))
   "A class representing a Docopt testcase example.")
 
-(defun docopt-make-testcase-example (&rest args)
-  "Make a new Docopt testcase example using ARGS."
-  (apply 'make-instance 'docopt-testcase-example args))
-
 (defclass docopt-testcase ()
   ((program
     :accessor docopt-testcase-program
@@ -82,10 +78,6 @@
     :initform nil
     :type (or list null)))
   "A class representing a Docopt testcase.")
-
-(defun docopt-make-testcase (&rest args)
-  "Make a new Docopt testcase using ARGS."
-  (apply 'make-instance 'docopt-testcase args))
 
 (defun docopt--parse-testcase-comment ()
   "Parse a Docopt testcase comment."
@@ -188,7 +180,7 @@
        (parsec-and (parsec-try (docopt--parse-testcase-blank-lines))
                    (docopt--parse-testcase-program))
        (docopt--parse-testcase-examples))
-    (docopt-make-testcase :program program :examples examples)))
+    (docopt-testcase :program program :examples examples)))
 
 (defun docopt--parse-testcases ()
   "Parse Docopt testcases."

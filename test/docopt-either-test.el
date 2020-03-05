@@ -36,15 +36,15 @@
 (describe "Concatenate the members of eithers"
   (it "should concatenate the members"
     (expect (docopt-either-concat
-             (docopt-make-either (docopt-make-argument "A")
-                                 (docopt-make-argument "B"))
-             (docopt-make-either (docopt-make-argument "C"))
-             (docopt-make-either (docopt-make-argument "D")))
+             (docopt-make-either (docopt-argument :name "A")
+                                 (docopt-argument :name "B"))
+             (docopt-make-either (docopt-argument :name "C"))
+             (docopt-make-either (docopt-argument :name "D")))
             :to-equal
             (docopt-make-either
-             (docopt-make-argument "A")
-             (docopt-make-argument "B")
-             (docopt-make-argument "C")
-             (docopt-make-argument "D")))))
+             (docopt-argument :name "A")
+             (docopt-argument :name "B")
+             (docopt-argument :name "C")
+             (docopt-argument :name "D")))))
 
 ;;; docopt-either-test.el ends here
