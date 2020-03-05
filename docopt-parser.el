@@ -35,7 +35,6 @@
 (require 'docopt-either)
 (require 'docopt-group)
 (require 'docopt-option)
-(require 'docopt-option-line)
 (require 'docopt-options-shortcut)
 (require 'docopt-repeated)
 (require 'docopt-standard-input)
@@ -257,17 +256,11 @@ When t, only allow \"=\" as the long option separator, otherwise
        (docopt--parse-whitespaces)
        (docopt--parse-option-line-description))
     (let ((default (docopt--parse-default description)))
-      (docopt-option-set-description-and-default long-option description default)
-      (docopt-option-set-description-and-default short-option description default)
-      (make-instance
-       'docopt-option-line
-       :description description
-       :long-option long-option
-       :short-option short-option))))
+      (seq-remove #'null (docopt-option-link long-option short-option description default)))))
 
 (defun docopt--parse-option-lines ()
   "Parse an option lines."
-  (parsec-many (docopt--parse-option-line)))
+  (apply #'append (parsec-many (docopt--parse-option-line))))
 
 (defun docopt--parse-options ()
   "Parse the options."
@@ -468,7 +461,7 @@ When t, only allow \"=\" as the long option separator, otherwise
   (let ((program (docopt-program)))
     (parsec-and (docopt--parse-program-header program)
                 (docopt--parse-program-sections program))
-    (docopt-set-shortcut-options program (docopt-program-options-list program))
+    (docopt-set-shortcut-options program (docopt-program-options program))
     program))
 
 (provide 'docopt-parser)

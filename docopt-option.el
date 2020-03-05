@@ -45,6 +45,12 @@
     :documentation "The description of the option."
     :initarg :description
     :initform nil
+    :type (or string null))
+   (synonym
+    :accessor docopt-option-synonym
+    :documentation "The synonym of the option."
+    :initarg :synonym
+    :initform nil
     :type (or string null)))
   "A class representing a Docopt base option.")
 
@@ -68,6 +74,42 @@
   (when option
     (oset option :description description)
     (docopt-option-set-default option default)))
+
+(defun docopt-option-set-synonym (option synonym)
+  "Set the :synonym slot of OPTION to :object-name of SYNONYM."
+  (when (and option synonym)
+    (oset option :synonym (oref synonym :object-name))))
+
+(defun docopt-option-link (long-option short-option description default)
+  "Link LONG-OPTION and SHORT-OPTION using DESCRIPTION and DEFAULT."
+  (when long-option
+    (docopt-option-set-description-and-default long-option description default)
+    (docopt-option-set-synonym long-option short-option))
+  (when short-option
+    (docopt-option-set-description-and-default short-option description default)
+    (docopt-option-set-synonym short-option long-option))
+  (list long-option short-option))
+
+(cl-defun docopt-make-options (&key description default long-name short-name argument argument-name)
+  "Make a new Docopt option line instance.
+
+Initialize the DESCRIPTION, DEFAULT, LONG-NAME, SHORT-NAME,
+ARGUMENT and ARGUMENT-NAME slots of the instance."
+  (let* ((argument (cond
+                    ((and argument
+                          (object-of-class-p argument 'docopt-argument)) argument)
+                    (argument-name (docopt-argument :object-name argument-name))))
+         (long-option (when long-name
+                        (docopt-long-option
+                         :object-name long-name
+                         :argument argument
+                         :description description)))
+         (short-option (when short-name
+                         (docopt-short-option
+                          :object-name short-name
+                          :argument argument
+                          :description description))))
+    (seq-remove #'null (docopt-option-link long-option short-option description default))))
 
 (provide 'docopt-option)
 

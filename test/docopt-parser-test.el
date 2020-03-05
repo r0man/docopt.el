@@ -208,73 +208,75 @@
 
   (it "should parse a short option without an argument"
     (expect (parsec-with-input "-h  Show this help." (docopt--parse-option-line))
-            :to-equal (docopt-make-option-line :description "Show this help." :short-name "h")))
+            :to-equal (docopt-make-options :description "Show this help." :short-name "h")))
 
   (it "should parse a short and long option without an argument"
     (expect (parsec-with-input "-h, --help  Show this help." (docopt--parse-option-line))
-            :to-equal (docopt-make-option-line :description "Show this help." :long-name "help" :short-name "h")))
+            :to-equal (docopt-make-options :description "Show this help." :long-name "help" :short-name "h")))
 
   (it "should parse a short option with a space separated argument"
     (expect (parsec-with-input "-p PATH  Path to files." (docopt--parse-option-line))
-            :to-equal (docopt-make-option-line
+            :to-equal (docopt-make-options
                        :argument-name "PATH"
                        :description "Path to files."
                        :short-name "p")))
 
   (it "should parse a short option with a not separated argument"
     (expect (parsec-with-input "-pPATH  Path to files." (docopt--parse-option-line))
-            :to-equal (docopt-make-option-line
+            :to-equal (docopt-make-options
                        :argument-name "PATH"
                        :description "Path to files."
                        :short-name "p")))
 
   (it "should parse a long option without an argument"
     (expect (parsec-with-input "--help  Show this help." (docopt--parse-option-line))
-            :to-equal (docopt-make-option-line
+            :to-equal (docopt-make-options
                        :description "Show this help."
                        :long-name "help")))
 
   (it "should parse a long and shortcut option without an argument"
     (expect (parsec-with-input "--help, -h  Show this help." (docopt--parse-option-line))
-            :to-equal (docopt-make-option-line
+            :to-equal (docopt-make-options
                        :description "Show this help."
                        :long-name "help"
                        :short-name "h")))
 
   (it "should parse a long option with an argument"
     (expect (parsec-with-input "--path PATH  Path to files." (docopt--parse-option-line))
-            :to-equal (docopt-make-option-line
+            :to-equal (docopt-make-options
                        :argument-name "PATH"
                        :description "Path to files."
                        :long-name "path")))
 
   (it "should parse a short option with a default argument"
     (expect (parsec-with-input "-c K  The K coefficient [default: 2.95]" (docopt--parse-option-line))
-            :to-equal (docopt-make-option-line
-                       :argument (docopt-argument :object-name "K" :default "2.95")
+            :to-equal (docopt-make-options
+                       :argument (docopt-argument :object-name "K")
                        :description "The K coefficient [default: 2.95]"
+                       :default "2.95"
                        :short-name "c")))
 
   (it "should parse a long option with a default argument"
     (expect (parsec-with-input "--coefficient=K  The K coefficient [default: 2.95]" (docopt--parse-option-line))
-            :to-equal (docopt-make-option-line
-                       :argument (docopt-argument :object-name "K" :default "2.95")
+            :to-equal (docopt-make-options
+                       :argument (docopt-argument :object-name "K")
                        :description "The K coefficient [default: 2.95]"
+                       :default "2.95"
                        :long-name "coefficient"))))
 
-
 (describe "The option lines parser"
+
   (it "should parse single-line descriptions"
     (expect (parsec-with-input
                 (concat "--moored      Moored (anchored) mine.\n"
                         "--drifting    Drifting mine.")
               (docopt--parse-option-lines))
-            :to-equal (list (docopt-make-option-line
+            :to-equal (list (docopt-long-option
                              :description "Moored (anchored) mine."
-                             :long-name "moored")
-                            (docopt-make-option-line
+                             :object-name "moored")
+                            (docopt-long-option
                              :description "Drifting mine."
-                             :long-name "drifting"))))
+                             :object-name "drifting"))))
 
   (it "should parse multi-line descriptions"
     (expect (parsec-with-input
@@ -283,15 +285,15 @@
                         "--version     Show version."
                         "                More version help.")
               (docopt--parse-option-lines))
-            :to-equal (list (docopt-make-option-line
+            :to-equal (list (docopt-long-option
                              :description "Moored (anchored) mine."
-                             :long-name "moored")
-                            (docopt-make-option-line
+                             :object-name "moored")
+                            (docopt-long-option
                              :description "Drifting mine."
-                             :long-name "drifting")
-                            (docopt-make-option-line
+                             :object-name "drifting")
+                            (docopt-long-option
                              :description "Show version.                More version help."
-                             :long-name "version")))))
+                             :object-name "version")))))
 
 
 (describe "Parsing stacked short options"
@@ -519,12 +521,12 @@
                        :usage (list (docopt-make-usage-pattern
                                      (docopt-command :object-name "prog")
                                      (docopt-make-options-shortcut
-                                      (list (docopt-long-option :object-name "all" :description "All.")
-                                            (docopt-short-option :object-name "a" :description "All.")))))
-                       :options (list (docopt-make-option-line
-                                       :description "All."
-                                       :short-name "a"
-                                       :long-name "all"))))))
+                                      (docopt-long-option :object-name "all" :description "All." :synonym "a")
+                                      (docopt-short-option :object-name "a" :description "All." :synonym "all"))))
+                       :options (docopt-make-options
+                                 :description "All."
+                                 :short-name "a"
+                                 :long-name "all")))))
 
 (describe "The docopt--parse-sep-end-by1 combinator"
   :var ((parser (lambda () (docopt--parse-sep-end-by1 (parsec-ch ?a) (parsec-ch ?\|)))))

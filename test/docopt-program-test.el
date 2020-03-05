@@ -33,31 +33,23 @@
 (require 'docopt-program)
 (require 'test-helper)
 
-(describe "Find an option line by"
-  :var ((option-line (docopt-make-option-line :short-name "h" :long-name "help" :description "Show this screen.")))
-
-  (it "description should return nil when not found"
-    (expect (docopt-program-find-option-line docopt-naval-fate "UNKNOWN")
-            :to-equal nil))
+(describe "Find an option by"
+  :var ((program (docopt-parse docopt-naval-fate-str)))
 
   (it "long option should return nil when not found"
-    (expect (docopt-program-find-option-line docopt-naval-fate (docopt-long-option :object-name "UNKNOWN"))
+    (expect (docopt-program-option program "UNKNOWN")
             :to-equal nil))
 
   (it "short option should return nil when not found"
-    (expect (docopt-program-find-option-line docopt-naval-fate (docopt-short-option :object-name "UNKNOWN"))
+    (expect (docopt-program-option program "U")
             :to-equal nil))
 
-  (it "description should return the option line when found by long option"
-    (expect (docopt-program-find-option-line docopt-naval-fate (docopt-option-line-description option-line))
-            :to-equal option-line))
-
   (it "long option should return the option line when found by long option"
-    (expect (docopt-program-find-option-line docopt-naval-fate (docopt-option-line-long-option option-line))
-            :to-equal option-line))
+    (expect (docopt-program-option program "help")
+            :to-equal (docopt-long-option :object-name "help" :description "Show this screen." :synonym "h")))
 
   (it "short option should return the option line when found by short option"
-    (expect (docopt-program-find-option-line docopt-naval-fate (docopt-option-line-short-option option-line))
-            :to-equal option-line)))
+    (expect (docopt-program-option program "h")
+            :to-equal (docopt-short-option :object-name "h" :description "Show this screen." :synonym "help"))))
 
 ;;; docopt-program-test.el ends here

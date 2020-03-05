@@ -29,7 +29,7 @@
 
 ;;; Code:
 
-(require 'docopt-option-line)
+(require 'docopt-option)
 (require 'eieio)
 (require 'seq)
 
@@ -66,16 +66,9 @@
     :type (or list null)))
   "A class representing a Docopt program.")
 
-(defun docopt-program-options-list (program)
-  "Return a list of long/short option pairs of the Docopt PROGRAM."
-  (seq-map (lambda (option-line)
-             (list (docopt-option-line-long-option option-line)
-                   (docopt-option-line-short-option option-line)))
-           (docopt-program-options program)))
-
-(defun docopt-program-find-option-line (program object)
-  "Find the option line in PROGRAM for the given OBJECT (description, long or short option)."
-  (seq-find (lambda (option-line) (docopt-option-line-matches-p option-line object))
+(defun docopt-program-option (program name)
+  "Return the long or short option of PROGRAM by NAME."
+  (seq-find (lambda (option) (equal name (oref option object-name)))
             (docopt-program-options program)))
 
 (provide 'docopt-program)

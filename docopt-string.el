@@ -35,7 +35,6 @@
 (require 'docopt-either)
 (require 'docopt-group)
 (require 'docopt-option)
-(require 'docopt-option-line)
 (require 'docopt-options-shortcut)
 (require 'docopt-repeated)
 (require 'docopt-standard-input)
@@ -75,17 +74,27 @@
   (when-let ((argument (docopt-option-argument option)))
     (concat "=" (docopt-string argument))))
 
+(defun docopt-string--synonym (synonym)
+  "Convert the Docopt SYNONYM to a string."
+  (when synonym
+    (if (= 1 (length synonym))
+        (concat "-" synonym)
+      (concat "--" synonym))))
+
 (defun docopt-string--options (options)
   "Convert the Docopt OPTIONS to a string."
-  (docopt-string--section "Options" (seq-map #'docopt-string options)))
-
-(defun docopt-string--option-line-options (option-line)
-  "Convert the options of the OPTION-LINE to a string."
-  (thread-last (list (docopt-option-line-short-option option-line)
-                     (docopt-option-line-long-option option-line))
-    (seq-remove #'null)
-    (seq-map #'docopt-string)
-    (s-join ", ")))
+  (docopt-string--section
+   "Options" (thread-last options
+               (seq-remove (lambda (option)
+                             (and (docopt-short-option-p option)
+                                  (docopt-option-synonym option))))
+               (seq-map (lambda (option)
+                          (format (concat "%-" (number-to-string docopt-string-options-width) "s %s")
+                                  (concat
+                                   (when-let ((synonym (oref option synonym)))
+                                     (concat (docopt-string--synonym synonym) ", "))
+                                   (docopt-string option))
+                                  (docopt-option-description option)))))))
 
 (cl-defmethod docopt-string ((argument docopt-argument))
   "Convert the Docopt usage ARGUMENT to a string."
@@ -131,12 +140,6 @@
 (cl-defmethod docopt-string ((group docopt-required-group))
   "Convert the Docopt required GROUP to a string."
   (concat "(" (docopt-string--join " " (docopt-group-members group)) ")"))
-
-(cl-defmethod docopt-string ((line docopt-option-line))
-  "Convert the Docopt option LINE to a string."
-  (format (concat "%-" (number-to-string docopt-string-options-width) "s %s")
-          (docopt-string--option-line-options line)
-          (docopt-option-line-description line)))
 
 (cl-defmethod docopt-string ((shortcut docopt-options-shortcut))
   "Convert the Docopt options SHORTCUT to a string."

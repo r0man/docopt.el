@@ -34,7 +34,6 @@
 (require 'docopt-either)
 (require 'docopt-group)
 (require 'docopt-option)
-(require 'docopt-option-line)
 (require 'docopt-program)
 (require 'docopt-repeated)
 (require 'docopt-standard-input)
