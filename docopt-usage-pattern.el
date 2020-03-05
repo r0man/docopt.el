@@ -51,6 +51,10 @@
   "Collect the arguments from the Docopt USAGE-PATTERN."
   (delete-dups (docopt-collect-arguments (docopt-usage-pattern-expressions usage-pattern))))
 
+(cl-defmethod docopt-collect-options ((usage-pattern docopt-usage-pattern))
+  "Collect the options from the Docopt USAGE-PATTERN."
+  (delete-dups (docopt-collect-options (docopt-usage-pattern-expressions usage-pattern))))
+
 (defun docopt-make-usage-pattern (command &rest expressions)
   "Make a new Docopt usage pattern with COMMAND and EXPRESSIONS."
   (make-instance 'docopt-usage-pattern :command command :expressions expressions))

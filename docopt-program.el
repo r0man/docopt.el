@@ -77,6 +77,16 @@
   "Collect the arguments from the Docopt PROGRAM."
   (delete-dups (seq-mapcat #'docopt-collect-arguments (docopt-program-usage program))))
 
+(cl-defmethod docopt-collect-options ((program docopt-program))
+  "Collect the options from the Docopt PROGRAM."
+  (cl-remove-duplicates
+   (seq-concatenate
+    'list
+    (seq-mapcat #'docopt-collect-options (docopt-program-usage program))
+    (docopt-program-options program))
+   :key #'eieio-object-name-string
+   :test 'string=))
+
 (defun docopt-program-option (program name)
   "Return the long or short option of PROGRAM by NAME."
   (seq-find (lambda (option) (equal name (oref option object-name)))

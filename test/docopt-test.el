@@ -49,7 +49,7 @@
     (expect (docopt-program-usage program)
             :to-equal docopt-naval-fate-usage-ast))
 
-  (it "should parse the options"
+  (it "shoulod parse the options"
     (expect (docopt-program-options program)
             :to-equal docopt-naval-fate-options-ast))
 
@@ -107,3 +107,14 @@
                             (docopt-long-option :object-name "speed" :argument (docopt-argument :object-name "kn" :value "10"))))))
 
 ;;; docopt-test.el ends here
+
+
+;; (it "should parse the options"
+;;     (expect (docopt-program-options program)
+;;             :to-equal '(#s(docopt-long-option "help" nil "Show this screen." "h")
+;;                          #s(docopt-short-option "h" nil "Show this screen." "help")
+;;                          #s(docopt-long-option "version" nil "Show version." nil)
+;;                          #s(docopt-long-option "speed" #s(docopt-argument "kn" "10" nil)
+;;                                                "Speed in knots [default: 10]." nil)
+;;                          #s(docopt-long-option "moored" nil "Moored (anchored) mine." nil)
+;;                          #s(docopt-long-option "drifting" nil "Drifting mine." nil))))

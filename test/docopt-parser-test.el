@@ -512,7 +512,8 @@
                        :header "PROGRAM"
                        :usage (list (docopt-make-usage-pattern
                                      (docopt-command :object-name "prog")
-                                     (docopt-long-option :object-name "foo"))))))
+                                     (docopt-long-option :object-name "foo")))
+                       :options (list (docopt-long-option :object-name "foo")))))
 
   (it "should parse \"Usage: prog [options]\n\nOptions: -a,--all  All.\""
     (expect (parsec-with-input "Usage: prog [options]\n\nOptions: -a,--all  All."
@@ -523,10 +524,8 @@
                                      (docopt-make-options-shortcut
                                       (docopt-long-option :object-name "all" :description "All." :synonym "a")
                                       (docopt-short-option :object-name "a" :description "All." :synonym "all"))))
-                       :options (docopt-make-options
-                                 :description "All."
-                                 :short-name "a"
-                                 :long-name "all")))))
+                       :options (list (docopt-long-option :object-name "all" :description "All." :synonym "a")
+                                      (docopt-short-option :object-name "a" :description "All." :synonym "all"))))))
 
 (describe "The docopt--parse-sep-end-by1 combinator"
   :var ((parser (lambda () (docopt--parse-sep-end-by1 (parsec-ch ?a) (parsec-ch ?\|)))))

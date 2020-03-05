@@ -38,6 +38,9 @@
 (cl-defmethod docopt-collect-arguments ((_ docopt-standard-input))
   "Collect the arguments from the Docopt shortcut." nil)
 
+(cl-defmethod docopt-collect-options ((_ docopt-standard-input))
+  "Collect the options from the Docopt shortcut." nil)
+
 (provide 'docopt-standard-input)
 
 ;;; docopt-standard-input.el ends here

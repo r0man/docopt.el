@@ -464,6 +464,7 @@ When t, only allow \"=\" as the long option separator, otherwise
                 (docopt--parse-program-sections program))
     (docopt-set-shortcut-options program (docopt-program-options program))
     (oset program :arguments (docopt-collect-arguments program))
+    (oset program :options (docopt-collect-options program))
     program))
 
 (provide 'docopt-parser)

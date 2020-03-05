@@ -48,6 +48,10 @@
   "Collect the arguments from the Docopt REPEATED."
   (docopt-collect-arguments (docopt-repeated-object repeated)))
 
+(cl-defmethod docopt-collect-options ((repeated docopt-repeated))
+  "Collect the options from the Docopt REPEATED."
+  (docopt-collect-options (docopt-repeated-object repeated)))
+
 (provide 'docopt-repeated)
 
 ;;; docopt-repeated.el ends here

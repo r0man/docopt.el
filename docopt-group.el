@@ -63,6 +63,10 @@
   "Collect the arguments from the Docopt GROUP."
   (docopt-collect-arguments (docopt-group-members group)))
 
+(cl-defmethod docopt-collect-options ((group docopt-group))
+  "Collect the options from the Docopt GROUP."
+  (docopt-collect-options (docopt-group-members group)))
+
 (provide 'docopt-group)
 
 ;;; docopt-group.el ends here

@@ -39,6 +39,9 @@
 (cl-defmethod docopt-collect-arguments ((_ docopt-command))
   "Collect the arguments from the Docopt COMMAND." nil)
 
+(cl-defmethod docopt-collect-options ((_ docopt-command))
+  "Collect the options from the Docopt COMMAND." nil)
+
 (provide 'docopt-command)
 
 ;;; docopt-command.el ends here

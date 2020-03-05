@@ -54,6 +54,10 @@
   "Collect the arguments from the Docopt EITHER."
   (delete-dups (seq-mapcat #'docopt-collect-arguments (docopt-either-members either))))
 
+(cl-defmethod docopt-collect-options ((either docopt-either))
+  "Collect the options from the Docopt EITHER."
+  (delete-dups (seq-mapcat #'docopt-collect-options (docopt-either-members either))))
+
 (provide 'docopt-either)
 
 ;;; docopt-either.el ends here

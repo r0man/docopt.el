@@ -68,6 +68,13 @@
 (cl-defmethod docopt-collect-arguments ((_ docopt-option))
   "Collect the arguments from the Docopt OPTION." nil)
 
+(cl-defmethod docopt-collect-options ((option docopt-option))
+  "Collect the options from the Docopt OPTION." option)
+
+(cl-defmethod docopt-collect-options ((lst list))
+  "Collect the options from the list LST."
+  (delete-dups (docopt--flatten (seq-map #'docopt-collect-options lst))))
+
 (defun docopt-option-set-default (option default)
   "Set the default argument value of OPTION to DEFAULT."
   (when-let ((argument (docopt-option-argument option)))
