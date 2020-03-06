@@ -35,12 +35,20 @@
 (require 'f)
 (require 'test-helper)
 
-(seq-doseq (testcase (docopt-parse-testcases (f-read-text "test/testcases.docopt")))
+(defun docopt-test-define-it (example)
+  "Define a Buttercup test for the Docopt TESTCASE and EXAMPLE."
+  (it (format "should parse: %s" (docopt-testcase-example-argv example))
+    (expect (docopt-testcase-example-actual example)
+            :to-equal (docopt-testcase-example-expected example))))
+
+(defun docopt-test-define-describe (testcase)
+  "Define a Buttercup test suite for the Docopt TESTCASE."
   (let ((program (docopt-testcase-program testcase)))
     (describe (format "Parsing the Docopt program:\n\n%s" (docopt-string program))
       (seq-doseq (example (docopt-testcase-test testcase))
-        (it (format "should parse: %s" (docopt-testcase-example-argv example))
-          (expect (docopt-testcase-example-actual example)
-                  :to-equal (docopt-testcase-example-expected example)))))))
+        (docopt-test-define-it example)))))
+
+(seq-doseq (testcase (docopt-parse-testcases (f-read-text "test/testcases.docopt")))
+  (docopt-test-define-describe testcase))
 
 ;;; docopt-test.el ends here

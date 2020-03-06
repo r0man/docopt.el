@@ -167,70 +167,37 @@
 
 ;; alist element
 
-(defvar docopt--argv-default nil
-  "The default value of a argv pair.")
+(cl-defgeneric docopt--argv-alist-element (object default)
+  "Return the alist cons for the OBJECT and DEFAULT.")
 
-(cl-defgeneric docopt--argv-alist-element (object)
-  "Return the alist cons for the OBJECT.")
-
-(cl-defmethod docopt--argv-alist-element ((argument docopt-argument))
-  "Return the alist cons for the ARGUMENT."
+(cl-defmethod docopt--argv-alist-element ((argument docopt-argument) default)
+  "Return the alist cons for the ARGUMENT and DEFAULT."
   (cons (docopt--argv-symbol argument) (docopt-argument-value argument)))
 
-(cl-defmethod docopt--argv-alist-element ((command docopt-command))
-  "Return the alist cons for the COMMAND."
-  (cons (docopt--argv-symbol command) docopt--argv-default))
+(cl-defmethod docopt--argv-alist-element ((command docopt-command) default)
+  "Return the alist cons for the COMMAND and DEFAULT."
+  (cons (docopt--argv-symbol command) default))
 
-(cl-defmethod docopt--argv-alist-element ((option docopt-option))
-  "Return the alist cons for the OPTION."
+(cl-defmethod docopt--argv-alist-element ((option docopt-option) default)
+  "Return the alist cons for the OPTION and DEFAULT."
   (cons (docopt--argv-symbol option)
         (if-let (argument (docopt-option-argument option))
             (docopt-argument-value argument)
-          docopt--argv-default)))
+          default)))
+
+(defun docopt-program-default-alist (program)
+  "Return the default alist of the Docopt PROGRAM."
+  (seq-map (lambda (element) (docopt--argv-alist-element element nil))
+           (docopt-program-argv-normalize program)))
 
 (defun docopt--argv-to-alist (program exprs)
   "Convert the Docopt EXPRS for PROGRAM to an alist."
-  (seq-concatenate
-   'list
-   (let ((docopt--argv-default t))
-     (seq-map #'docopt--argv-alist-element (seq-remove #'null exprs)))
-   (seq-map #'docopt--argv-alist-element (docopt-program-arguments program))
-   (seq-map #'docopt--argv-alist-element
-            (seq-remove (lambda (option)
-                          (and (docopt-short-option-p option)
-                               (docopt-option-synonym option)))
-                        (docopt-program-options program)))))
-
-(defun docopt--argv-to-alist (program exprs)
-  "Convert the Docopt EXPRS for PROGRAM to an alist."
-  (cl-remove-duplicates
-   (seq-concatenate
-    'list
-    (seq-map #'docopt--argv-alist-element (docopt-program-arguments program))
-    (seq-map #'docopt--argv-alist-element
-             (seq-remove (lambda (option)
-                           (and (docopt-short-option-p option)
-                                (docopt-option-synonym option)))
-                         (docopt-program-options program)))
-    (let ((docopt--argv-default t))
-      (seq-map #'docopt--argv-alist-element (seq-remove #'null exprs))))
-   :key #'car
-   :test 'string=))
-
-(defun docopt--argv-to-alist (program exprs)
-  "Convert the Docopt EXPRS for PROGRAM to an alist."
-  (thread-first (seq-concatenate
-                 'list
-                 (seq-map #'docopt--argv-alist-element (docopt-program-arguments program))
-                 (seq-map #'docopt--argv-alist-element
-                          (seq-remove (lambda (option)
-                                        (and (docopt-short-option-p option)
-                                             (docopt-option-synonym option)))
-                                      (docopt-program-options program)))
-                 (let ((docopt--argv-default t))
-                   (seq-map #'docopt--argv-alist-element (seq-remove #'null exprs))))
-    (cl-remove-duplicates :key #'car :test 'string=)
-    (cl-sort #'string< :key #'car)))
+  (let ((result (docopt-program-default-alist program)))
+    (seq-doseq (expr (seq-map (lambda (element) (docopt--argv-alist-element element t))
+                              (seq-remove #'null exprs)))
+      (when-let ((element (assoc (car expr) result)))
+        (setcdr element (cdr expr))))
+    (cl-sort result #'string< :key #'car)))
 
 (defun docopt--parse-argv (program s)
   "Parse the argument vector S of the Docopt PROGRAM."

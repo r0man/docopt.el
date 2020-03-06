@@ -196,7 +196,12 @@
                         (<x> . "1")
                         (<y> . "2")
                         (mine . t)
-                        (set . t))))
+                        (move)
+                        (new)
+                        (remove)
+                        (set . t)
+                        (ship)
+                        (shoot))))
 
   (it "should parse \"naval_fate mine set 1 2\""
     (expect (docopt-eval program "naval_fate mine set 1 2")
@@ -209,7 +214,12 @@
                         (<x> . "1")
                         (<y> . "2")
                         (mine . t)
-                        (set . t))))
+                        (move)
+                        (new)
+                        (remove)
+                        (set . t)
+                        (ship)
+                        (shoot))))
 
   (it "should parse \"naval_fate mine set 1 2 --drifting\""
     (expect (docopt-eval program "naval_fate mine set 1 2 --drifting")
@@ -222,7 +232,12 @@
                         (<x> . "1")
                         (<y> . "2")
                         (mine . t)
-                        (set . t))))
+                        (move)
+                        (new)
+                        (remove)
+                        (set . t)
+                        (ship)
+                        (shoot))))
 
   (it "should parse \"naval_fate ship SHIP-123 move 1 2 --speed=10\""
     (expect (docopt-eval program "naval_fate ship SHIP-123 move 1 2 --speed=10")
@@ -234,8 +249,13 @@
                         (<name> . "SHIP-123")
                         (<x> . "1")
                         (<y> . "2")
+                        (mine)
                         (move . t)
-                        (ship . t)))))
+                        (new)
+                        (remove)
+                        (set)
+                        (ship . t)
+                        (shoot)))))
 
 (describe "Parsing a program without arguments"
   (it "should return just the program"

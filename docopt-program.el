@@ -96,6 +96,16 @@
   (seq-find (lambda (option) (equal name (oref option object-name)))
             (docopt-program-options program)))
 
+(defun docopt-program-argv-normalize (program)
+  "Return a list of normalized Docopt argv elements for PROGRAM."
+  (seq-concatenate 'list
+                   (docopt-program-arguments program)
+                   (docopt-collect-commands program)
+                   (seq-remove (lambda (option)
+                                 (and (docopt-short-option-p option)
+                                      (docopt-option-synonym option)))
+                               (docopt-program-options program))))
+
 (provide 'docopt-program)
 
 ;;; docopt-program.el ends here

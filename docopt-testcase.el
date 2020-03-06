@@ -29,7 +29,7 @@
 
 ;;; Code:
 
-
+(require 'buttercup)
 (require 'cl-lib)
 (require 'docopt-parser)
 (require 'eieio)
