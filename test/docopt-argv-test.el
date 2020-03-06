@@ -100,7 +100,14 @@
                (parsec-with-input "Usage: naval_fate -h | --help"
                  (docopt--parse-usage))))
             :to-equal (list (docopt-command :object-name "naval_fate")
-                            (docopt-long-option :object-name "help")))))
+                            (docopt-long-option :object-name "help"))))
+
+  (it "should parse a sequence of short options"
+    (let ((options (list (docopt-short-option :object-name "a")
+                         (docopt-short-option :object-name "b")
+                         (docopt-short-option :object-name "c"))))
+      (expect (parsec-with-input "-a -b -c" (docopt-argv-parser options))
+              :to-equal options))))
 
 (describe "Parsing an either"
   :var ((exprs (parsec-with-input "a|-b|--c" (docopt--parse-usage-expr))))
@@ -180,56 +187,75 @@
 
   (it "should parse \"naval_fate mine set 1 2 --moored\""
     (expect (docopt-eval program "naval_fate mine set 1 2 --moored")
-            :to-equal '((mine . t)
-                        (set . t)
+            :to-equal '((--drifting)
+                        (--help)
+                        (--moored . t)
+                        (--speed)
+                        (--version)
+                        (<name>)
                         (<x> . "1")
                         (<y> . "2")
-                        (--moored . t))))
+                        (mine . t)
+                        (set . t))))
 
   (it "should parse \"naval_fate mine set 1 2\""
     (expect (docopt-eval program "naval_fate mine set 1 2")
-            :to-equal '((mine . t)
-                        (set . t)
+            :to-equal '((--drifting)
+                        (--help)
+                        (--moored)
+                        (--speed)
+                        (--version)
+                        (<name>)
                         (<x> . "1")
-                        (<y> . "2"))))
+                        (<y> . "2")
+                        (mine . t)
+                        (set . t))))
 
   (it "should parse \"naval_fate mine set 1 2 --drifting\""
     (expect (docopt-eval program "naval_fate mine set 1 2 --drifting")
-            :to-equal '((mine . t)
-                        (set . t)
+            :to-equal '((--drifting . t)
+                        (--help)
+                        (--moored)
+                        (--speed)
+                        (--version)
+                        (<name>)
                         (<x> . "1")
                         (<y> . "2")
-                        (--drifting . t))))
+                        (mine . t)
+                        (set . t))))
 
   (it "should parse \"naval_fate ship SHIP-123 move 1 2 --speed=10\""
     (expect (docopt-eval program "naval_fate ship SHIP-123 move 1 2 --speed=10")
-            :to-equal '((ship . t)
+            :to-equal '((--drifting)
+                        (--help)
+                        (--moored)
+                        (--speed . "10")
+                        (--version)
                         (<name> . "SHIP-123")
-                        (move . t)
                         (<x> . "1")
                         (<y> . "2")
-                        (--speed . "10")))))
+                        (move . t)
+                        (ship . t)))))
 
 (describe "Parsing a program without arguments"
   (it "should return just the program"
     (expect (docopt-eval (docopt-parse "Usage: prog") "prog")
-            :to-equal '())))
+            :to-equal nil)))
 
-;; (docopt--parse-argv-simple-list*
-;;  (list (docopt-short-option :object-name "a")
-;;        (docopt-short-option :object-name "b")
-;;        (docopt-short-option :object-name "c")))
+(describe "Parsing naval fate argument vectors"
+  :var ((program (docopt-parse docopt-naval-fate-str)))
 
-;; (parsec-with-input "-a -b -c"
-;;   (docopt-argv-parser
-;;    (list (docopt-short-option :object-name "a")
-;;          (docopt-short-option :object-name "b")
-;;          (docopt-short-option :object-name "c"))))
+  (it "should parse \"naval_fate --help\""
+    (expect (docopt-eval-ast program "naval_fate --help")
+            :to-equal (list (docopt-long-option :object-name "help"))))
 
-;; (parsec-with-input "-b  -c"
-;;   (docopt-argv-parser
-;;    (list (docopt-short-option :object-name "a")
-;;          (docopt-short-option :object-name "b")
-;;          (docopt-short-option :object-name "c"))))
+  (it "should parse \"naval_fate ship SHIP-123 move 1 2 --speed=10\""
+    (expect (docopt-eval-ast program "naval_fate ship SHIP-123 move 1 2 --speed=10")
+            :to-equal (list (docopt-command :object-name "ship")
+                            (docopt-argument :object-name "name" :value "SHIP-123")
+                            (docopt-command :object-name "move")
+                            (docopt-argument :object-name "x" :value "1")
+                            (docopt-argument :object-name "y" :value "2")
+                            (docopt-long-option :object-name "speed" :argument (docopt-argument :object-name "kn" :value "10"))))))
 
 ;;; docopt-argv-test.el ends here

@@ -31,7 +31,7 @@
 
 (require 'buttercup)
 (require 'docopt-testcase)
-(require 'f)
+(require 'docopt-string)
 
 (describe "The `docopt--parse-testcase-example` parser"
 
@@ -79,16 +79,5 @@
     (expect (parsec-with-input "r\"\"\"Usage: prog [options]\n\nOptions: -a  All.\n\n\"\"\""
               (docopt--parse-testcase-program))
             :to-equal (docopt-parse "Usage: prog [options]\n\nOptions: -a  All.\n\n"))))
-
-(describe "Parsing the Docopt test cases"
-  :var ((testcases (docopt-parse-testcases (f-read-text "test/testcases.docopt"))))
-
-  (it "should return 81 test cases"
-    (expect (length testcases) :to-equal 81))
-
-  ;; (it "should test all test cases"
-  ;;   (seq-doseq (testcase testcases)
-  ;;     (docopt-testcase-test testcase)))
-  )
 
 ;;; docopt-testcase-test.el ends here

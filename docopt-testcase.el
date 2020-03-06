@@ -215,7 +215,7 @@
           (if (docopt--testcase-parse-error-p ast)
               (progn (message "Test \"%s\": FAILED" argv)
                      (pp ast))
-            (let ((actual (docopt--argv-to-alist ast)))
+            (let ((actual (docopt--argv-to-alist program ast)))
               (oset example :actual actual)
               (if (equal actual expected)
                   (message "Test \"%s\": OK" argv)

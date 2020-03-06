@@ -31,90 +31,16 @@
 
 (require 'buttercup)
 (require 'docopt)
+(require 'docopt-testcase)
+(require 'f)
 (require 'test-helper)
 
-(describe "Parsing naval fate"
-  :var ((program (docopt-parse docopt-naval-fate-str)))
-
-  (it "should parse the arguments"
-    (expect (docopt-program-arguments program)
-            :to-equal (list (docopt-argument :object-name "name")
-                            (docopt-argument :object-name "x")
-                            (docopt-argument :object-name "y"))))
-
-  (it "should parse the header"
-    (expect (docopt-program-header program) :to-equal "Naval Fate."))
-
-  (it "should parse the usage"
-    (expect (docopt-program-usage program)
-            :to-equal docopt-naval-fate-usage-ast))
-
-  (it "shoulod parse the options"
-    (expect (docopt-program-options program)
-            :to-equal docopt-naval-fate-options-ast))
-
-  (it "should parse the examples"
-    (expect (docopt-program-examples program)
-            :to-equal '(("naval_fate" "ship" "new" "SHIP-123")
-                        ("naval_fate" "ship" "SHIP-123" "move" "1" "2" "--speed=10"))))
-
-  (it "should parse program sections: examples, options, usage"
-    (expect (docopt-parse
-             (concat docopt-naval-fate-header-str
-                     docopt-naval-fate-examples-str "\n"
-                     docopt-naval-fate-options-str "\n"
-                     docopt-naval-fate-usage-str "\n"))
-            :to-equal program))
-
-  (it "should parse program sections: options, examples, usage"
-    (expect (docopt-parse
-             (concat docopt-naval-fate-header-str
-                     docopt-naval-fate-options-str "\n"
-                     docopt-naval-fate-examples-str "\n"
-                     docopt-naval-fate-usage-str "\n"))
-            :to-equal program))
-
-  (it "should parse program sections: options, usage, examples"
-    (expect (docopt-parse
-             (concat docopt-naval-fate-header-str
-                     docopt-naval-fate-options-str "\n"
-                     docopt-naval-fate-usage-str "\n"
-                     docopt-naval-fate-examples-str "\n"))
-            :to-equal program))
-
-  (it "should parse program sections: usage, options, examples"
-    (expect (docopt-parse
-             (concat docopt-naval-fate-header-str
-                     docopt-naval-fate-usage-str "\n"
-                     docopt-naval-fate-options-str "\n"
-                     docopt-naval-fate-examples-str "\n"))
-            :to-equal program)))
-
-(describe "Parsing naval fate argument vectors"
-  :var ((program (docopt-parse docopt-naval-fate-str)))
-
-  (it "should parse \"naval_fate --help\""
-    (expect (docopt-eval-ast program "naval_fate --help")
-            :to-equal (list (docopt-long-option :object-name "help"))))
-
-  (it "should parse \"naval_fate ship SHIP-123 move 1 2 --speed=10\""
-    (expect (docopt-eval-ast program "naval_fate ship SHIP-123 move 1 2 --speed=10")
-            :to-equal (list (docopt-command :object-name "ship")
-                            (docopt-argument :object-name "name" :value "SHIP-123")
-                            (docopt-command :object-name "move")
-                            (docopt-argument :object-name "x" :value "1")
-                            (docopt-argument :object-name "y" :value "2")
-                            (docopt-long-option :object-name "speed" :argument (docopt-argument :object-name "kn" :value "10"))))))
+(seq-doseq (testcase (docopt-parse-testcases (f-read-text "test/testcases.docopt")))
+  (let ((program (docopt-testcase-program testcase)))
+    (describe (format "Parsing the Docopt program:\n\n%s" (docopt-string program))
+      (seq-doseq (example (docopt-testcase-test testcase))
+        (it (format "should parse: %s" (docopt-testcase-example-argv example))
+          (expect (docopt-testcase-example-actual example)
+                  :to-equal (docopt-testcase-example-expected example)))))))
 
 ;;; docopt-test.el ends here
-
-
-;; (it "should parse the options"
-;;     (expect (docopt-program-options program)
-;;             :to-equal '(#s(docopt-long-option "help" nil "Show this screen." "h")
-;;                          #s(docopt-short-option "h" nil "Show this screen." "help")
-;;                          #s(docopt-long-option "version" nil "Show version." nil)
-;;                          #s(docopt-long-option "speed" #s(docopt-argument "kn" "10" nil)
-;;                                                "Speed in knots [default: 10]." nil)
-;;                          #s(docopt-long-option "moored" nil "Moored (anchored) mine." nil)
-;;                          #s(docopt-long-option "drifting" nil "Drifting mine." nil))))
