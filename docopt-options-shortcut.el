@@ -51,10 +51,10 @@
   "A class representing a Docopt options shortcut.")
 
 (cl-defmethod docopt-collect-arguments ((shortcut docopt-options-shortcut))
-  "Collect the arguments from the Docopt shortcut." nil)
+  "Collect the arguments from the Docopt SHORTCUT." nil)
 
 (cl-defmethod docopt-collect-options ((shortcut docopt-options-shortcut))
-  "Collect the options from the Docopt shortcut." nil)
+  "Collect the options from the Docopt SHORTCUT." nil)
 
 (defun docopt-make-options-shortcut (&rest options)
   "Make a new Docopt options shortcut using OPTIONS."
