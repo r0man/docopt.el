@@ -94,7 +94,7 @@
                                    (when-let ((synonym (oref option synonym)))
                                      (concat (docopt-string--synonym synonym) ", "))
                                    (docopt-string option))
-                                  (docopt-option-description option)))))))
+                                  (or (docopt-option-description option) "")))))))
 
 (cl-defmethod docopt-string ((argument docopt-argument))
   "Convert the Docopt usage ARGUMENT to a string."
