@@ -209,12 +209,20 @@
 
 (defun docopt--argv-to-alist (program exprs)
   "Convert the Docopt EXPRS for PROGRAM to an alist."
-  (let ((result (docopt-program-default-alist program)))
-    (seq-doseq (expr (seq-map (lambda (element) (docopt--argv-alist-element element t))
-                              (seq-remove #'null exprs)))
-      (when-let ((element (assoc (car expr) result)))
-        (setcdr element (cdr expr))))
-    (cl-sort result #'string< :key #'car)))
+  (let ((result (thread-last (seq-remove #'null exprs)
+                  (seq-map (lambda (element) (docopt--argv-alist-element element t)))
+                  (seq-group-by #'car)
+                  (seq-map #'cdr)
+                  (seq-map (lambda (group)
+                             (let ((value (seq-map #'cdr group)))
+                               (cons (caar group)
+                                     (if (= 1 (length value))
+                                         (car value) value)))))
+                  (seq-sort-by #'car #'string<))))
+    (seq-doseq (element (docopt-program-default-alist program))
+      (unless (assoc (car element) result)
+        (setq result (cons element result))))
+    (seq-sort-by #'car #'string< result)))
 
 (defun docopt--parse-argv (program s)
   "Parse the argument vector S of the Docopt PROGRAM."
