@@ -136,15 +136,16 @@
 (defun docopt--parse-testcase-expected-data ()
   "Parse the Docopt testcase expected result data."
   (let ((json-false nil))
-    (json-read-from-string
-     (concat "{" (parsec-and (docopt--parse-spaces)
-                             (parsec-ch ?\{)
-                             (parsec-until-s
-                              (parsec-try (parsec-and
-                                           (docopt--parse-spaces)
-                                           (parsec-ch ?\})
-                                           (docopt--parse-spaces)
-                                           (parsec-eol-or-eof))))) "}"))))
+    (cl-sort (json-read-from-string
+              (concat "{" (parsec-and (docopt--parse-spaces)
+                                      (parsec-ch ?\{)
+                                      (parsec-until-s
+                                       (parsec-try (parsec-and
+                                                    (docopt--parse-spaces)
+                                                    (parsec-ch ?\})
+                                                    (docopt--parse-spaces)
+                                                    (parsec-eol-or-eof))))) "}"))
+             #'string< :key #'car)))
 
 (defun docopt--parse-testcase-expected ()
   "Parse the Docopt testcase expected result."
