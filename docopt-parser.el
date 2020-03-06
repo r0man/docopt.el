@@ -291,14 +291,6 @@ When t, only allow \"=\" as the long option separator, otherwise
   "Parse an expression group between OPEN and CLOSE."
   (docopt--flatten (docopt--parse-group open close (docopt--parse-usage-expr))))
 
-;; (defun docopt--parse-usage-group-optional ()
-;;   "Parse a optional expression group."
-;;   (apply #'docopt-make-optional-group (docopt-set-optional (docopt--parse-usage-group ?\[ ?\]) t)))
-
-;; (defun docopt--parse-usage-group-required ()
-;;   "Parse a required expression group."
-;;   (apply #'docopt-make-required-group (docopt-set-optional (docopt--parse-usage-group ?\( ?\)) nil)))
-
 (defun docopt--parse-usage-group-optional ()
   "Parse a optional expression group."
   (apply #'docopt-make-optional-group (docopt--parse-usage-group ?\[ ?\])))
@@ -464,7 +456,12 @@ When t, only allow \"=\" as the long option separator, otherwise
                 (docopt--parse-program-sections program))
     (docopt-set-shortcut-options program (docopt-program-options program))
     (oset program :arguments (docopt-collect-arguments program))
-    (oset program :options (docopt-collect-options program))
+    (oset program :options (docopt-options-merge
+                            (docopt-collect-options (docopt-program-usage program))
+                            (docopt-program-options program)))
+    (seq-doseq (option (docopt-program-options program))
+      (when (docopt-long-option-p option)
+        (oset option :prefixes (docopt-option-prefixes option (docopt-program-options program)))))
     program))
 
 (provide 'docopt-parser)

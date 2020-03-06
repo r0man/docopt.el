@@ -516,8 +516,8 @@
                        :header "PROGRAM"
                        :usage (list (docopt-make-usage-pattern
                                      (docopt-command :object-name "prog")
-                                     (docopt-long-option :object-name "foo")))
-                       :options (list (docopt-long-option :object-name "foo")))))
+                                     (docopt-long-option :object-name "foo" :prefixes '("fo" "f"))))
+                       :options (list (docopt-long-option :object-name "foo" :prefixes '("fo" "f"))))))
 
   (it "should parse \"Usage: prog [options]\n\nOptions: -a,--all  All.\""
     (expect (parsec-with-input "Usage: prog [options]\n\nOptions: -a,--all  All."
@@ -526,10 +526,10 @@
                        :usage (list (docopt-make-usage-pattern
                                      (docopt-command :object-name "prog")
                                      (docopt-make-options-shortcut
-                                      (docopt-long-option :object-name "all" :description "All." :synonym "a")
+                                      (docopt-long-option :object-name "all" :description "All." :synonym "a" :prefixes '("al" "a"))
                                       (docopt-short-option :object-name "a" :description "All." :synonym "all"))))
-                       :options (list (docopt-long-option :object-name "all" :description "All." :synonym "a")
-                                      (docopt-short-option :object-name "a" :description "All." :synonym "all"))))))
+                       :options (list (docopt-short-option :object-name "a" :description "All." :synonym "all")
+                                      (docopt-long-option :object-name "all" :description "All." :synonym "a" :prefixes '("al" "a")))))))
 
 (describe "Parsing naval fate"
   :var ((program (docopt-parse docopt-naval-fate-str)))
@@ -545,11 +545,21 @@
 
   (it "should parse the usage"
     (expect (docopt-program-usage program)
-            :to-equal docopt-naval-fate-usage-ast))
+            :to-equal (list docopt-naval-fate-pattern-ship-new
+                            docopt-naval-fate-pattern-ship-name
+                            docopt-naval-fate-pattern-ship-shoot
+                            docopt-naval-fate-pattern-mine
+                            docopt-naval-fate-pattern-help
+                            docopt-naval-fate-pattern-version)))
 
-  (it "shoulod parse the options"
+  (it "should parse the options"
     (expect (docopt-program-options program)
-            :to-equal docopt-naval-fate-options-ast))
+            :to-equal (list docopt-naval-fate-option-drifting
+                            docopt-naval-fate-option-h
+                            docopt-naval-fate-option-help
+                            docopt-naval-fate-option-moored
+                            docopt-naval-fate-option-speed
+                            docopt-naval-fate-option-version)))
 
   (it "should parse the examples"
     (expect (docopt-program-examples program)

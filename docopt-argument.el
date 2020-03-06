@@ -62,6 +62,18 @@
 (cl-defmethod docopt-collect-options ((_ docopt-argument))
   "Collect the options from the Docopt OPTION." nil)
 
+(defun docopt-argument-merge (argument-1 argument-2)
+  "Merge ARGUMENT-2 into ARGUMENT-1."
+  (cond
+   ((and argument-1 argument-2)
+    (with-slots (default object-name value) argument-1
+      (setq default (or default (oref argument-2 :default)))
+      (setq value (or value (oref argument-2 :value)))
+      (setq object-name (or object-name (oref argument-2 :object-name)))
+      argument-1))
+   (argument-1 argument-1)
+   (argument-2 argument-2)))
+
 (provide 'docopt-argument)
 
 ;;; docopt-argument.el ends here

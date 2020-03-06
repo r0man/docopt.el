@@ -56,17 +56,17 @@ Usage:
   prog [options]
 
 Options:
-  -p, --path=<PATH>    Path to files.
+  -v, --verbose        Verbose.
 "))
 
 ;; (docopt-eval my-program "prog -p root")
-;; (docopt-eval-ast my-program "prog --long one --long two")
+;; (docopt-eval-ast my-program "prog --ver")
 
 ;; (seq-doseq (testcase (docopt-parse-testcases (f-read-text "test/testcases.docopt")))
 ;;   (docopt-test-define-describe testcase))
 
-;; (seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 10))
-;;   (docopt-test-define-describe testcase))
+(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 4))
+  (docopt-test-define-describe testcase))
 
 ;; (setq my-testcase (nth 5 (docopt-parse-testcases (f-read-text "test/testcases.docopt"))))
 ;; (docopt-test-define-describe my-testcase)

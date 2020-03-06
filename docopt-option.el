@@ -29,8 +29,8 @@
 
 ;;; Code:
 
-(require 'docopt-generic)
 (require 'docopt-argument)
+(require 'docopt-generic)
 (require 'eieio)
 (require 'eieio-base)
 
@@ -57,13 +57,27 @@
 
 ;;; Long Option
 
-(defclass docopt-long-option (docopt-option) ()
+(defclass docopt-long-option (docopt-option)
+  ((prefixes
+    :accessor docopt-long-option-prefixes
+    :documentation "The prefixes of the long option."
+    :initarg :prefixes
+    :initform nil
+    :type (or list null)))
   "A class representing a Docopt long option.")
+
+(defun docopt-long-option-format (name)
+  "Format the long option NAME."
+  (concat "--" name))
 
 ;;; Short option
 
 (defclass docopt-short-option (docopt-option) ()
   "A class representing a Docopt short option.")
+
+(defun docopt-short-option-format (name)
+  "Format the short option NAME."
+  (concat "-" name))
 
 (cl-defmethod docopt-collect-arguments ((_ docopt-option))
   "Collect the arguments from the Docopt OPTION." nil)
@@ -109,6 +123,20 @@
       (oset short-option :argument (or short-opt-arg long-opt-arg))))
   (list long-option short-option))
 
+(defun docopt-option-prefixes (option skip-options)
+  "Return the prefixes for OPTION computed from the SKIP-OPTIONS."
+  (let ((skip-names (thread-last (seq-map #'eieio-object-name-string skip-options)
+                      (delete (oref option :object-name))
+                      (delete (oref option :synonym))))
+        (option-name (eieio-object-name-string option)) )
+    (thread-last (number-sequence 1 (- (length option-name) 1))
+      (seq-map (lambda (length) (substring option-name 0 length)))
+      (seq-remove (lambda (prefix)
+                    (seq-some (lambda (skip-name)
+                                (s-starts-with-p prefix skip-name))
+                              skip-names)))
+      (nreverse))))
+
 (cl-defun docopt-make-options (&key description default long-name short-name argument argument-name)
   "Make a new Docopt option line instance.
 
@@ -129,6 +157,34 @@ ARGUMENT and ARGUMENT-NAME slots of the instance."
                           :argument argument
                           :description description))))
     (seq-remove #'null (docopt-option-link long-option short-option description default))))
+
+(defun docopt-option-merge (option-1 option-2)
+  "Merge OPTION-2 into OPTION-1."
+  (cond
+   ((and option-1 option-2)
+    (with-slots (argument description synonym object-name) option-1
+      ;; (setq argument (or argument (oref option-2 :argument)))
+      (setq argument (docopt-argument-merge argument (oref option-2 :argument)))
+      (setq description (or description (oref option-2 :description)))
+      (setq object-name (or object-name (oref option-2 :object-name)))
+      (setq synonym (or synonym (oref option-2 :synonym)))
+      option-1))
+   ((option-1 option-1))
+   ((option-2 option-2))))
+
+(defun docopt-options-merge (options-1 options-2)
+  "Merge OPTIONS-2 into OPTIONS-1."
+  (thread-last options-1
+    (seq-reduce
+     (lambda (options option-2)
+       (if-let ((option-1 (seq-find (lambda (option-1)
+                                      (string= (eieio-object-name-string option-1)
+                                               (eieio-object-name-string option-2)))
+                                    options)))
+           (progn (docopt-option-merge option-1 option-2) options)
+         (cons option-2 options)))
+     options-2)
+    (seq-sort-by #'eieio-object-name-string #'string<)))
 
 (provide 'docopt-option)
 

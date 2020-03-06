@@ -1,4 +1,4 @@
-;;; docopt-program-test.el --- The Docopt program tests -*- lexical-binding: t -*-
+;;; docopt-option-test.el --- The Docopt option tests -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019-2020 r0man
 
@@ -25,31 +25,20 @@
 
 ;;; Commentary:
 
-;; The Docopt program tests
+;; The Docopt option tests
 
 ;;; Code:
 
 (require 'buttercup)
-(require 'docopt-program)
+(require 'docopt)
+(require 'docopt-option)
 (require 'test-helper)
 
-(describe "Find an option by"
-  :var ((program (docopt-parse docopt-naval-fate-str)))
+(describe "Computing option prefixes"
+  (it "should return the prefixes for Naval Fate --help"
+    (expect (docopt-option-prefixes
+             (docopt-program-option docopt-naval-fate "help")
+             (docopt-program-options docopt-naval-fate))
+            :to-equal '("hel" "he" "h"))))
 
-  (it "long option should return nil when not found"
-    (expect (docopt-program-option program "UNKNOWN")
-            :to-equal nil))
-
-  (it "short option should return nil when not found"
-    (expect (docopt-program-option program "U")
-            :to-equal nil))
-
-  (it "long option should return the long option"
-    (expect (docopt-program-option program "help")
-            :to-equal docopt-naval-fate-option-help))
-
-  (it "short option should return the short option"
-    (expect (docopt-program-option program "h")
-            :to-equal docopt-naval-fate-option-h)))
-
-;;; docopt-program-test.el ends here
+;;; docopt-option-test.el ends here

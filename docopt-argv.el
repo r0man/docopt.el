@@ -34,10 +34,6 @@
 (require 'docopt-util)
 (require 'parsec)
 
-(defun docopt-argv-format-option-name (name)
-  "Format the long or short option NAME."
-  (concat (if (= 1 (length name)) "-" "--") name))
-
 (defun docopt--parse-argv-identifier ()
   "Parse a Docopt command line argument identifier."
   (parsec-re "[^ ]+"))
@@ -91,11 +87,19 @@
       (oset argument :value value))
     argument))
 
+(defun docopt-argv--long-option-candidates (option)
+  "Return a list of candidates matching the long OPTION."
+  (cons (docopt-long-option-format (eieio-object-name-string option))
+        (seq-map #'docopt-long-option-format (docopt-long-option-prefixes option))))
+
 (cl-defmethod docopt-argv-parser ((option docopt-long-option))
   "Return an argument vector parser for the long OPTION."
   (seq-let [_ argument]
       (parsec-collect
-       (parsec-str (concat "--" (oref option object-name)))
+       (eval `(parsec-or
+               ,@(seq-map
+                  (lambda (prefix) `(parsec-str ,prefix))
+                  (docopt-argv--long-option-candidates option))))
        (docopt--parse-argv-long-option-argument option))
     (let ((option (copy-sequence option)))
       (oset option :argument argument)
@@ -106,7 +110,7 @@
   (with-slots (description synonym object-name) option
     (seq-let [_ argument]
         (parsec-collect
-         (parsec-str (docopt-argv-format-option-name object-name))
+         (parsec-str (docopt-short-option-format object-name))
          (docopt--parse-argv-short-option-argument option))
       (let ((option (copy-sequence option)))
         (oset option :argument argument)
@@ -183,13 +187,13 @@
 
 (cl-defmethod docopt--argv-symbol ((option docopt-long-option))
   "Return the symbol for the long OPTION in an alist."
-  (intern (concat "--" (oref option object-name))))
+  (intern (docopt-long-option-format (oref option object-name))))
 
 (cl-defmethod docopt--argv-symbol ((option docopt-short-option))
   "Return the symbol for the short OPTION in an alist."
   (if (docopt-option-synonym option)
-      (intern (docopt-argv-format-option-name (oref option synonym)))
-    (intern (docopt-argv-format-option-name (oref option object-name)))))
+      (intern (docopt-long-option-format (oref option synonym)))
+    (intern (docopt-short-option-format (oref option object-name)))))
 
 ;; alist element
 
