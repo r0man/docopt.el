@@ -34,6 +34,10 @@
 (require 'docopt-util)
 (require 'parsec)
 
+(defun docopt-argv-format-option-name (name)
+  "Format the long or short option NAME."
+  (concat (if (= 1 (length name)) "-" "--") name))
+
 (defun docopt--parse-argv-identifier ()
   "Parse a Docopt command line argument identifier."
   (parsec-re "[^ ]+"))
@@ -90,8 +94,9 @@
 (cl-defmethod docopt-argv-parser ((option docopt-long-option))
   "Return an argument vector parser for the long OPTION."
   (seq-let [_ argument]
-      (parsec-collect (parsec-str (concat "--" (oref option object-name)))
-                      (docopt--parse-argv-long-option-argument option))
+      (parsec-collect
+       (parsec-str (concat "--" (oref option object-name)))
+       (docopt--parse-argv-long-option-argument option))
     (let ((option (copy-sequence option)))
       (oset option :argument argument)
       option)))
@@ -100,11 +105,10 @@
   "Return an argument vector parser for the short OPTION."
   (with-slots (description synonym object-name) option
     (seq-let [_ argument]
-        (parsec-collect (parsec-str (concat "-" object-name))
-                        (docopt--parse-argv-short-option-argument option))
-      (let ((option (if (oref option synonym)
-                        (docopt-long-option synonym :description description)
-                      (copy-sequence option))))
+        (parsec-collect
+         (parsec-str (docopt-argv-format-option-name object-name))
+         (docopt--parse-argv-short-option-argument option))
+      (let ((option (copy-sequence option)))
         (oset option :argument argument)
         option))))
 
@@ -183,7 +187,9 @@
 
 (cl-defmethod docopt--argv-symbol ((option docopt-short-option))
   "Return the symbol for the short OPTION in an alist."
-  (intern (concat "-" (oref option object-name))))
+  (if (docopt-option-synonym option)
+      (intern (docopt-argv-format-option-name (oref option synonym)))
+    (intern (docopt-argv-format-option-name (oref option object-name)))))
 
 ;; alist element
 
