@@ -53,6 +53,9 @@
 (cl-defmethod docopt-collect-arguments ((shortcut docopt-options-shortcut))
   "Collect the arguments from the Docopt SHORTCUT." nil)
 
+(cl-defmethod docopt-collect-commands ((shortcut docopt-options-shortcut))
+  "Collect the commands from the Docopt SHORTCUT." nil)
+
 (cl-defmethod docopt-collect-options ((shortcut docopt-options-shortcut))
   "Collect the options from the Docopt SHORTCUT." nil)
 

@@ -36,6 +36,10 @@
                 x (list x)))
           list))
 
+(defun docopt--parsec-error-p (result)
+  "Return t if the car of RESULT is a 'parsec-error."
+  (and (sequencep result) (equal 'parsec-error (car result))))
+
 (provide 'docopt-util)
 
 ;;; docopt-util.el ends here

@@ -114,15 +114,15 @@
 
   (it "should parse the branch with a command"
     (expect (parsec-with-input "a" (docopt-argv-parser exprs))
-            :to-equal (docopt-command :object-name "a")))
+            :to-equal (list (docopt-command :object-name "a"))))
 
   (it "should parse the branch with a short option"
     (expect (parsec-with-input "-b" (docopt-argv-parser exprs))
-            :to-equal (docopt-short-option :object-name "b")))
+            :to-equal (list (docopt-short-option :object-name "b"))))
 
   (it "should parse the branch with a long option"
     (expect (parsec-with-input "--c" (docopt-argv-parser exprs))
-            :to-equal (docopt-long-option :object-name "c"))))
+            :to-equal (list (docopt-long-option :object-name "c")))))
 
 (describe "Parsing optional short options within an either"
   :var ((exprs (parsec-with-input "[-a|-b]" (docopt--parse-usage-expr))))
@@ -133,18 +133,18 @@
 
   (it "should parse the first branch"
     (expect (parsec-with-input "-a" (docopt-argv-parser exprs))
-            :to-equal (docopt-short-option :object-name "a")))
+            :to-equal (list (docopt-short-option :object-name "a"))))
 
   (it "should parse the second branch"
     (expect (parsec-with-input "-b" (docopt-argv-parser exprs))
-            :to-equal (docopt-short-option :object-name "b"))))
+            :to-equal (list (docopt-short-option :object-name "b")))))
 
 (describe "Parsing a command followed by optional short options within an either"
   :var ((exprs (parsec-with-input "cmd [-a|-b]" (docopt--parse-usage-expr))))
 
   (it "should parse just the command"
     (expect (parsec-with-input "cmd" (docopt-argv-parser exprs))
-            :to-equal (list (docopt-command :object-name "cmd") nil)))
+            :to-equal (list (docopt-command :object-name "cmd"))))
 
   (it "should parse the command and the first branch"
     (expect (parsec-with-input "cmd -a" (docopt-argv-parser exprs))
@@ -158,10 +158,10 @@
 
 (describe "Parsing an options shortcut"
   :var ((shortcut (docopt-make-options-shortcut
-                   (list (docopt-long-option :object-name "aa")
-                         (docopt-short-option :object-name "a"))
-                   (list (docopt-long-option :object-name "bb")
-                         (docopt-short-option :object-name "b")))))
+                   (docopt-long-option :object-name "aa")
+                   (docopt-short-option :object-name "a")
+                   (docopt-long-option :object-name "bb")
+                   (docopt-short-option :object-name "b"))))
 
   (it "should parse no options"
     (expect (parsec-with-input "" (docopt-argv-parser shortcut))

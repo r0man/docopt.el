@@ -34,10 +34,6 @@
 (require 'docopt-util)
 (require 'parsec)
 
-(defun docopt--parsec-error-p (result)
-  "Return t if the car of RESULT is a 'parsec-error."
-  (and (sequencep result) (equal 'parsec-error (car result))))
-
 (defun docopt--parse-argv-identifier ()
   "Parse a Docopt command line argument identifier."
   (parsec-re "[^ ]+"))
@@ -67,14 +63,19 @@
 
 (defun docopt--parse-argv-simple-list (lst)
   "Parse the Docopt argument vector LST."
-  (let ((result (eval (docopt--parse-argv-simple-list* lst))))
-    (if (= 1 (length lst))
-        (car result) result)))
+  (docopt--flatten (eval (docopt--parse-argv-simple-list* lst))))
 
-(defun docopt--parse-argv-option-argument (option)
+(defun docopt--parse-argv-long-option-argument (option)
   "Parse the argument of the OPTION command line argument."
   (when-let ((argument (docopt-option-argument option)))
     (parsec-and (docopt--parse-long-option-separator)
+                (docopt-argv-parser argument))
+    option))
+
+(defun docopt--parse-argv-short-option-argument (option)
+  "Parse the argument of the OPTION command line argument."
+  (when-let ((argument (docopt-option-argument option)))
+    (parsec-and (parsec-optional (docopt--parse-short-option-separator))
                 (docopt-argv-parser argument))
     option))
 
@@ -87,13 +88,16 @@
     (oset argument :value value)
     argument))
 
-(cl-defmethod docopt-argv-parser ((option docopt-option))
+(cl-defmethod docopt-argv-parser ((option docopt-long-option))
   "Return an argument vector parser for the long OPTION."
-  (parsec-collect (parsec-str (concat (cond
-                                       ((docopt-long-option-p option) "--")
-                                       ((docopt-short-option-p option) "-"))
-                                      (oref option object-name)))
-                  (docopt--parse-argv-option-argument option))
+  (parsec-collect (parsec-str (concat "--" (oref option object-name)))
+                  (docopt--parse-argv-long-option-argument option))
+  option)
+
+(cl-defmethod docopt-argv-parser ((option docopt-short-option))
+  "Return an argument vector parser for the short OPTION."
+  (parsec-collect (parsec-str (concat "-" (oref option object-name)))
+                  (docopt--parse-argv-short-option-argument option))
   option)
 
 (cl-defmethod docopt-argv-parser ((command docopt-command))
@@ -115,7 +119,7 @@
   (eval `(parsec-sepby
           (parsec-or
            ,@(seq-map (lambda (option) `(docopt-argv-parser (quote ,option)))
-                      (apply #'append (docopt-options-shortcut-options shortcut))))
+                      (docopt-options-shortcut-options shortcut)))
           (docopt--parse-spaces1))))
 
 (cl-defmethod docopt-argv-parser ((group docopt-optional-group))
@@ -137,12 +141,15 @@
          (num-expressions (length expressions)))
     (seq-let [command exprs]
         (parsec-collect
-         (parsec-return (docopt-argv-parser (docopt-usage-pattern-command pattern))
-           (unless (zerop num-expressions)
-             (docopt--parse-spaces1)))
-         (unless (zerop num-expressions)
-           (docopt-argv-parser expressions)))
-      (cons command (if (listp exprs) exprs (list exprs))))))
+         (docopt--parse-command-name)
+         (parsec-return (if (zerop num-expressions)
+                            (parsec-and (docopt--parse-spaces) nil)
+                          (parsec-and
+                           (docopt--parse-spaces)
+                           (docopt-argv-parser expressions)))
+           (parsec-eof)))
+      (cons (docopt-command command)
+            (if (listp exprs) exprs (list exprs))))))
 
 ;; alist symbol
 
@@ -201,8 +208,24 @@
 
 (defun docopt--parse-argv (program s)
   "Parse the argument vector S of the Docopt PROGRAM."
-  (cdr (parsec-with-input s (docopt-argv-parser program))))
+  (let ((result (parsec-with-input s (docopt-argv-parser program))))
+    (if (docopt--parsec-error-p result)
+        result (cdr result))))
 
 (provide 'docopt-argv)
 
 ;;; docopt-argv.el ends here
+
+
+
+;; (docopt-eval-ast
+;;  (docopt-parse "
+;; Usage:
+;;   prog [options]
+
+;; Options:
+;;   -p=<PATH>
+
+;; Examples:
+;; ")
+;;  "prog -phome/")

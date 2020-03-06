@@ -157,6 +157,10 @@
     (expect (parsec-with-input "-p PATH" (docopt--parse-short-option))
             :to-equal (docopt-short-option :object-name "p" :argument (docopt-argument :object-name "PATH"))))
 
+  (it "should parse an option with a equal sign separated argument"
+    (expect (parsec-with-input "-p=PATH" (docopt--parse-short-option))
+            :to-equal (docopt-short-option :object-name "p" :argument (docopt-argument :object-name "PATH"))))
+
   (it "should parse an option with a not separated argument"
     (expect (parsec-with-input "-pPATH" (docopt--parse-short-option))
             :to-equal (docopt-short-option :object-name "p" :argument (docopt-argument :object-name "PATH")))))

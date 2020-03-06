@@ -174,7 +174,7 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 (defun docopt--parse-short-option-separator ()
   "Parse a short option separator."
-  (docopt--parse-whitespace))
+  (parsec-or (parsec-ch ?=) (docopt--parse-whitespace)))
 
 (defun docopt--parse-short-option ()
   "Parse a short option."

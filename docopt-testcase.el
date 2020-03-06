@@ -32,6 +32,7 @@
 (require 'buttercup)
 (require 'cl-lib)
 (require 'docopt-parser)
+(require 'docopt-util)
 (require 'eieio)
 (require 'json)
 (require 'parsec)
@@ -42,8 +43,7 @@
     :accessor docopt-testcase-example-ast
     :documentation "The argument vector of the testcase example."
     :initarg :ast
-    :initform nil
-    :type (or list null))
+    :initform nil)
    (argv
     :accessor docopt-testcase-example-argv
     :documentation "The argument vector of the testcase example."
@@ -55,7 +55,7 @@
     :documentation "The actual result of the testcase example."
     :initarg :actual
     :initform nil
-    :type (or list null))
+    :type (or list symbol null))
    (expected
     :accessor docopt-testcase-example-expected
     :documentation "The expected result of the testcase example."
@@ -189,40 +189,19 @@
   "Parse Docopt testcases from the string S."
   (parsec-with-input s (docopt--parse-testcases)))
 
-(defun docopt--equal-set (s1 s2)
-  "Return t if the association lists S1 and S2 are set equal."
-  (equal (cl-sort s1 #'string< :key #'car)
-         (cl-sort s2 #'string< :key #'car)))
-
-(defun docopt--testcase-parse-error-p (result)
-  "Return t if RESULT is a parse error."
-  (cond
-   ((and (sequencep result)
-         (sequencep (car result)))
-    (docopt--testcase-parse-error-p (car result)))
-   ((and (sequencep result)
-         (equal 'parsec-error (car result)))
-    t)))
-
 (defun docopt--testcase-test-example (program example)
   "Test the Docopt EXAMPLE of the PROGRAM."
   (let ((argv (docopt-testcase-example-argv example)))
     (condition-case nil
-        (let* ((ast (docopt--parse-argv program argv))
+        (let* (
+               (ast (docopt--parse-argv program argv))
                (expected (docopt-testcase-example-expected example)))
           (oset example :ast ast)
-          (if (docopt--testcase-parse-error-p ast)
-              (progn (message "Test \"%s\": FAILED" argv)
-                     (pp ast))
-            (let ((actual (docopt--argv-to-alist program ast)))
-              (oset example :actual actual)
-              (if (equal actual expected)
-                  (message "Test \"%s\": OK" argv)
-                (progn (message "Test \"%s\": FAILED" argv)
-                       (message "- Expected: %s" expected)
-                       (message "- Actual: %s" actual)
-                       (pp ast))))))
-      (error (message "Test \"%s\": FAILED" argv)))
+          (if (docopt--parsec-error-p ast)
+              (oset example :actual 'user-error)
+            (oset example :actual (docopt--argv-to-alist program ast))))
+      (error (progn (message "Test \"%s\": ERROR" argv)
+                    (oset example :actual 'fatal-error))))
     example))
 
 (defun docopt-testcase-test (testcase)
