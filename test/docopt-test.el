@@ -56,18 +56,17 @@ Usage:
   prog [options]
 
 Options:
-  --path=<files>       Path to files
-                [dEfAuLt: /root]
+  -p, --path=<PATH>    Path to files.
 "))
 
-;; (docopt-eval my-program "prog --long one --long two")
+;; (docopt-eval my-program "prog -p root")
 ;; (docopt-eval-ast my-program "prog --long one --long two")
 
 ;; (seq-doseq (testcase (docopt-parse-testcases (f-read-text "test/testcases.docopt")))
 ;;   (docopt-test-define-describe testcase))
 
-(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 3))
-  (docopt-test-define-describe testcase))
+;; (seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 10))
+;;   (docopt-test-define-describe testcase))
 
 ;; (setq my-testcase (nth 5 (docopt-parse-testcases (f-read-text "test/testcases.docopt"))))
 ;; (docopt-test-define-describe my-testcase)

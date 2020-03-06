@@ -102,6 +102,11 @@
   (when short-option
     (docopt-option-set-description-and-default short-option description default)
     (docopt-option-set-synonym short-option long-option))
+  (when (and long-option short-option)
+    (let ((long-opt-arg (oref long-option :argument))
+          (short-opt-arg (oref short-option :argument)))
+      (oset long-option :argument (or long-opt-arg short-opt-arg))
+      (oset short-option :argument (or short-opt-arg long-opt-arg))))
   (list long-option short-option))
 
 (cl-defun docopt-make-options (&key description default long-name short-name argument argument-name)
