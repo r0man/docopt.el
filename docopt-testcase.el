@@ -135,15 +135,16 @@
 
 (defun docopt--parse-testcase-expected-data ()
   "Parse the Docopt testcase expected result data."
-  (json-read-from-string
-   (concat "{" (parsec-and (docopt--parse-spaces)
-                           (parsec-ch ?\{)
-                           (parsec-until-s
-                            (parsec-try (parsec-and
-                                         (docopt--parse-spaces)
-                                         (parsec-ch ?\})
-                                         (docopt--parse-spaces)
-                                         (parsec-eol-or-eof))))) "}")))
+  (let ((json-false nil))
+    (json-read-from-string
+     (concat "{" (parsec-and (docopt--parse-spaces)
+                             (parsec-ch ?\{)
+                             (parsec-until-s
+                              (parsec-try (parsec-and
+                                           (docopt--parse-spaces)
+                                           (parsec-ch ?\})
+                                           (docopt--parse-spaces)
+                                           (parsec-eol-or-eof))))) "}"))))
 
 (defun docopt--parse-testcase-expected ()
   "Parse the Docopt testcase expected result."
@@ -165,9 +166,6 @@
                       (docopt--parse-testcase-expected))
         (docopt--parse-whitespaces))
     (make-instance 'docopt-testcase-example :argv argv :expected expected)))
-
-(parsec-with-input "$ prog\n{\"-a\": false}\n"
-  (docopt--parse-testcase-example))
 
 (defun docopt--parse-testcase-examples ()
   "Parse Docopt testcase examples."
