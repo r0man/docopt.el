@@ -98,12 +98,15 @@
 
 (cl-defmethod docopt-argv-parser ((option docopt-short-option))
   "Return an argument vector parser for the short OPTION."
-  (seq-let [_ argument]
-      (parsec-collect (parsec-str (concat "-" (oref option object-name)))
-                      (docopt--parse-argv-short-option-argument option))
-    (let ((option (copy-sequence option)))
-      (oset option :argument argument)
-      option)))
+  (with-slots (description synonym object-name) option
+    (seq-let [_ argument]
+        (parsec-collect (parsec-str (concat "-" object-name))
+                        (docopt--parse-argv-short-option-argument option))
+      (let ((option (if (oref option synonym)
+                        (docopt-long-option synonym :description description)
+                      (copy-sequence option))))
+        (oset option :argument argument)
+        option))))
 
 (cl-defmethod docopt-argv-parser ((command docopt-command))
   "Return an argument vector parser for the COMMAND."

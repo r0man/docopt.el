@@ -48,25 +48,25 @@
       (seq-doseq (example (docopt-testcase-test testcase))
         (docopt-test-define-it example)))))
 
+;;; docopt-test.el ends here
+
+(setq my-program
+      (docopt-parse "
+Usage:
+  prog [options]
+
+Options:
+  -v, --verbose        Verbose.
+"))
+
+(docopt-eval my-program "prog -v")
+(docopt-eval-ast my-program "prog -v")
+
 ;; (seq-doseq (testcase (docopt-parse-testcases (f-read-text "test/testcases.docopt")))
 ;;   (docopt-test-define-describe testcase))
 
-(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 3))
+(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 4))
   (docopt-test-define-describe testcase))
 
 ;; (setq my-testcase (nth 5 (docopt-parse-testcases (f-read-text "test/testcases.docopt"))))
 ;; (docopt-test-define-describe my-testcase)
-
-;;; docopt-test.el ends here
-
-;; (docopt-eval-ast
-;;  (docopt-parse "
-;; Usage:
-;;   prog [options]
-
-;; Options:
-;;   -p=<PATH>
-
-;; Examples:
-;; ")
-;;  "prog -phome/")
