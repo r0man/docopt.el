@@ -192,16 +192,15 @@
 (defun docopt--testcase-test-example (program example)
   "Test the Docopt EXAMPLE of the PROGRAM."
   (let ((argv (docopt-testcase-example-argv example)))
-    (condition-case nil
-        (let* (
-               (ast (docopt--parse-argv program argv))
+    (condition-case exception
+        (let* ((ast (docopt--parse-argv program argv))
                (expected (docopt-testcase-example-expected example)))
           (oset example :ast ast)
           (if (docopt--parsec-error-p ast)
               (oset example :actual 'user-error)
             (oset example :actual (docopt--argv-to-alist program ast))))
-      (error (progn (message "Test \"%s\": ERROR" argv)
-                    (oset example :actual 'fatal-error))))
+      (error (progn (message "Test \"%s\": ERROR:%s " argv exception)
+                    (oset example :actual exception))))
     example))
 
 (defun docopt-testcase-test (testcase)
