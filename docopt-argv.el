@@ -208,7 +208,8 @@
   "Return the alist cons for the OPTION and DEFAULT."
   (cons (docopt--argv-symbol option)
         (if-let (argument (docopt-option-argument option))
-            (docopt-argument-value argument)
+            (or (docopt-argument-value argument)
+                (docopt-argument-default argument))
           default)))
 
 (defun docopt-program-default-alist (program)

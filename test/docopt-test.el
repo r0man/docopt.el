@@ -53,10 +53,11 @@
 (setq my-program
       (docopt-parse "
 Usage:
-  prog --long=<arg>...
+  prog [options]
 
 Options:
-  --long=<arg>
+  --path=<files>       Path to files
+                [dEfAuLt: /root]
 "))
 
 ;; (docopt-eval my-program "prog --long one --long two")
