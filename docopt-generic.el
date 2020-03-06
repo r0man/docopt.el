@@ -34,6 +34,9 @@
 (cl-defgeneric docopt-collect-arguments (object)
   "Collect the arguments from the Docopt OBJECT.")
 
+(cl-defgeneric docopt-collect-commands (object)
+  "Collect the arguments from the Docopt OBJECT.")
+
 (cl-defgeneric docopt-collect-options (object)
   "Collect the options from the Docopt OBJECT.")
 

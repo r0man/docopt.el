@@ -56,6 +56,9 @@
   "Collect the arguments from the list LST."
   (delete-dups (docopt--flatten (seq-map #'docopt-collect-arguments lst))))
 
+(cl-defmethod docopt-collect-commands ((argument docopt-argument))
+  "Collect the commands from the Docopt ARGUMENT." nil)
+
 (cl-defmethod docopt-collect-options ((_ docopt-argument))
   "Collect the options from the Docopt OPTION." nil)
 

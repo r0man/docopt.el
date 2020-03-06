@@ -39,6 +39,13 @@
 (cl-defmethod docopt-collect-arguments ((_ docopt-command))
   "Collect the arguments from the Docopt COMMAND." nil)
 
+(cl-defmethod docopt-collect-commands ((command docopt-command))
+  "Collect the commands from the Docopt COMMAND." command)
+
+(cl-defmethod docopt-collect-commands ((lst list))
+  "Collect the commands from the list LST."
+  (delete-dups (docopt--flatten (seq-map #'docopt-collect-commands lst))))
+
 (cl-defmethod docopt-collect-options ((_ docopt-command))
   "Collect the options from the Docopt COMMAND." nil)
 
