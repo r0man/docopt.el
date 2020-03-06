@@ -55,3 +55,15 @@
 (docopt-test-define-describe my-testcase)
 
 ;;; docopt-test.el ends here
+
+;; (docopt-eval-ast
+;;  (docopt-parse "
+;; Usage:
+;;   prog [options]
+
+;; Options:
+;;   -p=<PATH>
+
+;; Examples:
+;; ")
+;;  "prog -phome/")

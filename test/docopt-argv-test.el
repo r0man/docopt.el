@@ -276,6 +276,13 @@
                             (docopt-command :object-name "move")
                             (docopt-argument :object-name "x" :value "1")
                             (docopt-argument :object-name "y" :value "2")
-                            (docopt-long-option :object-name "speed" :argument (docopt-argument :object-name "kn" :value "10"))))))
+                            (docopt-long-option :object-name "speed" :argument (docopt-argument :object-name "kn" :value "10")))))
+
+  (it "should parse \"naval_fate ship new SHIP-1 SHIP-2\""
+    (expect (docopt-eval-ast program "naval_fate ship new SHIP-1 SHIP-2")
+            :to-equal (list (docopt-command "ship")
+                            (docopt-command "new")
+                            (docopt-argument "name" :value "SHIP-1")
+                            (docopt-argument "name" :value "SHIP-2")))))
 
 ;;; docopt-argv-test.el ends here

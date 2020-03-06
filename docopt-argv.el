@@ -69,50 +69,60 @@
   "Parse the argument of the OPTION command line argument."
   (when-let ((argument (docopt-option-argument option)))
     (parsec-and (docopt--parse-long-option-separator)
-                (docopt-argv-parser argument))
-    option))
+                (docopt-argv-parser argument))))
 
 (defun docopt--parse-argv-short-option-argument (option)
   "Parse the argument of the OPTION command line argument."
   (when-let ((argument (docopt-option-argument option)))
     (parsec-and (parsec-optional (docopt--parse-short-option-separator))
-                (docopt-argv-parser argument))
-    option))
+                (docopt-argv-parser argument))))
 
 (cl-defgeneric docopt-argv-parser (object)
   "Return an argument vector parser for OBJECT.")
 
 (cl-defmethod docopt-argv-parser ((argument docopt-argument))
   "Return an argument vector parser for ARGUMENT."
-  (when-let ((value (docopt--parse-argv-identifier)))
-    (oset argument :value value)
+  (let ((argument (copy-sequence argument)))
+    (when-let ((value (docopt--parse-argv-identifier)))
+      (oset argument :value value))
     argument))
 
 (cl-defmethod docopt-argv-parser ((option docopt-long-option))
   "Return an argument vector parser for the long OPTION."
-  (parsec-collect (parsec-str (concat "--" (oref option object-name)))
-                  (docopt--parse-argv-long-option-argument option))
-  option)
+  (seq-let [_ argument]
+      (parsec-collect (parsec-str (concat "--" (oref option object-name)))
+                      (docopt--parse-argv-long-option-argument option))
+    (let ((option (copy-sequence option)))
+      (oset option :argument argument)
+      option)))
 
 (cl-defmethod docopt-argv-parser ((option docopt-short-option))
   "Return an argument vector parser for the short OPTION."
-  (parsec-collect (parsec-str (concat "-" (oref option object-name)))
-                  (docopt--parse-argv-short-option-argument option))
-  option)
+  (seq-let [_ argument]
+      (parsec-collect (parsec-str (concat "-" (oref option object-name)))
+                      (docopt--parse-argv-short-option-argument option))
+    (let ((option (copy-sequence option)))
+      (oset option :argument argument)
+      option)))
 
 (cl-defmethod docopt-argv-parser ((command docopt-command))
   "Return an argument vector parser for the COMMAND."
   (when (parsec-str (oref command object-name))
-    command))
+    (copy-sequence command)))
 
 (cl-defmethod docopt-argv-parser ((either docopt-either))
   "Return an argument vector parser for the EITHER."
-  (eval `(parsec-or ,@(seq-map (lambda (member) `(docopt-argv-parser (quote ,member)))
-                               (docopt-either-members either)))))
+  (eval `(parsec-or
+          ,@(seq-map (lambda (member) `(docopt-argv-parser (quote ,member)))
+                     (docopt-either-members either)))))
 
 (cl-defmethod docopt-argv-parser ((lst list))
   "Return an argument vector parser for the LST."
   (docopt--parse-argv-simple-list (docopt--flatten lst)))
+
+(cl-defmethod docopt-argv-parser ((repeated docopt-repeated))
+  "Return an argument vector parser for the REPEATED."
+  (parsec-sepby (docopt-argv-parser (docopt-repeated-object repeated)) (docopt--parse-spaces1)))
 
 (cl-defmethod docopt-argv-parser ((shortcut docopt-options-shortcut))
   "Return an argument vector parser for the options SHORTCUT."
@@ -215,17 +225,3 @@
 (provide 'docopt-argv)
 
 ;;; docopt-argv.el ends here
-
-
-
-;; (docopt-eval-ast
-;;  (docopt-parse "
-;; Usage:
-;;   prog [options]
-
-;; Options:
-;;   -p=<PATH>
-
-;; Examples:
-;; ")
-;;  "prog -phome/")
