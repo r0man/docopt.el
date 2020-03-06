@@ -51,8 +51,11 @@
 ;; (seq-doseq (testcase (docopt-parse-testcases (f-read-text "test/testcases.docopt")))
 ;;   (docopt-test-define-describe testcase))
 
-(setq my-testcase (nth 4 (docopt-parse-testcases (f-read-text "test/testcases.docopt"))))
-(docopt-test-define-describe my-testcase)
+(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 3))
+  (docopt-test-define-describe testcase))
+
+;; (setq my-testcase (nth 5 (docopt-parse-testcases (f-read-text "test/testcases.docopt"))))
+;; (docopt-test-define-describe my-testcase)
 
 ;;; docopt-test.el ends here
 
