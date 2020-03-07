@@ -53,14 +53,10 @@
 (setq my-program
       (docopt-parse "
 Usage:
-  prog [-a -r -m=<msg> -m -s -g]
+  prog -v...
 
 Options:
-  -a                   Add
-  -g
-  -m=<msg>             Message
-  -r                   Remote
-  -s
+  -v                    should parse: prog -v
 "))
 
 ;; (docopt-eval my-program "prog -p root")
