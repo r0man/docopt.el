@@ -52,13 +52,10 @@
 
 (setq my-program
       (docopt-parse "
-Usage:
-  prog [options]
+Usage: prog [options]
 
-Options:
-  -a                   Add
-  -m=<msg>             Message
-  -r                   Remote
+Options: --version
+         --verbose
 "))
 
 ;; (docopt-eval my-program "prog -p root")
@@ -67,7 +64,7 @@ Options:
 ;; (seq-doseq (testcase (docopt-parse-testcases (f-read-text "test/testcases.docopt")))
 ;;   (docopt-test-define-describe testcase))
 
-(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 11))
+(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 12))
   (docopt-test-define-describe testcase))
 
 ;; (setq my-testcase (nth 5 (docopt-parse-testcases (f-read-text "test/testcases.docopt"))))

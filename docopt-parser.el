@@ -215,7 +215,7 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 (defun docopt--parse-option-line-separator ()
   "Parse an option line separator."
-  (parsec-and (parsec-eol) (docopt--parse-option-line-begin)))
+  (parsec-and (parsec-eol) (parsec-lookahead (docopt--parse-option-line-begin))))
 
 (defun docopt--parse-option-line-description ()
   "Parse an option line description."
@@ -254,7 +254,7 @@ When t, only allow \"=\" as the long option separator, otherwise
       (parsec-collect
        (docopt--parse-whitespaces)
        (docopt--parse-option-line-options)
-       (docopt--parse-whitespaces)
+       (docopt--parse-spaces)
        (docopt--parse-option-line-description))
     (let ((default (docopt--parse-default description)))
       (seq-remove #'null (docopt-option-link long-option short-option description default)))))
