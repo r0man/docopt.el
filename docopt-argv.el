@@ -30,6 +30,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'dash)
 (require 'docopt-parser)
 (require 'docopt-util)
 (require 'parsec)
@@ -64,6 +65,45 @@
 (defun docopt--parse-argv-simple-list (lst)
   "Parse the Docopt argument vector LST."
   (docopt--flatten (eval (docopt--parse-argv-simple-list* lst))))
+
+(defun docopt--parse-argv-stacked-list (lst)
+  "Parse the Docopt argument vector LST."
+  (docopt--flatten (docopt-argv-parser (docopt-argv--stack-short-options lst))))
+
+(defun docopt-argv--stack-short-options (lst)
+  "Parse the Docopt argument vector LST."
+  (thread-last lst
+    (-partition-by (lambda (element) (not (docopt-short-option-p element))))
+    (seq-mapcat (lambda (group)
+                  (thread-last (-partition-after-pred
+                                (lambda (element)
+                                  (and (docopt-short-option-p element)
+                                       (docopt-option-argument element)))
+                                group)
+                    (seq-map (lambda (group)
+                               (if (docopt-short-option-p (car group))
+                                   (make-instance 'docopt-stacked-short-options :members group)
+                                 group))))))
+    (docopt--flatten)))
+
+(defun docopt-argv-stack-start-regex (option)
+  "Return the regular expression to parse a stacked short OPTION at the beginning."
+  (concat "-" (eieio-object-name-string option)))
+
+(defun docopt-argv-stack-element-regex (option)
+  "Return the regular expression to parse a stacked short OPTION."
+  (let ((name (eieio-object-name-string option)))
+    (if (docopt-option-argument option)
+        (concat "\\(\s*-\\)?" name "\\(=\\|[\s]+\\)?\\([^\s]+\\)")
+      (concat "\\(\s*-\\)?" name))))
+
+(defun docopt-argv-stack-regex (options)
+  "Return the regular expression to parse the stacked short OPTIONS."
+  (with-slots (members) options
+    (concat (docopt-argv-stack-start-regex (car members))
+            (thread-last (seq-drop members 1)
+              (seq-map (lambda (option) (docopt-argv-stack-element-regex option)))
+              (s-join "")))))
 
 (defun docopt--parse-argv-long-option-argument (option)
   "Parse the argument of the OPTION command line argument."
@@ -132,11 +172,23 @@
 
 (cl-defmethod docopt-argv-parser ((lst list))
   "Return an argument vector parser for the LST."
-  (docopt--parse-argv-simple-list (docopt--flatten lst)))
+  (if (seq-find #'docopt-short-option-p lst)
+      (docopt--parse-argv-stacked-list (docopt--flatten lst))
+    (docopt--parse-argv-simple-list (docopt--flatten lst))))
 
 (cl-defmethod docopt-argv-parser ((option docopt-long-option))
   "Return an argument vector parser for the long OPTION."
   (parsec-try (parsec-and (parsec-str "--") (docopt-argv--parse-long-option option))))
+
+(cl-defmethod docopt-argv-parser ((options docopt-stacked-short-options))
+  "Return an argument vector parser for the stacked short OPTIONS."
+  (with-slots (members) options
+    (let ((group (+ 1 (length members)))
+          (members (seq-map #'copy-sequence members)))
+      (when-let ((value (eval `(parsec-query (parsec-re ,(docopt-argv-stack-regex options)) :group ,group))))
+        (when-let ((argument (docopt-option-argument (car (last members)))))
+          (oset argument :value value))))
+    members))
 
 (cl-defmethod docopt-argv-parser ((option docopt-short-option))
   "Return an argument vector parser for the short OPTION."
@@ -158,6 +210,15 @@
 (cl-defmethod docopt-argv-parser ((group docopt-optional-group))
   "Return an argument vector parser for the GROUP."
   (parsec-optional (docopt-argv-parser (docopt-group-members group))))
+
+;; (cl-defmethod docopt-argv-parser ((group docopt-optional-group))
+;;   "Return an argument vector parser for the GROUP."
+;;   (docopt--flatten
+;;    (eval `(parsec-optional (parsec-sepby
+;;                             (parsec-or ,@(seq-map (lambda (member)
+;;                                                     `(docopt-argv-parser (quote ,member)))
+;;                                                   (docopt-group-members group)))
+;;                             (docopt--parse-spaces))))))
 
 (cl-defmethod docopt-argv-parser ((program docopt-program))
   "Return an argument vector parser for the PROGRAM."
@@ -235,21 +296,23 @@
 
 (defun docopt--argv-to-alist (program exprs)
   "Convert the Docopt EXPRS for PROGRAM to an alist."
-  (let ((result (thread-last (seq-remove #'null exprs)
-                  (seq-map (lambda (element) (docopt--argv-alist-element element t)))
-                  (seq-group-by #'car)
-                  (seq-map #'cdr)
-                  (seq-map (lambda (group)
-                             (let ((value (seq-map #'cdr group)))
-                               (cons (caar group)
-                                     (if (= 1 (length value))
-                                         (car value)
-                                       (apply #'vector value))))))
-                  (seq-sort-by #'car #'string<))))
-    (seq-doseq (element (docopt-program-default-alist program))
-      (unless (assoc (car element) result)
-        (setq result (cons element result))))
-    (seq-sort-by #'car #'string< result)))
+  (if (docopt--parsec-error-p exprs)
+      exprs
+    (let ((result (thread-last (seq-remove #'null exprs)
+                    (seq-map (lambda (element) (docopt--argv-alist-element element t)))
+                    (seq-group-by #'car)
+                    (seq-map #'cdr)
+                    (seq-map (lambda (group)
+                               (let ((value (seq-map #'cdr group)))
+                                 (cons (caar group)
+                                       (if (= 1 (length value))
+                                           (car value)
+                                         (apply #'vector value))))))
+                    (seq-sort-by #'car #'string<))))
+      (seq-doseq (element (docopt-program-default-alist program))
+        (unless (assoc (car element) result)
+          (setq result (cons element result))))
+      (seq-sort-by #'car #'string< result))))
 
 (defun docopt--parse-argv (program s)
   "Parse the argument vector S of the Docopt PROGRAM."

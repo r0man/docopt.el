@@ -59,7 +59,8 @@
 
 (defun docopt-string--section (header content)
   "Convert the Docopt section HEADER and CONTENT to a string."
-  (concat header ":\n  " (string-join content "\n  ")))
+  (unless (zerop (length content))
+    (concat header ":\n  " (string-join content "\n  "))))
 
 (defun docopt-string--examples (examples)
   "Convert the Docopt EXAMPLES to a string."
