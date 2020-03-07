@@ -159,25 +159,43 @@
 (describe "Parsing an options shortcut"
   :var ((shortcut (docopt-make-options-shortcut
                    (docopt-long-option :object-name "aa")
-                   (docopt-short-option :object-name "a")
+                   (docopt-short-option :object-name "a" :argument (docopt-argument :object-name "A"))
                    (docopt-long-option :object-name "bb")
-                   (docopt-short-option :object-name "b"))))
+                   (docopt-short-option :object-name "b")
+                   (docopt-short-option :object-name "c")
+                   (docopt-long-option :object-name "c" :argument (docopt-argument :object-name "C")))))
 
   (it "should parse no options"
     (expect (parsec-with-input "" (docopt-argv-parser shortcut))
             :to-equal nil))
 
   (it "should parse a single short option"
-    (expect (parsec-with-input "-a" (docopt-argv-parser shortcut))
-            :to-equal (list (docopt-short-option :object-name "a"))))
+    (expect (parsec-with-input "-a=x" (docopt-argv-parser shortcut))
+            :to-equal (list (docopt-short-option
+                             :object-name "a"
+                             :argument (docopt-argument :object-name "A" :value "x")))))
 
   (it "should parse a single long option"
     (expect (parsec-with-input "--aa" (docopt-argv-parser shortcut))
             :to-equal (list (docopt-long-option :object-name "aa"))))
 
   (it "should parse multiple option"
-    (expect (parsec-with-input "-a -b --bb --aa" (docopt-argv-parser shortcut))
-            :to-equal (list (docopt-short-option :object-name "a")
+    (expect (parsec-with-input "-a=x -b --bb --aa" (docopt-argv-parser shortcut))
+            :to-equal (list (docopt-short-option
+                             :object-name "a"
+                             :argument (docopt-argument :object-name "A" :value "x"))
+                            (docopt-short-option :object-name "b")
+                            (docopt-long-option :object-name "bb")
+                            (docopt-long-option :object-name "aa"))))
+
+  (it "should parse multiple stacked option"
+    (expect (parsec-with-input "--aa -bca=x -b --bb --aa" (docopt-argv-parser shortcut))
+            :to-equal (list (docopt-long-option :object-name "aa")
+                            (docopt-short-option :object-name "b")
+                            (docopt-short-option :object-name "c")
+                            (docopt-short-option
+                             :object-name "a"
+                             :argument (docopt-argument :object-name "A" :value "x"))
                             (docopt-short-option :object-name "b")
                             (docopt-long-option :object-name "bb")
                             (docopt-long-option :object-name "aa")))))

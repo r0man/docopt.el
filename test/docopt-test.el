@@ -56,7 +56,9 @@ Usage:
   prog [options]
 
 Options:
-  -v, --verbose        Verbose.
+  -a                   Add
+  -m=<msg>             Message
+  -r                   Remote
 "))
 
 ;; (docopt-eval my-program "prog -p root")
@@ -65,7 +67,7 @@ Options:
 ;; (seq-doseq (testcase (docopt-parse-testcases (f-read-text "test/testcases.docopt")))
 ;;   (docopt-test-define-describe testcase))
 
-(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 4))
+(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 11))
   (docopt-test-define-describe testcase))
 
 ;; (setq my-testcase (nth 5 (docopt-parse-testcases (f-read-text "test/testcases.docopt"))))
