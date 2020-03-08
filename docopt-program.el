@@ -75,21 +75,18 @@
 
 (cl-defmethod docopt-collect-arguments ((program docopt-program))
   "Collect the arguments from the Docopt PROGRAM."
-  (delete-dups (seq-mapcat #'docopt-collect-arguments (docopt-program-usage program))))
+  (seq-mapcat #'docopt-collect-arguments (docopt-program-usage program)))
 
 (cl-defmethod docopt-collect-commands ((program docopt-program))
   "Collect the commands from the Docopt PROGRAM."
-  (delete-dups (seq-mapcat #'docopt-collect-commands (docopt-program-usage program))))
+  (seq-mapcat #'docopt-collect-commands (docopt-program-usage program)))
 
 (cl-defmethod docopt-collect-options ((program docopt-program))
   "Collect the options from the Docopt PROGRAM."
-  (cl-remove-duplicates
-   (seq-concatenate
-    'list
-    (seq-mapcat #'docopt-collect-options (docopt-program-usage program))
-    (docopt-program-options program))
-   :key #'eieio-object-name-string
-   :test 'string=))
+  (seq-concatenate
+   'list
+   (seq-mapcat #'docopt-collect-options (docopt-program-usage program))
+   (docopt-program-options program)))
 
 (defun docopt-program-option (program name)
   "Return the long or short option of PROGRAM by NAME."

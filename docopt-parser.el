@@ -456,9 +456,9 @@ When t, only allow \"=\" as the long option separator, otherwise
                 (docopt--parse-program-sections program))
     (let ((program (docopt-program-remove-unknown-options program)))
       (docopt-set-shortcut-options program (docopt-program-options program))
-      (oset program :arguments (docopt-collect-arguments program))
+      (oset program :arguments (docopt-remove-duplicates (docopt-collect-arguments program)))
       (oset program :options (docopt-options-merge
-                              (docopt-collect-options (docopt-program-usage program))
+                              (docopt-remove-duplicates (docopt-collect-options (docopt-program-usage program)))
                               (docopt-program-options program)))
       (seq-doseq (option (docopt-program-options program))
         (when (docopt-long-option-p option)

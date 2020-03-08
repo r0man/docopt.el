@@ -29,6 +29,9 @@
 
 ;;; Code:
 
+(require 'docopt-generic)
+(require 'cl-lib)
+
 (defun docopt--flatten (list)
   "Flatten the LIST."
   (mapcan (lambda (x)
@@ -39,6 +42,10 @@
 (defun docopt--parsec-error-p (result)
   "Return t if the car of RESULT is a 'parsec-error."
   (and (sequencep result) (equal 'parsec-error (car result))))
+
+(defun docopt-remove-duplicates (lst)
+  "Remove duplicate Docopt objects from LST."
+  (cl-remove-duplicates lst :test #'docopt-equals))
 
 (provide 'docopt-util)
 

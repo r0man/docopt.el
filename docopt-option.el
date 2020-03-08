@@ -55,6 +55,15 @@
     :type (or string null)))
   "A class representing a Docopt base option.")
 
+(cl-defmethod docopt-equals ((option docopt-option) object)
+  "Return t if OPTION and OBJECT are equal-ish."
+  (and (equal (object-class option)
+              (object-class object))
+       (string= (eieio-object-name-string option)
+                (eieio-object-name-string object))
+       (docopt-equals (docopt-option-argument option)
+                      (docopt-option-argument object))))
+
 (cl-defmethod docopt-walk ((option docopt-option) f)
   "Walk the OPTION of an abstract syntax tree and apply F on it."
   (let ((option (copy-sequence option)))
@@ -120,7 +129,7 @@
 
 (cl-defmethod docopt-collect-options ((lst list))
   "Collect the options from the list LST."
-  (delete-dups (docopt--flatten (seq-map #'docopt-collect-options lst))))
+  (docopt--flatten (seq-map #'docopt-collect-options lst)))
 
 (defun docopt-option-set-default (option default)
   "Set the default argument value of OPTION to DEFAULT."

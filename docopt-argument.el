@@ -48,13 +48,19 @@
     :type (or string null)))
   "A class representing a Docopt argument.")
 
+(cl-defmethod docopt-equals ((argument docopt-argument) object)
+  "Return t if ARGUMENT and OBJECT are equal-ish."
+  (and (docopt-argument-p object)
+       (string= (eieio-object-name-string argument)
+                (eieio-object-name-string object))))
+
 (cl-defmethod docopt-collect-arguments ((argument docopt-argument))
   "Collect the arguments from the Docopt ARGUMENT."
   (list argument))
 
 (cl-defmethod docopt-collect-arguments ((lst list))
   "Collect the arguments from the list LST."
-  (delete-dups (docopt--flatten (seq-map #'docopt-collect-arguments lst))))
+  (docopt--flatten (seq-map #'docopt-collect-arguments lst)))
 
 (cl-defmethod docopt-collect-commands ((argument docopt-argument))
   "Collect the commands from the Docopt ARGUMENT." nil)
