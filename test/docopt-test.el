@@ -52,15 +52,17 @@
 
 (setq my-program
       (docopt-parse "
-usage: prog [-armmsg]
+Usage:
+  prog [options] cmd
 
-options: -a        Add
-         -r        Remote
-         -m <msg>  Message
+Options:
+  -a
 "))
 
+;; (docopt-eval-ast my-program "prog -a cmd")
+
 ;; (docopt-eval my-program "prog -p root")
-;; (docopt-eval-ast my-program "prog -a -r -myourass")
+;; (docopt-eval-ast my-program "prog -a cmd")
 ;; (docopt-eval my-program "prog")
 ;; (docopt-eval my-program "prog -a -r -m Hello")
 ;; (docopt-eval my-program "prog -a -r -m Hello -m -s -g")

@@ -205,7 +205,8 @@
                            (parsec-try (docopt-argv--parse-stacked-options (quote ,shortcut)))
                            ,@(seq-map (lambda (option) `(list (docopt-argv-parser (quote ,option))))
                                       (docopt-options-shortcut-options shortcut)))
-                          (docopt--parse-spaces1)))))
+                          (parsec-try (parsec-and (docopt--parse-spaces1)
+                                                  (parsec-lookahead (parsec-str "-"))))))))
 
 (cl-defmethod docopt-argv-parser ((group docopt-optional-group))
   "Return an argument vector parser for the GROUP."
