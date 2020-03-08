@@ -3,8 +3,9 @@
 
 (package-file "docopt.el")
 
-(depends-on "parsec")
+(depends-on "dash")
 (depends-on "f")
+(depends-on "parsec")
 (depends-on "s")
 
 (files "*.el" (:exclude ".dir-locals.el"))
