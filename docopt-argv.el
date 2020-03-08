@@ -241,8 +241,8 @@
 
 (cl-defmethod docopt-argv-parser ((program docopt-program))
   "Return an argument vector parser for the PROGRAM."
-  (eval `(parsec-or ,@(seq-map (lambda (pattern) `(parsec-try (docopt-argv-parser (quote ,pattern))))
-                               (docopt-program-usage program)))))
+  (docopt--flatten (eval `(parsec-or ,@(seq-map (lambda (pattern) `(parsec-try (docopt-argv-parser (quote ,pattern))))
+                                               (docopt-program-usage program))))))
 
 (cl-defmethod docopt-argv-parser ((group docopt-required-group))
   "Return an argument vector parser for the GROUP."
