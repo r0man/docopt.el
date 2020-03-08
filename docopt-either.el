@@ -62,6 +62,13 @@
   "Collect the options from the Docopt EITHER."
   (delete-dups (seq-mapcat #'docopt-collect-options (docopt-either-members either))))
 
+(cl-defmethod docopt-walk ((either docopt-either) f)
+  "Walk the EITHER of an abstract syntax tree and apply F on it."
+  (let ((either (copy-sequence either)))
+    (with-slots (members) either
+      (setq members (docopt-walk members f))
+      (funcall f either))))
+
 (provide 'docopt-either)
 
 ;;; docopt-either.el ends here

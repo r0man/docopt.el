@@ -62,6 +62,15 @@
 (cl-defmethod docopt-collect-options ((_ docopt-argument))
   "Collect the options from the Docopt OPTION." nil)
 
+(cl-defmethod docopt-walk ((argument docopt-argument) f)
+  "Walk the ARGUMENT of an abstract syntax tree and apply F on it."
+  (let ((argument (copy-sequence argument)))
+    (with-slots (default object-name value) argument
+      (setq default (docopt-walk default f))
+      (setq object-name (docopt-walk object-name f))
+      (setq value (docopt-walk value f))
+      (funcall f argument))))
+
 (defun docopt-argument-merge (argument-1 argument-2)
   "Merge ARGUMENT-2 into ARGUMENT-1."
   (cond

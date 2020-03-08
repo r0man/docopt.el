@@ -41,6 +41,13 @@
     :type (or list null)))
   "A class representing a Docopt group.")
 
+(cl-defmethod docopt-walk ((group docopt-group) f)
+  "Walk the GROUP of an abstract syntax tree and apply F on it."
+  (let ((group (copy-sequence group)))
+    (with-slots (members) group
+      (setq members (docopt-walk members f))
+      (funcall f group))))
+
 ;;; Optional Group
 
 (defclass docopt-optional-group (docopt-group) ()

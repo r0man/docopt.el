@@ -59,6 +59,13 @@
 (cl-defmethod docopt-collect-options ((shortcut docopt-options-shortcut))
   "Collect the options from the Docopt SHORTCUT." nil)
 
+(cl-defmethod docopt-walk ((shortcut docopt-options-shortcut) f)
+  "Walk the SHORTCUT of an abstract syntax tree and apply F on it."
+  (let ((shortcut (copy-sequence shortcut)))
+    (with-slots (options) shortcut
+      (setq options (docopt-walk options f))
+      (funcall f shortcut))))
+
 (defun docopt-make-options-shortcut (&rest options)
   "Make a new Docopt options shortcut using OPTIONS."
   (make-instance 'docopt-options-shortcut :options options))

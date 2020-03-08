@@ -55,6 +55,15 @@
     :type (or string null)))
   "A class representing a Docopt base option.")
 
+(cl-defmethod docopt-walk ((option docopt-option) f)
+  "Walk the OPTION of an abstract syntax tree and apply F on it."
+  (let ((option (copy-sequence option)))
+    (with-slots (argument description synonym) option
+      (setq argument (docopt-walk argument f))
+      (setq description (docopt-walk description f))
+      (setq synonym (docopt-walk synonym f))
+      (funcall f option))))
+
 ;;; Long Option
 
 (defclass docopt-long-option (docopt-option)
@@ -65,6 +74,16 @@
     :initform nil
     :type (or list null)))
   "A class representing a Docopt long option.")
+
+(cl-defmethod docopt-walk ((option docopt-long-option) f)
+  "Walk the OPTION of an abstract syntax tree and apply F on it."
+  (let ((option (copy-sequence option)))
+    (with-slots (argument description synonym prefixes) option
+      (setq argument (docopt-walk argument f))
+      (setq description (docopt-walk description f))
+      (setq synonym (docopt-walk synonym f))
+      (setq prefixes (docopt-walk prefixes f))
+      (funcall f option))))
 
 (defun docopt-long-option-format (name)
   "Format the long option NAME."

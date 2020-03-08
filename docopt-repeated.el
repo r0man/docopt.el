@@ -56,6 +56,13 @@
   "Collect the options from the Docopt REPEATED."
   (docopt-collect-options (docopt-repeated-object repeated)))
 
+(cl-defmethod docopt-walk ((repeated docopt-repeated) f)
+  "Walk the REPEATED of an abstract syntax tree and apply F on it."
+  (let ((repeated (copy-sequence repeated)))
+    (with-slots (object) repeated
+      (setq object (docopt-walk object f))
+      (funcall f repeated))))
+
 (provide 'docopt-repeated)
 
 ;;; docopt-repeated.el ends here

@@ -106,6 +106,55 @@
                                       (docopt-option-synonym option)))
                                (docopt-program-options program))))
 
+(cl-defmethod docopt-walk ((program docopt-program) f)
+  "Walk the PROGRAM of an abstract syntax tree and apply F on it."
+  (let ((program (copy-sequence program)))
+    (with-slots (arguments header examples footer usage options) program
+      (setq arguments (docopt-walk arguments f))
+      (setq header (docopt-walk header f))
+      (setq examples (docopt-walk examples f))
+      (setq usage (docopt-walk usage f))
+      (funcall f program))))
+
+(defun docopt-program-remove-unknown-options (program)
+  "Remove all options from PROGRAM that are not defined in the options section."
+  (if (docopt-program-options program)
+      (docopt-walk program
+                   (lambda (element)
+                     (cond
+                      ((docopt-group-child-p element)
+                       (with-slots (members) element
+                         (setq members (delete-dups
+                                        (seq-filter (lambda (member)
+                                                      (if (docopt-option-child-p member)
+                                                          (docopt-program-option program (eieio-object-name-string member))
+                                                        t))
+                                                    members)))
+                         element))
+                      (t element))))
+    program))
+
+;; (defun docopt-walk-options (program)
+;;   (docopt-walk program (lambda (element)
+;;                          (cond
+;;                           ((docopt-option-child-p element)
+;;                            element)
+
+;;                           ((docopt-group-child-p element)
+;;                            (docopt-group-members element))
+
+;;                           ((docopt-either-p element)
+;;                            (docopt--flatten (apply #'append (docopt-either-members element))))
+
+;;                           ((docopt-repeated-p element)
+;;                            (list (docopt-repeated-object element)))
+
+;;                           ((docopt-usage-pattern-p element)
+;;                            (apply #'append (docopt-usage-pattern-expressions element)))
+
+;;                           ((docopt-program-p element)
+;;                            (seq-mapcat #'docopt--flatten (docopt-program-usage element)))))))
+
 (provide 'docopt-program)
 
 ;;; docopt-program.el ends here

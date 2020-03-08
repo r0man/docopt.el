@@ -454,15 +454,16 @@ When t, only allow \"=\" as the long option separator, otherwise
   (let ((program (docopt-program)))
     (parsec-and (docopt--parse-program-header program)
                 (docopt--parse-program-sections program))
-    (docopt-set-shortcut-options program (docopt-program-options program))
-    (oset program :arguments (docopt-collect-arguments program))
-    (oset program :options (docopt-options-merge
-                            (docopt-collect-options (docopt-program-usage program))
-                            (docopt-program-options program)))
-    (seq-doseq (option (docopt-program-options program))
-      (when (docopt-long-option-p option)
-        (oset option :prefixes (docopt-option-prefixes option (docopt-program-options program)))))
-    program))
+    (let ((program (docopt-program-remove-unknown-options program)))
+      (docopt-set-shortcut-options program (docopt-program-options program))
+      (oset program :arguments (docopt-collect-arguments program))
+      (oset program :options (docopt-options-merge
+                              (docopt-collect-options (docopt-program-usage program))
+                              (docopt-program-options program)))
+      (seq-doseq (option (docopt-program-options program))
+        (when (docopt-long-option-p option)
+          (oset option :prefixes (docopt-option-prefixes option (docopt-program-options program)))))
+      program)))
 
 (provide 'docopt-parser)
 

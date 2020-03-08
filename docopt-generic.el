@@ -30,6 +30,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'seq)
 
 (cl-defgeneric docopt-collect-arguments (object)
   "Collect the arguments from the Docopt OBJECT.")
@@ -39,6 +40,17 @@
 
 (cl-defgeneric docopt-collect-options (object)
   "Collect the options from the Docopt OBJECT.")
+
+(cl-defgeneric docopt-walk (object f)
+  "Walk the OBJECT of an abstract syntax tree and apply F on it.")
+
+(cl-defmethod docopt-walk ((lst list) f)
+  "Walk the list LST of an abstract syntax tree and apply F on it."
+  (seq-map (lambda (element) (docopt-walk element f)) lst))
+
+(cl-defmethod docopt-walk ((s string) f)
+  "Walk the string S of an abstract syntax tree and apply F on it."
+  (funcall f s))
 
 (provide 'docopt-generic)
 
