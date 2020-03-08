@@ -417,53 +417,51 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 ;; Program
 
-(defun docopt--parse-program-header (program)
+(defun docopt--parse-program-header ()
   "Parse and set the Docopt PROGRAM header."
   (let ((header (s-trim (parsec-until-s (parsec-lookahead (parsec-re "\\([[:alnum:]]+\\):"))))))
-    (unless (s-blank-p header)
-      (oset program :header header))))
+    (unless (s-blank-p header) (list :header header))))
 
-(defun docopt--parse-program-examples (program)
+(defun docopt--parse-program-examples ()
   "Parse and set the Docopt PROGRAM examples."
-  (oset program :examples (docopt--parse-examples)))
+  (list :examples (docopt--parse-examples)))
 
-(defun docopt--parse-program-footer (program)
+(defun docopt--parse-program-footer ()
   "Parse and set the Docopt PROGRAM footer."
-  (oset program :footer (parsec-until-s
-                         (parsec-or
-                          (parsec-eof)
-                          (parsec-lookahead (docopt--parse-section-header))))))
+  (list :footer (parsec-until-s
+                 (parsec-or
+                  (parsec-eof)
+                  (parsec-lookahead (docopt--parse-section-header))))))
 
-(defun docopt--parse-program-options (program)
+(defun docopt--parse-program-options ()
   "Parse and set the Docopt PROGRAM options."
-  (oset program :options (docopt--parse-options)))
+  (list :options (docopt--parse-options)))
 
-(defun docopt--parse-program-usage (program)
+(defun docopt--parse-program-usage ()
   "Parse and set the Docopt PROGRAM usage."
-  (oset program :usage (docopt--parse-usage)))
+  (list :usage (docopt--parse-usage)))
 
-(defun docopt--parse-program-sections (program)
+(defun docopt--parse-program-sections ()
   "Parse and set the Docopt sections for the PROGRAM."
-  (parsec-many (parsec-or (docopt--parse-program-usage program)
-                          (docopt--parse-program-options program)
-                          (docopt--parse-program-examples program)
-                          (docopt--parse-program-footer program))))
+  (seq-remove #'null (cons (docopt--parse-program-header)
+                           (parsec-many (parsec-or (docopt--parse-program-usage)
+                                                   (docopt--parse-program-options)
+                                                   (docopt--parse-program-examples)
+                                                   (docopt--parse-program-footer))))))
 
 (defun docopt--parse-program ()
   "Parse a Docopt program."
   (let ((program (docopt-program)))
-    (parsec-and (docopt--parse-program-header program)
-                (docopt--parse-program-sections program))
+    (docopt-program-set-sections program (docopt--parse-program-sections))
     (let ((program (docopt-program-remove-unknown-options program)))
-      (docopt-set-shortcut-options program (docopt-program-options program))
-      (oset program :arguments (docopt-remove-duplicates (docopt-collect-arguments program)))
-      (oset program :options (docopt-options-merge
-                              (docopt-remove-duplicates (docopt-collect-options (docopt-program-usage program)))
-                              (docopt-program-options program)))
-      (seq-doseq (option (docopt-program-options program))
-        (when (docopt-long-option-p option)
-          (oset option :prefixes (docopt-option-prefixes option (docopt-program-options program)))))
-      program)))
+      (with-slots (arguments options usage) program
+        (docopt-set-shortcut-options program options)
+        (setq arguments (docopt-remove-duplicates (docopt-collect-arguments program)))
+        (setq options (docopt-options-merge (docopt-remove-duplicates (docopt-collect-options usage)) options))
+        (seq-doseq (option options)
+          (when (docopt-long-option-p option)
+            (oset option :prefixes (docopt-option-prefixes option options))))
+        program))))
 
 (provide 'docopt-parser)
 

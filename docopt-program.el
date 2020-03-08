@@ -93,6 +93,12 @@
   (seq-find (lambda (option) (equal name (oref option object-name)))
             (docopt-program-options program)))
 
+(defun docopt-program-set-sections (program sections)
+  "Set the sections of the PROGRAM to SECTIONS."
+  (seq-doseq (section sections)
+    (seq-let [slot value] section
+      (eieio-oset program slot value))))
+
 (defun docopt-program-argv-normalize (program)
   "Return a list of normalized Docopt argv elements for PROGRAM."
   (seq-concatenate 'list
