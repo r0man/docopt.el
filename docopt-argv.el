@@ -30,6 +30,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'cl-seq)
 (require 'dash)
 (require 'docopt-parser)
 (require 'docopt-util)
@@ -66,9 +67,25 @@
   "Parse the Docopt argument vector LST."
   (docopt--flatten (eval (docopt--parse-argv-simple-list* lst))))
 
+(defun docopt-argv--parse-option-list (lst)
+  "Parse the list LST of Docopt options in any order."
+  (let ((options (apply #'append (eval `(parsec-sepby
+                                         (parsec-or ,@(seq-map (lambda (option) `(list (docopt-argv-parser ,option))) lst))
+                                         (parsec-try (parsec-and (docopt--parse-spaces1)
+                                                                 (parsec-lookahead (parsec-str "-")))))))))
+    (let ((expected-options (seq-map #'eieio-object-name-string lst))
+          (found-options (seq-map #'eieio-object-name-string options)))
+      (when-let ((difference (cl-set-difference expected-options found-options)))
+        (parsec-stop
+         :message (format "Missing options: %s" difference)
+         :expected expected-options
+         :found expected-options)))
+    options))
+
 (defun docopt--parse-argv-stacked-list (lst)
   "Parse the Docopt argument vector LST."
-  (docopt--flatten (docopt-argv-parser (docopt-argv--stack-short-options lst))))
+  (parsec-or (docopt--flatten (docopt-argv-parser (docopt-argv--stack-short-options lst)))
+             (docopt-argv--parse-option-list lst)))
 
 (defun docopt-argv--stack-short-options (lst)
   "Parse the Docopt argument vector LST."
@@ -172,9 +189,9 @@
 
 (cl-defmethod docopt-argv-parser ((lst list))
   "Return an argument vector parser for the LST."
-  (if (seq-find #'docopt-short-option-p lst)
-      (docopt--parse-argv-stacked-list (docopt--flatten lst))
-    (docopt--parse-argv-simple-list (docopt--flatten lst))))
+  (cond ((seq-find #'docopt-short-option-p lst)
+         (docopt--parse-argv-stacked-list (docopt--flatten lst)))
+        (t (docopt--parse-argv-simple-list (docopt--flatten lst)))))
 
 (cl-defmethod docopt-argv-parser ((option docopt-long-option))
   "Return an argument vector parser for the long OPTION."

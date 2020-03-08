@@ -52,14 +52,15 @@
 
 (setq my-program
       (docopt-parse "
-Usage:
-  prog [options] cmd
+usage: prog -a -b
 
-Options:
-  -a
+options:
+ -a
+ -b
 "))
 
-;; (docopt-eval-ast my-program "prog -a cmd")
+;; (docopt-eval-ast my-program "prog -ab")
+;; (docopt-eval-ast my-program "prog -b -a")
 
 ;; (docopt-eval my-program "prog -p root")
 ;; (docopt-eval-ast my-program "prog -a cmd")
@@ -72,7 +73,7 @@ Options:
 ;; (seq-doseq (testcase (docopt-parse-testcases (f-read-text "test/testcases.docopt")))
 ;;   (docopt-test-define-describe testcase))
 
-(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 14))
+(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 16))
   (docopt-test-define-describe testcase))
 
 ;; (setq my-testcase (nth 5 (docopt-parse-testcases (f-read-text "test/testcases.docopt"))))
