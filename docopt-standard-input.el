@@ -36,10 +36,14 @@
   "A class representing the Docopt standard input.")
 
 (cl-defmethod docopt-collect-arguments ((_ docopt-standard-input))
-  "Collect the arguments from the Docopt shortcut." nil)
+  "Collect the arguments from the Docopt STANDARD-INPUT." nil)
+
+(cl-defmethod docopt-collect-commands ((standard-input docopt-standard-input))
+  "Collect the commands from the Docopt STANDARD-INPUT."
+  standard-input)
 
 (cl-defmethod docopt-collect-options ((_ docopt-standard-input))
-  "Collect the options from the Docopt shortcut." nil)
+  "Collect the options from the Docopt STANDARD-INPUT." nil)
 
 (cl-defmethod docopt-walk ((standard-input docopt-standard-input) f)
   "Walk the STANDARD-INPUT of an abstract syntax tree and apply F on it."

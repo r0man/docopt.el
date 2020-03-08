@@ -242,11 +242,15 @@
 (cl-defmethod docopt-argv-parser ((program docopt-program))
   "Return an argument vector parser for the PROGRAM."
   (docopt--flatten (eval `(parsec-or ,@(seq-map (lambda (pattern) `(parsec-try (docopt-argv-parser (quote ,pattern))))
-                                               (docopt-program-usage program))))))
+                                                (docopt-program-usage program))))))
 
 (cl-defmethod docopt-argv-parser ((group docopt-required-group))
   "Return an argument vector parser for the GROUP."
   (docopt-argv-parser (docopt-group-members group)))
+
+(cl-defmethod docopt-argv-parser ((standard-input docopt-standard-input))
+  "Return an argument vector parser for the STANDARD-INPUT."
+  (when (parsec-optional (parsec-str "-")) standard-input))
 
 (cl-defmethod docopt-argv-parser ((pattern docopt-usage-pattern))
   "Return an argument vector parser for the PATTERN."
@@ -308,6 +312,10 @@
             (or (docopt-argument-value argument)
                 (docopt-argument-default argument))
           default)))
+
+(cl-defmethod docopt--argv-alist-element ((standard-input docopt-standard-input) default)
+  "Return the alist cons for the STANDARD-INPUT and DEFAULT."
+  (cons '- default))
 
 (defun docopt-program-default-alist (program)
   "Return the default alist of the Docopt PROGRAM."
