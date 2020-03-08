@@ -116,6 +116,7 @@
   "Parse the Docopt testcase program."
   (let ((usage (docopt--parse-testcase-usage)))
     (let ((program (parsec-with-input usage (docopt--parse-program))))
+      (oset program :source (s-trim usage))
       (if (docopt-program-p program)
           program
         (error "Can't parse Docopt program: %s" usage)))))

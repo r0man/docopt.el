@@ -564,39 +564,46 @@
   (it "should parse the examples"
     (expect (docopt-program-examples program)
             :to-equal '(("naval_fate" "ship" "new" "SHIP-123")
-                        ("naval_fate" "ship" "SHIP-123" "move" "1" "2" "--speed=10"))))
+                        ("naval_fate" "ship" "SHIP-123" "move" "1" "2" "--speed=10")))))
+
+(describe "Parsing naval fate with different section order"
+  :var ((program (docopt-parse docopt-naval-fate-str)))
 
   (it "should parse program sections: examples, options, usage"
-    (expect (docopt-parse
-             (concat docopt-naval-fate-header-str
-                     docopt-naval-fate-examples-str "\n"
-                     docopt-naval-fate-options-str "\n"
-                     docopt-naval-fate-usage-str "\n"))
-            :to-equal program))
+    (expect (docopt-equal
+             program (docopt-parse
+                      (concat docopt-naval-fate-header-str
+                              docopt-naval-fate-examples-str "\n"
+                              docopt-naval-fate-options-str "\n"
+                              docopt-naval-fate-usage-str "\n")))
+            :to-equal t))
 
   (it "should parse program sections: options, examples, usage"
-    (expect (docopt-parse
-             (concat docopt-naval-fate-header-str
-                     docopt-naval-fate-options-str "\n"
-                     docopt-naval-fate-examples-str "\n"
-                     docopt-naval-fate-usage-str "\n"))
-            :to-equal program))
+    (expect (docopt-equal
+             program (docopt-parse
+                      (concat docopt-naval-fate-header-str
+                              docopt-naval-fate-options-str "\n"
+                              docopt-naval-fate-examples-str "\n"
+                              docopt-naval-fate-usage-str "\n")))
+            :to-equal t))
 
   (it "should parse program sections: options, usage, examples"
-    (expect (docopt-parse
-             (concat docopt-naval-fate-header-str
-                     docopt-naval-fate-options-str "\n"
-                     docopt-naval-fate-usage-str "\n"
-                     docopt-naval-fate-examples-str "\n"))
-            :to-equal program))
+    (expect (docopt-equal
+             program (docopt-parse
+                      (concat docopt-naval-fate-header-str
+                              docopt-naval-fate-options-str "\n"
+                              docopt-naval-fate-usage-str "\n"
+                              docopt-naval-fate-examples-str "\n")))
+            :to-equal t))
 
   (it "should parse program sections: usage, options, examples"
-    (expect (docopt-parse
-             (concat docopt-naval-fate-header-str
-                     docopt-naval-fate-usage-str "\n"
-                     docopt-naval-fate-options-str "\n"
-                     docopt-naval-fate-examples-str "\n"))
-            :to-equal program)))
+    (expect (docopt-equal
+             program (docopt-parse
+                      (concat docopt-naval-fate-header-str
+                              docopt-naval-fate-usage-str "\n"
+                              docopt-naval-fate-options-str "\n"
+                              docopt-naval-fate-examples-str "\n")))
+            :to-equal t)))
 
 (describe "The docopt--parse-sep-end-by1 combinator"
   :var ((parser (lambda () (docopt--parse-sep-end-by1 (parsec-ch ?a) (parsec-ch ?\|)))))

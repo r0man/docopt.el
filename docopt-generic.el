@@ -41,10 +41,10 @@
 (cl-defgeneric docopt-collect-options (object)
   "Collect the options from the Docopt OBJECT.")
 
-(cl-defgeneric docopt-equals (object-1 object-2)
+(cl-defgeneric docopt-equal (object-1 object-2)
   "Return t if OBJECT-1 and OBJECT-2 are equal-ish.")
 
-(cl-defmethod docopt-equals (object-1 object-2)
+(cl-defmethod docopt-equal (object-1 object-2)
   "Return t if OBJECT-1 and OBJECT-2 are equal-ish."
   (equal object-1 object-2))
 

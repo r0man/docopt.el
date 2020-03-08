@@ -45,7 +45,7 @@
 
 (defun docopt-remove-duplicates (lst)
   "Remove duplicate Docopt objects from LST."
-  (cl-remove-duplicates lst :test #'docopt-equals))
+  (cl-remove-duplicates lst :test #'docopt-equal))
 
 (provide 'docopt-util)
 

@@ -133,7 +133,8 @@
                      (docopt-string--options (docopt-program-options program))
                      (docopt-string--examples (docopt-program-examples program)))
     (seq-remove #'s-blank-p)
-    (s-join "\n\n")))
+    (s-join "\n\n")
+    (s-trim)))
 
 (cl-defmethod docopt-string ((repeated docopt-repeated))
   "Convert the Docopt usage REPEATED to a string."

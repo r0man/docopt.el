@@ -70,7 +70,13 @@
     :documentation "The options of the program."
     :initarg :options
     :initform nil
-    :type (or list null)))
+    :type (or list null))
+   (source
+    :accessor docopt-program-source
+    :documentation "The source of the program."
+    :initarg :source
+    :initform nil
+    :type (or string null)))
   "A class representing a Docopt program.")
 
 (cl-defmethod docopt-collect-arguments ((program docopt-program))
@@ -87,6 +93,14 @@
    'list
    (seq-mapcat #'docopt-collect-options (docopt-program-usage program))
    (docopt-program-options program)))
+
+(cl-defmethod docopt-equal ((program docopt-program) other)
+  "Return t if PROGRAM and OTHER are equal-ish."
+  (with-slots (arguments usage options) program
+    (and (docopt-program-p other)
+         (equal arguments (oref other :arguments))
+         (equal usage (oref other :usage))
+         (equal options (oref other :options)))))
 
 (defun docopt-program-option (program name)
   "Return the long or short option of PROGRAM by NAME."

@@ -33,11 +33,14 @@
 (require 'docopt-argv)
 (require 'docopt-parser)
 (require 'parsec)
+(require 's)
 
 ;;;###autoload
 (defun docopt-parse (s)
   "Parse the Docopt program from S."
-  (parsec-with-input s (docopt--parse-program)))
+  (let ((program (parsec-with-input s (docopt--parse-program))))
+    (oset program :source (s-trim s))
+    program))
 
 ;;;###autoload
 (defun docopt-eval-ast (program s)

@@ -55,13 +55,13 @@
     :type (or string null)))
   "A class representing a Docopt base option.")
 
-(cl-defmethod docopt-equals ((option docopt-option) object)
+(cl-defmethod docopt-equal ((option docopt-option) object)
   "Return t if OPTION and OBJECT are equal-ish."
   (and (equal (object-class option)
               (object-class object))
        (string= (eieio-object-name-string option)
                 (eieio-object-name-string object))
-       (docopt-equals (docopt-option-argument option)
+       (docopt-equal (docopt-option-argument option)
                       (docopt-option-argument object))))
 
 (cl-defmethod docopt-walk ((option docopt-option) f)
