@@ -52,14 +52,18 @@
 
 (setq my-program
       (docopt-parse "
-usage: prog -a -b
+Usage:
+  prog [options] A
 
-options:
- -a
- -b
+Options:
+  -q                   Be quiet
+  -v                   Be verbose. should parse: prog -v arg
 "))
 
-;; (docopt-eval-ast my-program "prog -ab")
+;; (docopt-string my-program)
+;; (docopt-eval my-program "prog -v arg")
+
+;; (docopt-eval-ast my-program "prog -v arg")
 ;; (docopt-eval-ast my-program "prog -b -a")
 
 ;; (docopt-eval my-program "prog -p root")

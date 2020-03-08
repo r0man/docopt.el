@@ -99,7 +99,8 @@
 
 (cl-defmethod docopt-string ((argument docopt-argument))
   "Convert the Docopt usage ARGUMENT to a string."
-  (concat "<" (oref argument object-name) ">"))
+  (let ((name (eieio-object-name-string argument)))
+    (if (s-uppercase? name) name (concat "<" name ">"))))
 
 (cl-defmethod docopt-string ((command docopt-command))
   "Convert the Docopt usage COMMAND to a string."

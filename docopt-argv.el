@@ -35,6 +35,7 @@
 (require 'docopt-parser)
 (require 'docopt-util)
 (require 'parsec)
+(require 's)
 
 (defun docopt--parse-argv-identifier ()
   "Parse a Docopt command line argument identifier."
@@ -270,7 +271,8 @@
 
 (cl-defmethod docopt--argv-symbol ((argument docopt-argument))
   "Return the symbol for the ARGUMENT in an alist."
-  (intern (concat "<" (oref argument object-name) ">")))
+  (let ((name (eieio-object-name-string argument)))
+    (if (s-uppercase? name) (intern name) (intern (concat "<" name ">")))))
 
 (cl-defmethod docopt--argv-symbol ((command docopt-command))
   "Return the symbol for the COMMAND in an alist."
