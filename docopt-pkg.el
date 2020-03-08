@@ -1,4 +1,4 @@
-;;; docopt.el --- A Docopt implementation in Elisp -*- lexical-binding: t -*-
+;;; docopt-pkg.el --- A Docopt implementation in Elisp -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019-2020 r0man
 
@@ -30,31 +30,15 @@
 
 ;;; Code:
 
-(require 'docopt-argv)
-(require 'docopt-parser)
-(require 'docopt-util)
-(require 'parsec)
-(require 's)
+(define-package "docopt" "0.1.0"
+  "A Docopt implementation in Elisp"
+  '((cl-lib "1.0")
+    (dash "2.17.0")
+    (emacs "26.1")
+    (f "0.20.0")
+    (parsec "0.1.3")
+    (s "1.12.0")
+    (seq "2.21")
+    (transient "0.3.0")))
 
-;;;###autoload
-(defun docopt-parse (s)
-  "Parse the Docopt program from S."
-  (let ((program (parsec-with-input s (docopt--parse-program))))
-    (when (docopt--parsec-error-p program)
-      (signal 'docopt-invalid-program program))
-    (setf (oref program :source) (docopt-strip s))
-    program))
-
-;;;###autoload
-(defun docopt-eval-ast (program s)
-  "Parse the argument vector from S using the Docopt PROGRAM."
-  (docopt-argv-parse program s))
-
-;;;###autoload
-(defun docopt-eval (program s)
-  "Parse the argument vector from S using the Docopt PROGRAM."
-  (docopt--argv-to-alist program (docopt-argv-parse program s)))
-
-(provide 'docopt)
-
-;;; docopt.el ends here
+;;; docopt-pkg.el ends here

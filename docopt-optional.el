@@ -50,10 +50,11 @@
 
 (cl-defmethod docopt-set-optional ((object docopt-optionable) optional)
   "Set the :optional slot of OBJECT to OPTIONAL."
-  (oset object :optional optional))
+  (setf (oref object :optional) optional))
 
 (cl-defmethod docopt-set-optional ((object t) optional)
-  "Set the :optional slot of OBJECT to OPTIONAL." nil)
+  "Set the :optional slot of OBJECT to OPTIONAL."
+  (ignore object optional) nil)
 
 (provide 'docopt-optional)
 

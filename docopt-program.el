@@ -34,6 +34,11 @@
 (require 'eieio)
 (require 'seq)
 
+(defcustom docopt-string-options-width 20
+  "The width of the options on a Docopt options line."
+  :type 'number
+  :group 'docopt)
+
 (defclass docopt-program ()
   ((examples
     :accessor docopt-program-examples
@@ -51,6 +56,12 @@
     :accessor docopt-program-header
     :documentation "The header of the program."
     :initarg :header
+    :initform nil
+    :type (or string null))
+   (name
+    :accessor docopt-program-name
+    :documentation "The name of the program."
+    :initarg :name
     :initform nil
     :type (or string null))
    (options
@@ -100,6 +111,11 @@
       (setq usage (clone (docopt-program-usage program)))
       copy)))
 
+(cl-defmethod docopt-name ((program docopt-program))
+  "Return the name of PROGRAM."
+  (when-let ((usage-pattern (car (docopt-program-usage program))))
+    (docopt-name usage-pattern)))
+
 (cl-defmethod docopt-equal ((program docopt-program) other)
   "Return t if PROGRAM and OTHER are equal-ish."
   (with-slots (usage options) program
@@ -120,6 +136,10 @@
   (seq-find (lambda (option) (equal name (docopt-option-name option)))
             (docopt-program-options program)))
 
+(defun docopt-program-shell-command (command)
+  "Run the shell COMMAND with the --help option and parse the result as a Docopt program."
+  (docopt-parse (shell-command-to-string (concat command " --help"))))
+
 (defun docopt-program-set-sections (program sections)
   "Set the sections of the PROGRAM to SECTIONS."
   (seq-doseq (section sections)
@@ -136,6 +156,16 @@
                                       (docopt-option-synonym option)))
                                (docopt-program-options program))))
 
+(cl-defmethod docopt-string ((program docopt-program))
+  "Convert the Docopt PROGRAM to a string."
+  (thread-last (list (docopt-program-header program)
+                     (docopt-string--usage (docopt-program-usage program))
+                     (docopt-string--options (docopt-program-options program))
+                     (docopt-string--examples (docopt-program-examples program)))
+    (seq-remove #'s-blank-p)
+    (s-join "\n\n")
+    (docopt-strip)))
+
 (cl-defmethod docopt-walk ((program docopt-program) f)
   "Walk the PROGRAM of an abstract syntax tree and apply F on it."
   (with-slots (header examples footer usage options) program
@@ -144,23 +174,94 @@
     (setq usage (docopt-walk usage f))
     (funcall f program)))
 
+(defun docopt-string--section (header content)
+  "Convert the Docopt section HEADER and CONTENT to a string."
+  (unless (zerop (length content))
+    (concat header ":\n  " (string-join content "\n  "))))
+
+(defun docopt-string--example (example)
+  "Convert the Docopt EXAMPLE to a string."
+  (string-join example " "))
+
+(defun docopt-string--examples (examples)
+  "Convert the Docopt EXAMPLES to a string."
+  (docopt-string--section "Examples" (seq-map #'docopt-string--example examples)))
+
+(defun docopt-string--usage (usage)
+  "Convert the Docopt USAGE to a string."
+  (docopt-string--section "Usage" (seq-map #'docopt-string usage)))
+
+(defun docopt-string--synonym (synonym)
+  "Convert the Docopt SYNONYM to a string."
+  (when synonym
+    (if (= 1 (length synonym))
+        (concat "-" synonym)
+      (concat "--" synonym))))
+
+(defun docopt-string--options (options)
+  "Convert the Docopt OPTIONS to a string."
+  (docopt-string--section
+   "Options" (thread-last options
+               (seq-remove (lambda (option)
+                             (and (docopt-short-option-p option)
+                                  (docopt-option-synonym option))))
+               (seq-map (lambda (option)
+                          (format (concat "%-" (number-to-string docopt-string-options-width) "s %s")
+                                  (concat
+                                   (when-let ((synonym (oref option synonym)))
+                                     (concat (docopt-string--synonym synonym) ", "))
+                                   (docopt-string option))
+                                  (or (docopt-option-description option) "")))))))
+
 (defun docopt-program-remove-unknown-options (program)
   "Remove all options from PROGRAM that are not defined in the options section."
   (if (docopt-program-options program)
       (docopt-walk program
                    (lambda (element)
                      (cond
-                      ((docopt-group-child-p element)
+                      ((cl-typep element 'docopt-group)
                        (with-slots (members) element
                          (setq members (delete-dups
                                         (seq-filter (lambda (member)
-                                                      (if (docopt-option-child-p member)
+                                                      (if (cl-typep member 'docopt-option)
                                                           (docopt-program-option program (docopt-option-name member))
                                                         t))
                                                     members)))
                          element))
                       (t element))))
     program))
+
+(defun docopt-program-set-identity (program)
+  "Remove all options from PROGRAM that are not defined in the options section."
+  (let ((objects (list)))
+    (docopt-walk program
+                 (lambda (element)
+                   (if-let ((found (cl-find element objects :test #'docopt-equal)))
+                       found
+                     (progn
+                       (setq objects (cons element objects))
+                       element))))
+    program))
+
+(defun docopt-program-set-incompatible (program)
+  "Set the incompatible options for the PROGRAM."
+  (docopt-walk program
+               (lambda (element)
+                 (when (and (cl-typep element 'docopt-either)
+                            (cl-every (lambda (members)
+                                        (and (= 1 (length members))
+                                             (cl-every (lambda (member)
+                                                         (cl-typep member 'docopt-option))
+                                                       members)))
+                                      (docopt-either-members element)))
+                   (let ((options (apply #'append (docopt-either-members element))))
+                     (seq-doseq (option options)
+                       (setf (oref option incompatible)
+                             (seq-remove (lambda (current)
+                                           (docopt-equal current option))
+                                         options)))))
+                 element))
+  program)
 
 (provide 'docopt-program)
 

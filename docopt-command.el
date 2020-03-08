@@ -33,10 +33,12 @@
 (require 'docopt-generic)
 (require 'docopt-optional)
 (require 'docopt-repeated)
+(require 'docopt-value)
 (require 'eieio)
 (require 'eieio-base)
 
-(defclass docopt-command (docopt-optionable docopt-repeatable)
+(defclass docopt-command
+  (docopt-optionable docopt-repeatable docopt-value-base)
   ((name
     :accessor docopt-command-name
     :documentation "The name of the command."
@@ -52,6 +54,10 @@
       (setq name (clone (docopt-command-name command)))
       copy)))
 
+(cl-defmethod docopt-argument-list ((command docopt-command))
+  "Return the shell argument list for the COMMAND."
+  (list (docopt-command-name command)))
+
 (cl-defmethod docopt-collect-arguments ((_ docopt-command))
   "Collect the arguments from the Docopt COMMAND." nil)
 
@@ -65,8 +71,17 @@
 (cl-defmethod docopt-collect-options ((_ docopt-command))
   "Collect the options from the Docopt COMMAND." nil)
 
+(cl-defmethod docopt-format ((command docopt-command))
+  "Convert the Docopt usage COMMAND to a formatted string."
+  (let ((s (docopt-string command)))
+    (if (docopt-value command) (docopt-bold s) s)))
+
 (cl-defmethod docopt-name ((command docopt-command))
   "Return the name of COMMAND."
+  (docopt-command-name command))
+
+(cl-defmethod docopt-string ((command docopt-command))
+  "Convert the Docopt usage COMMAND to a string."
   (docopt-command-name command))
 
 (cl-defmethod docopt-walk ((command docopt-command) f)

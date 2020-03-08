@@ -35,6 +35,10 @@
 
 (describe "Parsing tokens"
 
+  (it "should parse a command name"
+    (expect (parsec-with-input "naval_fate.py" (docopt--parse-command-name))
+            :to-equal "naval_fate.py"))
+
   (it "should parse a space"
     (expect (parsec-with-input " " (docopt--parse-space)) :to-equal " "))
 
@@ -518,6 +522,7 @@
               (docopt--parse-program))
             :to-equal (docopt-program
                        :header "PROGRAM"
+                       :name "prog"
                        :usage (list (docopt-make-usage-pattern
                                      (docopt-command :name "prog")
                                      (docopt-long-option :name "foo" :prefixes '("fo" "f"))))
@@ -527,6 +532,7 @@
     (expect (parsec-with-input "Usage: prog [options]\n\nOptions: -a,--all  All."
               (docopt--parse-program))
             :to-equal (docopt-program
+                       :name "prog"
                        :usage (list (docopt-make-usage-pattern
                                      (docopt-command :name "prog")
                                      (docopt-make-options-shortcut
@@ -537,6 +543,9 @@
 
 (describe "Parsing naval fate"
   :var ((program (docopt-parse docopt-naval-fate-str)))
+
+  (it "should parse the name"
+    (expect (docopt-program-name program) :to-equal "naval_fate"))
 
   (it "should parse the header"
     (expect (docopt-program-header program) :to-equal "Naval Fate."))

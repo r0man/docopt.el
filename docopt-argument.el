@@ -33,11 +33,13 @@
 (require 'docopt-generic)
 (require 'docopt-optional)
 (require 'docopt-repeated)
+(require 'docopt-value)
 (require 'docopt-util)
 (require 'eieio)
 (require 'eieio-base)
 
-(defclass docopt-argument (docopt-optionable docopt-repeatable)
+(defclass docopt-argument
+  (docopt-optionable docopt-repeatable docopt-value-base)
   ((default
      :accessor docopt-argument-default
      :documentation "The default of the argument."
@@ -49,13 +51,7 @@
     :documentation "The name of the argument."
     :initarg :name
     :initform nil
-    :type (or string null))
-   (value
-    :accessor docopt-argument-value
-    :documentation "The value of the argument."
-    :initarg :value
-    :initform nil
-    :type (or string vector null)))
+    :type (or string null)))
   "A class representing a Docopt argument.")
 
 (cl-defmethod clone ((argument docopt-argument) &rest params)
@@ -64,8 +60,12 @@
     (with-slots (default value name) copy
       (setq default (clone (docopt-argument-default argument)))
       (setq name (clone (docopt-argument-name argument)))
-      (setq value (clone (docopt-argument-value argument)))
+      (setq value (clone (docopt-value argument)))
       copy)))
+
+(cl-defmethod docopt-argument-list ((argument docopt-argument))
+  "Return the shell argument list for the ARGUMENT."
+  (list (docopt-value argument)))
 
 (cl-defmethod docopt-equal ((argument docopt-argument) object)
   "Return t if ARGUMENT and OBJECT are equal-ish."
@@ -82,14 +82,28 @@
   (-flatten (seq-map #'docopt-collect-arguments lst)))
 
 (cl-defmethod docopt-collect-commands ((argument docopt-argument))
-  "Collect the commands from the Docopt ARGUMENT." nil)
+  "Collect the commands from the Docopt ARGUMENT."
+  (ignore argument) nil)
 
-(cl-defmethod docopt-collect-options ((_ docopt-argument))
-  "Collect the options from the Docopt OPTION." nil)
+(cl-defmethod docopt-collect-options ((argument docopt-argument))
+  "Collect the options from the Docopt ARGUMENT."
+  (ignore argument) nil)
+
+(cl-defmethod docopt-format ((argument docopt-argument))
+  "Convert the Docopt usage ARGUMENT to a formatted string."
+  (let ((name (if-let ((value (docopt-value argument)))
+                  (docopt-bold value)
+                (docopt-argument-name argument))))
+    (if (s-uppercase? name) name (concat "<" name ">"))))
 
 (cl-defmethod docopt-name ((argument docopt-argument))
   "Return the name of ARGUMENT."
   (docopt-argument-name argument))
+
+(cl-defmethod docopt-string ((argument docopt-argument))
+  "Convert the Docopt usage ARGUMENT to a string."
+  (let ((name (docopt-argument-name argument)))
+    (if (s-uppercase? name) name (concat "<" name ">"))))
 
 (cl-defmethod docopt-walk ((argument docopt-argument) f)
   "Walk the ARGUMENT of an abstract syntax tree and apply F on it."
@@ -105,7 +119,7 @@
    ((and argument-1 argument-2)
     (with-slots (default name value) argument-1
       (setq default (or default (docopt-argument-default argument-2)))
-      (setq value (or value (docopt-argument-value argument-2)))
+      (setq value (or value (docopt-value argument-2)))
       (setq name (or name (docopt-argument-name argument-2)))
       argument-1))
    (argument-1 argument-1)

@@ -31,7 +31,6 @@
 
 (require 'cl-generic)
 (require 'cl-lib)
-(require 'cl-seq)
 (require 'dash)
 (require 'docopt-parser)
 (require 'docopt-util)
@@ -78,7 +77,7 @@
 (defun docopt-argv--parse-short-option-name (program option)
   "Parse the short OPTION name of PROGRAM."
   (let ((option (copy-sequence option)))
-    (oset option :argument
+    (setf (oref option :argument)
           (parsec-and
            (parsec-str (docopt-option-name option))
            (docopt-argv--parse-short-option-argument program option)))
@@ -169,7 +168,7 @@
                      (parsec-lookahead (parsec-none-of ?-))
                      (parsec-re "[^ ]+"))))
     (let ((argument (clone argument)))
-      (oset argument :value value)
+      (setf (oref argument :value) value)
       argument)))
 
 (cl-defmethod docopt-argv-parser (program (argument docopt-argument))
@@ -178,9 +177,10 @@
                      (parsec-lookahead (parsec-none-of ?-))
                      (parsec-re "[^ ]+"))))
     (let ((argument (clone argument)))
-      (oset argument :value (if (vectorp (docopt-argument-value argument))
-                                (vector value)
-                              value))
+      (setf (oref argument :value)
+            (if (vectorp (docopt-value argument))
+                (vector value)
+              value))
       argument)))
 
 (cl-defmethod docopt-argv-parser (program (command docopt-command))
@@ -217,7 +217,7 @@
          (docopt-argv-parser program argument)))
     (let ((copy (clone option)))
       (when (docopt-option-argument option)
-        (oset copy :argument argument))
+        (setf (oref copy :argument) argument))
       copy)))
 
 (cl-defmethod docopt-argv-parser (program (repeated docopt-repeated))
@@ -243,7 +243,7 @@
       (parsec-optional (cl-call-next-method program object))
     (cl-call-next-method program object)))
 
-(cl-defmethod docopt-argv-parser (_ (program docopt-program))
+(cl-defmethod docopt-argv-parser (program (program docopt-program))
   "Return an argument vector parser for the PROGRAM."
   (-flatten (eval `(parsec-or ,@(seq-map (lambda (pattern) `(docopt-argv-parser ,program ,pattern))
                                          (docopt-program-usage program))))))
@@ -325,12 +325,12 @@
 
 (cl-defmethod docopt-argv--value ((argument docopt-argument) default)
   "Return the value for the ARGUMENT in an alist or DEFAULT."
-  (docopt-argument-value argument))
+  (docopt-value argument))
 
 (cl-defmethod docopt-argv--value ((option docopt-option) default)
   "Return the value for the OPTION in an alist or DEFAULT."
   (if-let (argument (docopt-option-argument option))
-      (or (docopt-argument-value argument)
+      (or (docopt-value argument)
           (docopt-argument-default argument)
           default)
     default))

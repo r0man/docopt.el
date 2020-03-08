@@ -32,6 +32,8 @@
 (require 'docopt-generic)
 (require 'docopt-optional)
 (require 'eieio)
+(require 's)
+(require 'seq)
 
 (defclass docopt-group ()
   ((members
@@ -45,8 +47,13 @@
 (cl-defmethod clone ((group docopt-group) &rest params)
   "Return a copy of the GROUP and apply PARAMS."
   (let ((copy (apply #'cl-call-next-method group params)))
-    (oset copy :members (clone (docopt-group-members group)))
+    (setf (oref copy :members) (clone (docopt-group-members group)))
     copy))
+
+(cl-defmethod docopt-argument-list ((group docopt-group))
+  "Return the shell argument list for the GROUP."
+  (with-slots (members) group
+    (seq-mapcat #'docopt-argument-list members)))
 
 (cl-defmethod docopt-set-repeat ((group docopt-group) value)
   "Set the :repeat slot of the GROUP members to VALUE."
@@ -75,6 +82,16 @@
   (cl-call-next-method group optional)
   (docopt-set-optional (docopt-group-members group) optional))
 
+(cl-defmethod docopt-format ((group docopt-optional-group))
+  "Convert the Docopt usage GROUP to a formatted string."
+  (with-slots (members) group
+    (concat "[" (s-join " " (seq-map #'docopt-format members)) "]")))
+
+(cl-defmethod docopt-string ((group docopt-optional-group))
+  "Convert the Docopt usage GROUP to a string."
+  (with-slots (members) group
+    (concat "[" (s-join " " (seq-map #'docopt-string members)) "]")))
+
 ;;; Required Group
 
 (defclass docopt-required-group (docopt-group) ()
@@ -95,6 +112,16 @@
 (cl-defmethod docopt-collect-options ((group docopt-group))
   "Collect the options from the Docopt GROUP."
   (docopt-collect-options (docopt-group-members group)))
+
+(cl-defmethod docopt-format ((group docopt-required-group))
+  "Convert the Docopt required GROUP to a formatted string."
+  (with-slots (members) group
+    (concat "(" (s-join " " (seq-map #'docopt-format members)) ")")))
+
+(cl-defmethod docopt-string ((group docopt-required-group))
+  "Convert the Docopt required GROUP to a string."
+  (with-slots (members) group
+    (concat "(" (s-join " " (seq-map #'docopt-string members)) ")")))
 
 (provide 'docopt-group)
 

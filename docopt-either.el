@@ -31,10 +31,12 @@
 
 (require 'docopt-generic)
 (require 'docopt-optional)
+(require 'docopt-value)
 (require 'eieio)
+(require 's)
 (require 'seq)
 
-(defclass docopt-either (docopt-optionable)
+(defclass docopt-either (docopt-optionable docopt-value-base)
   ((members
     :accessor docopt-either-members
     :documentation "The members of the either."
@@ -50,10 +52,27 @@
       (setq members (clone (docopt-either-members either)))
       copy)))
 
+(cl-defmethod docopt-argument-list ((either docopt-either))
+  "Return the shell argument list for the EITHER."
+  (thread-last (oref either members)
+    (seq-mapcat (lambda (members) (seq-filter #'docopt-value members)))
+    (seq-map #'docopt-argument-list)
+    (car)))
+
+(cl-defmethod docopt-format ((either docopt-either))
+  "Convert the Docopt EITHER to a formatted string."
+  (with-slots (members) either
+    (s-join " | " (seq-map #'docopt-format members))))
+
 (cl-defmethod docopt-set-repeat ((either docopt-either) value)
   "Set the :repeat slot of the EITHER members to VALUE."
   (docopt-set-repeat (docopt-either-members either) value)
   either)
+
+(cl-defmethod docopt-string ((either docopt-either))
+  "Convert the Docopt EITHER to a string."
+  (with-slots (members) either
+    (s-join " | " (seq-map #'docopt-string members))))
 
 (defun docopt-make-either (&rest members)
   "Make a new Docopt argument using MEMBERS and OPTIONAL."

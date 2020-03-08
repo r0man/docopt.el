@@ -54,34 +54,15 @@
 
 ;;; docopt-test.el ends here
 
-;; (setq my-program (docopt-parse "Usage: prog -v ..."))
+;; (setq my-program (docopt-parse "usage: prog [-o <o>]...
 
-(setq my-program (docopt-parse "usage: prog [-o <o>]...
-
-options: -o <o>  [default: x y]"))
+;; options: -o <o>  [default: x y]"))
 
 ;; (docopt-eval my-program "prog -o this")
 ;; (docopt-eval my-program "prog 20 40")
 
-;; (docopt-eval-ast my-program "prog -vv")
-
-;; (docopt-eval-ast my-program "prog -a -r -myourass")
-
-;; (setq my-program
-;;       (docopt-parse "usage: prog (NAME | --foo NAME)
-
-;; options: --foo
-;; "))
-
-;; (docopt-eval-ast my-program "prog -a")
-
-;; (pp (car (last (docopt-parse-testcases (f-read-text "testcases.docopt")))))
-
-(seq-doseq (testcase (docopt-parse-testcases (f-read-text "test/testcases.docopt")))
-  (docopt-test-define-describe testcase))
-
-;; (seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 17))
+;; (seq-doseq (testcase (docopt-parse-testcases (f-read-text "test/testcases.docopt")))
 ;;   (docopt-test-define-describe testcase))
 
-;; (setq my-testcase (nth 5 (docopt-parse-testcases (f-read-text "test/testcases.docopt"))))
-;; (docopt-test-define-describe my-testcase)
+(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 16))
+  (docopt-test-define-describe testcase))

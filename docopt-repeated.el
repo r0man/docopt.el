@@ -44,6 +44,11 @@
   "Make a new Docopt argument using OBJECT."
   (docopt-repeated :object (docopt-set-repeat object t)))
 
+(cl-defmethod docopt-argument-list ((repeated docopt-repeated))
+  "Return the shell argument list for the REPEATED object."
+  (with-slots (object) repeated
+    (docopt-argument-list object)))
+
 (cl-defmethod docopt-collect-arguments ((repeated docopt-repeated))
   "Collect the arguments from the Docopt REPEATED."
   (docopt-collect-arguments (docopt-repeated-object repeated)))
@@ -55,6 +60,14 @@
 (cl-defmethod docopt-collect-options ((repeated docopt-repeated))
   "Collect the options from the Docopt REPEATED."
   (docopt-collect-options (docopt-repeated-object repeated)))
+
+(cl-defmethod docopt-format ((repeated docopt-repeated))
+  "Convert the Docopt usage REPEATED to a formatted string."
+  (concat (docopt-format (docopt-repeated-object repeated)) "..."))
+
+(cl-defmethod docopt-string ((repeated docopt-repeated))
+  "Convert the Docopt usage REPEATED to a string."
+  (concat (docopt-string (docopt-repeated-object repeated)) "..."))
 
 (cl-defmethod docopt-walk ((repeated docopt-repeated) f)
   "Walk the REPEATED of an abstract syntax tree and apply F on it."
@@ -74,7 +87,7 @@
 
 (cl-defmethod docopt-set-repeat ((object docopt-repeatable) value)
   "Set the :repeat slot of OBJECT to VALUE."
-  (oset object :repeat value)
+  (setf (oref object :repeat) value)
   object)
 
 (provide 'docopt-repeated)

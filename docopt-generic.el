@@ -30,6 +30,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 's)
 (require 'seq)
 
 (cl-defmethod clone ((lst list))
@@ -43,6 +44,9 @@
 (cl-defmethod clone ((s string))
   "Return a copy of S."
   (copy-sequence s))
+
+(cl-defgeneric docopt-argument-list (object)
+  "Return the shell argument list for the OBJECT.")
 
 (cl-defgeneric docopt-collect-arguments (object)
   "Collect the arguments from the Docopt OBJECT.")
@@ -60,6 +64,17 @@
   "Return t if OBJECT-1 and OBJECT-2 are equal-ish."
   (equal object-1 object-2))
 
+(cl-defgeneric docopt-format (object)
+  "Convert the Docopt OBJECT to a formatted string.")
+
+(cl-defmethod docopt-format ((lst list))
+  "Convert the list LST to a formatted string."
+  (s-join " " (seq-map #'docopt-format lst)))
+
+(cl-defmethod docopt-format ((object t))
+  "Convert the Docopt OBJECT to a formatted string."
+  (docopt-string object))
+
 (cl-defgeneric docopt-name (object)
   "Return the name of OBJECT.")
 
@@ -69,6 +84,13 @@
 (cl-defmethod docopt-set-repeat ((lst list) value)
   "Set the :repeat slot of the LST elements to VALUE."
   (seq-map (lambda (element) (docopt-set-repeat element value)) lst))
+
+(cl-defgeneric docopt-string (object)
+  "Convert the Docopt OBJECT to a string.")
+
+(cl-defmethod docopt-string ((lst list))
+  "Convert the list LST to a string."
+  (s-join " " (seq-map #'docopt-string lst)))
 
 (cl-defgeneric docopt-walk (object f)
   "Walk the OBJECT of an abstract syntax tree and apply F on it.")

@@ -50,11 +50,32 @@
 
 (cl-defmethod clone ((pattern docopt-usage-pattern) &rest params)
   "Return a copy of the usage PATTERN and apply PARAMS."
-  (let ((copy (apply #'cl-call-next-method usage-pattern params)))
+  (let ((copy (apply #'cl-call-next-method pattern params)))
     (with-slots (command expressions) copy
-      (setq command (clone (docopt-usage-pattern-command argument)))
-      (setq expressions (clone (docopt-usage-pattern-expressions argument)))
+      (setq command (clone (docopt-usage-pattern-command pattern)))
+      (setq expressions (clone (docopt-usage-pattern-expressions pattern)))
       copy)))
+
+(cl-defmethod docopt-argument-list ((pattern docopt-usage-pattern))
+  "Return the shell argument list for the usage PATTERN."
+  (with-slots (command expressions) pattern
+    (append (docopt-argument-list command)
+            (seq-mapcat #'docopt-argument-list expressions))))
+
+(cl-defmethod docopt-name ((usage-pattern docopt-usage-pattern))
+  "Return the name of USAGE-PATTERN."
+  (when-let ((command (docopt-usage-pattern-command usage-pattern)))
+    (docopt-name command)))
+
+(cl-defmethod docopt-format ((pattern docopt-usage-pattern))
+  "Convert the Docopt usage PATTERN to a formatted string."
+  (with-slots (command expressions) pattern
+    (concat (docopt-string command) " " (s-join " " (seq-map #'docopt-format expressions)))))
+
+(cl-defmethod docopt-string ((pattern docopt-usage-pattern))
+  "Convert the Docopt usage PATTERN to a string."
+  (with-slots (command expressions) pattern
+    (concat (docopt-string command) " " (s-join " " (seq-map #'docopt-string expressions)))))
 
 (cl-defmethod docopt-walk ((pattern docopt-usage-pattern) f)
   "Walk the usage PATTERN of an abstract syntax tree and apply F on it."
@@ -84,7 +105,7 @@
   (let ((result nil))
     (docopt-walk usage-pattern
                  (lambda (element)
-                   (when (docopt-repeatable-child-p element)
+                   (when (cl-typep element 'docopt-repeatable)
                      (setq result (cons element result)))
                    element))
     (reverse result)))

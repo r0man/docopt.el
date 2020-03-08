@@ -31,7 +31,6 @@
 
 (require 'buttercup)
 (require 'docopt-testcase)
-(require 'docopt-string)
 
 (describe "The `docopt--parse-testcase-example` parser"
 

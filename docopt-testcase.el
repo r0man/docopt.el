@@ -117,7 +117,7 @@
   "Parse the Docopt testcase program."
   (let ((usage (docopt--parse-testcase-usage)))
     (let ((program (parsec-with-input usage (docopt--parse-program))))
-      (oset program :source (docopt-strip usage))
+      (setf (oref program :source) (docopt-strip usage))
       (if (docopt-program-p program)
           program
         (error "Can't parse Docopt program: %s" usage)))))
@@ -187,28 +187,13 @@
 (defun docopt--testcase-test-example (program example)
   "Test the Docopt EXAMPLE of the PROGRAM."
   (let ((argv (docopt-testcase-example-argv example)))
-    (condition-case exception
-        (let* ((ast (docopt-argv-parse program argv))
-               (expected (docopt-testcase-example-expected example)))
-          (oset example :ast ast)
+    (condition-case nil
+        (let ((ast (docopt-argv-parse program argv)))
+          (setf (oref example :ast) ast)
           (if (docopt--parsec-error-p ast)
-              (oset example :actual 'user-error)
-            (oset example :actual (docopt--argv-to-alist program ast))))
-      (error (progn (message "Test \"%s\": ERROR:%s " argv exception)
-                    (oset example :actual exception))))
-    example))
-
-(defun docopt--testcase-test-example (program example)
-  "Test the Docopt EXAMPLE of the PROGRAM."
-  (let ((argv (docopt-testcase-example-argv example)))
-    (condition-case exception
-        (let* ((ast (docopt-argv-parse program argv))
-               (expected (docopt-testcase-example-expected example)))
-          (oset example :ast ast)
-          (if (docopt--parsec-error-p ast)
-              (oset example :actual 'user-error)
-            (oset example :actual (docopt--argv-to-alist program ast))))
-      (error (oset example :actual 'user-error)))
+              (setf (oref example :actual) 'user-error)
+            (setf (oref example :actual) (docopt--argv-to-alist program ast))))
+      (error (setf (oref example :actual) 'user-error)))
     example))
 
 (defun docopt-testcase-test (testcase)

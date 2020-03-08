@@ -33,6 +33,10 @@
 (require 'cl-lib)
 (require 's)
 
+(defun docopt-bold (text)
+  "Add the `bold' face property to TEXT."
+  (when text (propertize (format "%s" text) 'face 'bold)))
+
 (defun docopt-strip (s)
   "Trim S, return nil if only the empty string is left."
   (let ((s (s-trim s)))

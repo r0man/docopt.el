@@ -50,14 +50,27 @@
     :type (or list null)))
   "A class representing a Docopt options shortcut.")
 
+(cl-defmethod docopt-argument-list ((shortcut docopt-options-shortcut))
+  "Return the shell argument list for the options SHORTCUT."
+  (with-slots (options) shortcut
+    (seq-mapcat #'docopt-argument-list (seq-filter #'docopt-value options))))
+
 (cl-defmethod docopt-collect-arguments ((shortcut docopt-options-shortcut))
-  "Collect the arguments from the Docopt SHORTCUT." nil)
+  "Collect the arguments from the Docopt SHORTCUT."
+  (ignore shortcut) nil)
 
 (cl-defmethod docopt-collect-commands ((shortcut docopt-options-shortcut))
-  "Collect the commands from the Docopt SHORTCUT." nil)
+  "Collect the commands from the Docopt SHORTCUT."
+  (ignore shortcut) nil)
 
 (cl-defmethod docopt-collect-options ((shortcut docopt-options-shortcut))
-  "Collect the options from the Docopt SHORTCUT." nil)
+  "Collect the options from the Docopt SHORTCUT."
+  (ignore shortcut) nil)
+
+(cl-defmethod docopt-string ((shortcut docopt-options-shortcut))
+  "Convert the Docopt options SHORTCUT to a string."
+  (ignore shortcut)
+  "[options]")
 
 (cl-defmethod docopt-walk ((shortcut docopt-options-shortcut) f)
   "Walk the SHORTCUT of an abstract syntax tree and apply F on it."
@@ -94,10 +107,11 @@
 
 (cl-defmethod docopt-set-shortcut-options ((shortcut docopt-options-shortcut) options)
   "Set the options shortcut in SHORTCUT to OPTIONS."
-  (oset shortcut :options options))
+  (setf (oref shortcut :options) options))
 
 (cl-defmethod docopt-set-shortcut-options (object options)
-  "Set the options shortcut in OBJECT to OPTIONS.")
+  "Set the options shortcut in OBJECT to OPTIONS."
+  (ignore object options))
 
 (provide 'docopt-options-shortcut)
 

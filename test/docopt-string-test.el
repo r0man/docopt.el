@@ -31,7 +31,6 @@
 
 (require 'buttercup)
 (require 'docopt)
-(require 'docopt-string)
 (require 'test-helper)
 
 (describe "Printing naval fate"

@@ -35,22 +35,30 @@
 (defclass docopt-standard-input () ()
   "A class representing the Docopt standard input.")
 
-(cl-defmethod docopt-collect-arguments ((_ docopt-standard-input))
-  "Collect the arguments from the Docopt STANDARD-INPUT." nil)
+(cl-defmethod docopt-collect-arguments ((input docopt-standard-input))
+  "Collect the arguments from the Docopt standard INPUT."
+  (ignore input) nil)
 
-(cl-defmethod docopt-collect-commands ((standard-input docopt-standard-input))
-  "Collect the commands from the Docopt STANDARD-INPUT."
-  standard-input)
+(cl-defmethod docopt-collect-commands ((input docopt-standard-input))
+  "Collect the commands from the Docopt standard INPUT."
+  input)
 
-(cl-defmethod docopt-collect-options ((_ docopt-standard-input))
-  "Collect the options from the Docopt STANDARD-INPUT." nil)
+(cl-defmethod docopt-collect-options ((input docopt-standard-input))
+  "Collect the options from the Docopt standard INPUT."
+  (ignore input) nil)
 
-(cl-defmethod docopt-name ((standard-input docopt-standard-input))
-  "Return the name of STANDARD-INPUT." "-")
+(cl-defmethod docopt-name ((input docopt-standard-input))
+  "Return the name of standard INPUT."
+  (ignore input) "-")
 
-(cl-defmethod docopt-walk ((standard-input docopt-standard-input) f)
-  "Walk the STANDARD-INPUT of an abstract syntax tree and apply F on it."
-  (funcall f standard-input))
+(cl-defmethod docopt-string ((input docopt-standard-input))
+  "Convert the Docopt options standard INPUT to a string."
+  (ignore input)
+  "[-]")
+
+(cl-defmethod docopt-walk ((input docopt-standard-input) f)
+  "Walk the standard INPUT of an abstract syntax tree and apply F on it."
+  (funcall f input))
 
 (provide 'docopt-standard-input)
 

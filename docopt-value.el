@@ -1,4 +1,4 @@
-;;; docopt.el --- A Docopt implementation in Elisp -*- lexical-binding: t -*-
+;;; docopt-value.el --- The Docopt value -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019-2020 r0man
 
@@ -7,7 +7,6 @@
 ;; Created: 29 Feb 2020
 ;; Keywords: docopt, tools, processes
 ;; Homepage: https://github.com/r0man/docopt.el
-;; Version: 0.1.0
 
 ;; This file is not part of GNU Emacs.
 
@@ -26,35 +25,22 @@
 
 ;;; Commentary:
 
-;; A Docopt implementation in Elisp
+;; The Docopt value base class
 
 ;;; Code:
 
-(require 'docopt-argv)
-(require 'docopt-parser)
-(require 'docopt-util)
-(require 'parsec)
-(require 's)
+(require 'cl-lib)
+(require 'eieio)
+(require 'seq)
 
-;;;###autoload
-(defun docopt-parse (s)
-  "Parse the Docopt program from S."
-  (let ((program (parsec-with-input s (docopt--parse-program))))
-    (when (docopt--parsec-error-p program)
-      (signal 'docopt-invalid-program program))
-    (setf (oref program :source) (docopt-strip s))
-    program))
+(defclass docopt-value-base ()
+  ((value
+    :initarg :value
+    :initform nil
+    :accessor docopt-value
+    :documentation "The value of the Docopt object."))
+  "A base class for Docopt objects that have a value slot.")
 
-;;;###autoload
-(defun docopt-eval-ast (program s)
-  "Parse the argument vector from S using the Docopt PROGRAM."
-  (docopt-argv-parse program s))
+(provide 'docopt-value)
 
-;;;###autoload
-(defun docopt-eval (program s)
-  "Parse the argument vector from S using the Docopt PROGRAM."
-  (docopt--argv-to-alist program (docopt-argv-parse program s)))
-
-(provide 'docopt)
-
-;;; docopt.el ends here
+;;; docopt-value.el ends here

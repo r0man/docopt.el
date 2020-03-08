@@ -34,11 +34,14 @@
 (require 'docopt-generic)
 (require 'docopt-optional)
 (require 'docopt-repeated)
+(require 'docopt-value)
 (require 'eieio)
 (require 'eieio-base)
+(require 'seq)
 (require 'subr-x)
 
-(defclass docopt-option (docopt-optionable docopt-repeatable)
+(defclass docopt-option
+  (docopt-optionable docopt-repeatable docopt-value-base)
   ((argument
     :accessor docopt-option-argument
     :documentation "The argument of the option."
@@ -57,6 +60,12 @@
     :initarg :name
     :initform nil
     :type (or string null))
+   (incompatible
+    :accessor docopt-option-incompatible
+    :documentation "The list of incompatible options."
+    :initarg :incompatible
+    :initform nil
+    :type (or list null))
    (synonym
     :accessor docopt-option-synonym
     :documentation "The synonym of the option."
@@ -76,7 +85,9 @@
 
 (cl-defmethod docopt-equal ((option docopt-option) object)
   "Return t if OPTION and OBJECT are equal-ish."
-  (and (equal (eieio-object-class option)
+  (and (eieio-object-p option)
+       (eieio-object-p object)
+       (equal (eieio-object-class option)
               (eieio-object-class object))
        (string= (docopt-option-name option)
                 (docopt-option-name object))
@@ -113,6 +124,35 @@
       (setq prefixes (clone (docopt-long-option-prefixes option)))
       copy)))
 
+(cl-defmethod docopt-argument-list ((option docopt-long-option))
+  "Return the shell argument list for the long OPTION."
+  (with-slots (argument name value) option
+    ;; TODO: Use value from argument
+    (list (concat "--" name (when argument (concat " " value))))))
+
+(defun docopt-format--option-argument (option)
+  "Convert the Docopt OPTION argument to a formatted string."
+  (with-slots (argument value) option
+    (when argument (concat "=" (or value (docopt-format argument))))))
+
+(defun docopt-format--option (prefix option)
+  "Return the OPTION as a string with PREFIX."
+  (let ((s (concat prefix (docopt-option-name option) (docopt-format--option-argument option))))
+    (if (docopt-value option) (docopt-bold s) s)))
+
+(cl-defmethod docopt-format ((option docopt-long-option))
+  "Convert the Docopt long OPTION to a formatted string."
+  (docopt-format--option "--" option))
+
+(defun docopt-string--option-argument (option)
+  "Convert the Docopt OPTION argument to a string."
+  (when-let ((argument (docopt-option-argument option)))
+    (concat "=" (docopt-string argument))))
+
+(cl-defmethod docopt-string ((option docopt-long-option))
+  "Convert the Docopt long OPTION to a string."
+  (concat "--" (docopt-option-name option) (docopt-string--option-argument option)))
+
 (cl-defmethod docopt-walk ((option docopt-long-option) f)
   "Walk the OPTION of an abstract syntax tree and apply F on it."
   (with-slots (argument description synonym prefixes) option
@@ -135,11 +175,18 @@
   "Format the short option NAME."
   (concat "-" name))
 
+(cl-defmethod docopt-argument-list ((option docopt-short-option))
+  "Return the shell argument list for the short OPTION."
+  (with-slots (argument name value) option
+    ;; TODO: Use value from argument
+    (list (concat "-" name (when argument (concat " " value))))))
+
 (cl-defmethod docopt-collect-arguments ((_ docopt-option))
   "Collect the arguments from the Docopt OPTION." nil)
 
 (cl-defmethod docopt-collect-commands ((option docopt-option))
-  "Collect the commands from the Docopt OPTION." nil)
+  "Collect the commands from the Docopt OPTION."
+  (ignore option) nil)
 
 (cl-defmethod docopt-collect-options ((option docopt-option))
   "Collect the options from the Docopt OPTION." option)
@@ -148,21 +195,29 @@
   "Collect the options from the list LST."
   (-flatten (seq-map #'docopt-collect-options lst)))
 
+(cl-defmethod docopt-format ((option docopt-short-option))
+  "Convert the Docopt short OPTION to a formatted string."
+  (docopt-format--option "-" option))
+
+(cl-defmethod docopt-string ((option docopt-short-option))
+  "Convert the Docopt short OPTION to a string."
+  (concat "-" (docopt-option-name option) (docopt-string--option-argument option)))
+
 (defun docopt-option-set-default (option default)
   "Set the default argument value of OPTION to DEFAULT."
   (when-let ((argument (docopt-option-argument option)))
-    (oset argument :default default)))
+    (setf (oref argument :default) default)))
 
 (defun docopt-option-set-description-and-default (option description default)
   "Set the DESCRIPTION and DEFAULT of the OPTION."
   (when option
-    (oset option :description description)
+    (setf (oref option :description) description)
     (docopt-option-set-default option default)))
 
 (defun docopt-option-set-synonym (option synonym)
   "Set the :synonym slot of OPTION to SYNONYM."
   (when (and option synonym)
-    (oset option :synonym (docopt-option-name synonym))))
+    (setf (oref option :synonym) (docopt-option-name synonym))))
 
 (defun docopt-option-link (long-option short-option description default)
   "Link LONG-OPTION and SHORT-OPTION using DESCRIPTION and DEFAULT."
@@ -175,8 +230,8 @@
   (when (and long-option short-option)
     (let ((long-opt-arg (docopt-option-argument long-option))
           (short-opt-arg (docopt-option-argument short-option)))
-      (oset long-option :argument (or long-opt-arg short-opt-arg))
-      (oset short-option :argument (or short-opt-arg long-opt-arg))))
+      (setf (oref long-option :argument) (or long-opt-arg short-opt-arg))
+      (setf (oref short-option :argument) (or short-opt-arg long-opt-arg))))
   (list long-option short-option))
 
 (defun docopt-option-prefixes (option skip-options)

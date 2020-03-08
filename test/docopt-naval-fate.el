@@ -30,6 +30,7 @@
 ;;; Code:
 
 (require 'docopt)
+(require 'docopt-transient)
 (require 'parsec)
 (require 's)
 
@@ -116,6 +117,18 @@
    :name "version"
    :prefixes '("versio" "versi" "vers" "ver" "ve" "v")))
 
+(setf (oref docopt-naval-fate-option-h incompatible)
+      (list docopt-naval-fate-option-help )
+
+      (oref docopt-naval-fate-option-help incompatible)
+      (list docopt-naval-fate-option-h)
+
+      (oref docopt-naval-fate-option-moored incompatible)
+      (list docopt-naval-fate-option-drifting)
+
+      (oref docopt-naval-fate-option-drifting incompatible)
+      (list docopt-naval-fate-option-moored))
+
 ;; Usage patterns
 
 (defvar docopt-naval-fate-pattern-ship-new
@@ -172,6 +185,12 @@
 
 (defvar docopt-naval-fate
   (docopt-parse docopt-naval-fate-str))
+
+(defun docopt-naval-fate-transient ()
+  "Invoke the Docopt Naval Fate transient."
+  (interactive)
+  (docopt-transient-define-command docopt-naval-fate)
+  (docopt-transient-invoke-command docopt-naval-fate))
 
 (provide 'docopt-naval-fate)
 

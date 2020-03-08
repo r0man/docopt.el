@@ -1,95 +1,56 @@
-export EMACS ?= emacs
-EMACSFLAGS = -L .
-CASK = cask
-VERSION = $(shell git describe --tags --abbrev=0 | sed 's/^v//')
-PKG = docopt
+# * makem.sh/Makefile --- Script to aid building and testing Emacs Lisp packages
 
-ELS_ALL = $(wildcard *.el)
-ELS = $(filter-out $(PKG)-autoloads.el,$(ELS_ALL))
-OBJECTS = $(ELS:.el=.elc)
+# This Makefile is from the makem.sh repo: <https://github.com/alphapapa/makem.sh>.
 
-.PHONY: elpa build version test lint clean elpaclean autoloads run-$(PKG)
+# * Arguments
 
-all: build
+# For consistency, we use only var=val options, not hyphen-prefixed options.
 
-.depend: $(ELS)
-	@echo Compute dependencies
-	@rm -f .depend
-	@for f in $(ELS); do \
-		sed -n "s/(require '\(\(docopt\|nrepl\)-.*\)).*$$/$${f}c: \1.elc/p" $$f >> .depend;\
-	done
+# NOTE: I don't like duplicating the arguments here and in makem.sh,
+# but I haven't been able to find a way to pass arguments which
+# conflict with Make's own arguments through Make to the script.
+# Using -- doesn't seem to do it.
 
--include .depend
+ifdef install-deps
+	INSTALL_DEPS = "--install-deps"
+endif
+ifdef install-linters
+	INSTALL_LINTERS = "--install-linters"
+endif
 
-elpa-$(EMACS):
-	$(CASK) install
-	$(CASK) update
-	touch $@
+ifdef sandbox
+	ifeq ($(sandbox), t)
+		SANDBOX = --sandbox
+	else
+		SANDBOX = --sandbox=$(sandbox)
+	endif
+endif
 
-elpa: elpa-$(EMACS)
+ifdef debug
+	DEBUG = "--debug"
+endif
 
-autoloads: $(PKG)-autoloads.el
+# ** Verbosity
 
-$(PKG)-autoloads.el: $(ELS)
-	@printf "Generating $@\n"
-	@printf "%s" "$$LOADDEFS_TMPL" > $@
-	@$(CASK) exec $(EMACS) -Q --batch -l autoload.el --eval "(progn\
-	(fset 'message (lambda (&rest _)))\
-	(setq make-backup-files nil)\
-	(setq vc-handled-backends nil)\
-	(setq default-directory (file-truename default-directory))\
-	(setq generated-autoload-file (expand-file-name \"$@\"))\
-	(setq find-file-visit-truename t)\
-	(update-directory-autoloads default-directory))"
+# Since the "-v" in "make -v" gets intercepted by Make itself, we have
+# to use a variable.
 
-build: version elpa autoloads
-	$(CASK) build
+verbose = $(v)
 
-version:
-	$(EMACS) --version
+ifneq (,$(findstring vv,$(verbose)))
+	VERBOSE = "-vv"
+else ifneq (,$(findstring v,$(verbose)))
+	VERBOSE = "-v"
+endif
 
-test: version build
-	$(CASK) exec buttercup -L . -L ./test
+# * Rules
 
-lint: version elpa
-	$(CASK) exec $(EMACS) -Q --batch \
-		--eval "(setq enable-local-variables :safe)" \
-		-l elisp-lint.el -f elisp-lint-files-batch \
-		--no-package-format \
-                --no-fill-column \
-		$(ELS)
+# TODO: Handle cases in which "test" or "tests" are called and a
+# directory by that name exists, which can confuse Make.
 
-test-all: lint test
+%:
+	@./makem.sh $(DEBUG) $(VERBOSE) $(SANDBOX) $(INSTALL_DEPS) $(INSTALL_LINTERS) $(@)
 
-clean:
-	rm -f .depend elpa-$(EMACS) $(OBJECTS) $(PKG)-autoloads.el
-
-elpaclean: clean
-	rm -f elpa*
-	rm -rf .cask # Clean packages installed for development
-
-run-$(PKG): elpa
-	cask exec $(EMACS) -Q -L . --eval "(require '$(PKG))"
-
-html:
-	mkdocs build
-
-## Templates #########################################################
-
-define LOADDEFS_TMPL
-;;; $(PKG)-autoloads.el --- automatically extracted autoloads
-;;
-;;; Code:
-(add-to-list 'load-path (directory-file-name \
-(or (file-name-directory #$$) (car load-path))))
-
-;; Local Variables:
-;; version-control: never
-;; no-byte-compile: t
-;; no-update-autoloads: t
-;; End:
-;;; $(PKG)-autoloads.el ends here
-
-endef
-export LOADDEFS_TMPL
-#'
+.DEFAULT: init
+init:
+	@./makem.sh $(DEBUG) $(VERBOSE) $(SANDBOX) $(INSTALL_DEPS) $(INSTALL_LINTERS)
