@@ -30,10 +30,12 @@
 ;;; Code:
 
 (require 'docopt-generic)
+(require 'docopt-repeated)
+(require 'docopt-optional)
 (require 'eieio)
 (require 'eieio-base)
 
-(defclass docopt-argument (eieio-named)
+(defclass docopt-argument (docopt-repeatable docopt-optionable eieio-named)
   ((default
      :accessor docopt-argument-default
      :documentation "The default of the argument."

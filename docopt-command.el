@@ -30,10 +30,11 @@
 ;;; Code:
 
 (require 'docopt-generic)
+(require 'docopt-optional)
 (require 'eieio)
 (require 'eieio-base)
 
-(defclass docopt-command (eieio-named) ()
+(defclass docopt-command (docopt-optionable eieio-named) ()
   "A class representing a Docopt command.")
 
 (cl-defmethod docopt-collect-arguments ((_ docopt-command))

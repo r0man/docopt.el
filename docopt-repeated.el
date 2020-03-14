@@ -40,9 +40,29 @@
     :documentation "The repeated object."))
   "A class representing a repeatable Docopt object.")
 
+(defclass docopt-repeatable ()
+  ((repeat
+    :initarg :repeat
+    :initform nil
+    :accessor docopt-repeat-p
+    :documentation "Whether the object is repeatable or not."))
+  "A class representing a repeatable Docopt argument or group.")
+
+(cl-defgeneric docopt-set-repeated (object repeat)
+  "Set the :repeat slot of OBJECT to REPEAT.")
+
+(cl-defmethod docopt-set-repeated ((object docopt-repeatable) repeat)
+  "Set the :repeat slot of OBJECT to REPEAT."
+  (oset object :repeat repeat))
+
+(cl-defmethod docopt-set-repeated ((object t) repeat)
+  "Set the :repeat slot of OBJECT to REPEAT." nil)
+
 (defun docopt-make-repeated (object)
   "Make a new Docopt argument using OBJECT."
-  (make-instance 'docopt-repeated :object object))
+  (let ((repeated (make-instance 'docopt-repeated :object object)))
+    (docopt-set-repeated object t)
+    repeated))
 
 (cl-defmethod docopt-collect-arguments ((repeated docopt-repeated))
   "Collect the arguments from the Docopt REPEATED."

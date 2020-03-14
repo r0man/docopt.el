@@ -30,11 +30,12 @@
 ;;; Code:
 
 (require 'docopt-argument)
+(require 'docopt-optional)
 (require 'docopt-generic)
 (require 'eieio)
 (require 'eieio-base)
 
-(defclass docopt-option (eieio-named)
+(defclass docopt-option (docopt-optionable eieio-named)
   ((argument
     :accessor docopt-option-argument
     :documentation "The argument of the option."

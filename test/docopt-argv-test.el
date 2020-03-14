@@ -36,12 +36,7 @@
 
 (describe "The `docopt-argv-parser` parser"
 
-  (it "should parse a required argument"
-    (expect (parsec-with-input "my-arg"
-              (docopt-argv-parser (docopt-argument :object-name "ARG")))
-            :to-equal (docopt-argument :object-name "ARG" :value "my-arg")))
-
-  (it "should parse an optional argument"
+  (it "should parse an argument"
     (expect (parsec-with-input "my-arg"
               (docopt-argv-parser (docopt-argument :object-name "ARG")))
             :to-equal (docopt-argument :object-name "ARG" :value "my-arg")))
@@ -84,8 +79,8 @@
     (expect (parsec-with-input "a b"
               (docopt-argv-parser
                (parsec-with-input "[A B]" (docopt--parse-usage-expr))))
-            :to-equal (list (docopt-argument :object-name "A" :value "a")
-                            (docopt-argument :object-name "B" :value "b"))))
+            :to-equal (list (docopt-argument :object-name "A" :value "a" :optional t)
+                            (docopt-argument :object-name "B" :value "b" :optional t))))
 
   (it "should parse a required group"
     (expect (parsec-with-input "a b"
@@ -298,13 +293,14 @@
                              :argument (docopt-argument :object-name "kn" :default "10" :value "20")
                              :description "Speed in knots [default: 10]."
                              :object-name "speed"
+                             :optional t
                              :prefixes '("spee" "spe" "sp" "s")))))
 
   (it "should parse \"naval_fate ship new SHIP-1 SHIP-2\""
     (expect (docopt-eval-ast program "naval_fate ship new SHIP-1 SHIP-2")
             :to-equal (list (docopt-command :object-name "ship")
                             (docopt-command :object-name "new")
-                            (docopt-argument :object-name "name" :value "SHIP-1")
-                            (docopt-argument :object-name "name" :value "SHIP-2")))))
+                            (docopt-argument :object-name "name" :value "SHIP-1" :repeat t)
+                            (docopt-argument :object-name "name" :value "SHIP-2" :repeat t)))))
 
 ;;; docopt-argv-test.el ends here

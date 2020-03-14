@@ -30,9 +30,10 @@
 ;;; Code:
 
 (require 'docopt-generic)
+(require 'docopt-repeated)
 (require 'eieio)
 
-(defclass docopt-group ()
+(defclass docopt-group (docopt-repeatable)
   ((members
     :accessor docopt-group-members
     :documentation "The argument of the option."
@@ -55,7 +56,9 @@
 
 (defun docopt-make-optional-group (&rest members)
   "Make a new optional Docopt group with MEMBERS."
-  (make-instance 'docopt-optional-group :members members))
+  (let ((group (make-instance 'docopt-optional-group :members members)))
+    (seq-doseq (member members) (docopt-set-optional member t))
+    group))
 
 ;;; Required Group
 
