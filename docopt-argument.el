@@ -50,6 +50,14 @@
     :type (or string null)))
   "A class representing a Docopt argument.")
 
+(cl-defmethod docopt-copy ((argument docopt-argument))
+  "Make a copy of ARGUMENT."
+  (with-slots (default value) argument
+    (let ((copy (copy-sequence argument)))
+      (oset copy :default (docopt-copy default))
+      (oset copy :value (docopt-copy value))
+      copy)))
+
 (cl-defmethod docopt-equal ((argument docopt-argument) object)
   "Return t if ARGUMENT and OBJECT are equal-ish."
   (and (docopt-argument-p object)

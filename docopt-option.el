@@ -63,7 +63,7 @@
        (string= (eieio-object-name-string option)
                 (eieio-object-name-string object))
        (docopt-equal (docopt-option-argument option)
-                      (docopt-option-argument object))))
+                     (docopt-option-argument object))))
 
 (cl-defmethod docopt-walk ((option docopt-option) f)
   "Walk the OPTION of an abstract syntax tree and apply F on it."
@@ -131,6 +131,15 @@
 (cl-defmethod docopt-collect-options ((lst list))
   "Collect the options from the list LST."
   (docopt--flatten (seq-map #'docopt-collect-options lst)))
+
+(cl-defmethod docopt-copy ((option docopt-option))
+  "Make a copy of OPTION."
+  (with-slots (argument description synonym) option
+    (let ((copy (copy-sequence option)))
+      (oset copy :argument (docopt-copy argument))
+      (oset copy :description (docopt-copy description))
+      (oset copy :synonym (docopt-copy synonym))
+      copy)))
 
 (defun docopt-option-set-default (option default)
   "Set the default argument value of OPTION to DEFAULT."
