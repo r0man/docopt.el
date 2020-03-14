@@ -53,11 +53,14 @@
 (setq my-program
       (docopt-parse "
 Usage:
-  prog [-]
+  prog [options]
+
+Options:
+  -p=PATH
 "))
 
 ;; (docopt-string my-program)
-;; (docopt-eval my-program "prog")
+;; (docopt-eval my-program "prog -p")
 ;; (docopt-eval my-program "prog --input a.txt --input=b.txt")
 
 ;; (docopt-eval-ast my-program "prog -v arg")

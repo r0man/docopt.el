@@ -158,6 +158,49 @@
            (docopt--parse-argv-short-option-argument option)))
     option))
 
+(defun docopt-argv--parse-long-options (options)
+  "Parse the long OPTIONS."
+  (list (eval `(parsec-or ,@(seq-map (lambda (long-option) `(docopt-argv-parser ,long-option))
+                                     (seq-filter #'docopt-long-option-p options))))))
+
+(defun docopt-argv--parse-short-options-stacked-arg-0 (options)
+  "Parse the stacked short OPTIONS without an argument."
+  (parsec-many1 (eval `(parsec-or ,@(seq-map (lambda (option)
+                                               `(docopt-argv--parse-short-option ,option))
+                                             (seq-remove #'docopt-option-argument options))))))
+
+(defun docopt-argv--parse-short-options-stacked-arg-1 (options)
+  "Parse the stacked OPTIONS with an argument."
+  (eval `(parsec-or ,@(seq-map (lambda (option)
+                                 `(docopt-argv--parse-short-option ,option))
+                               (seq-filter #'docopt-option-argument options)))))
+
+(defun docopt-argv--parse-short-options (options)
+  "Parse the short OPTIONS, possibly stacked."
+  (let ((options-arg-0 (seq-remove #'docopt-option-argument options))
+        (options-arg-1 (seq-filter #'docopt-option-argument options)))
+    (thread-last (parsec-and
+                  (parsec-str "-")
+                  (parsec-or
+                   (parsec-collect
+                    (docopt-argv--parse-short-options-stacked-arg-0 options-arg-0)
+                    (parsec-optional (docopt-argv--parse-short-options-stacked-arg-1 options-arg-1)))
+                   (parsec-collect
+                    (parsec-optional (docopt-argv--parse-short-options-stacked-arg-0 options-arg-0))
+                    (docopt-argv--parse-short-options-stacked-arg-1 options-arg-1))))
+      (seq-remove #'null)
+      (docopt--flatten))))
+
+(defun docopt-argv--parse-options (options)
+  "Parse the argument vector for OPTIONS."
+  (apply #'append (parsec-sepby (parsec-or (docopt-argv--parse-long-options
+                                            (seq-filter #'docopt-long-option-p options))
+                                           (docopt-argv--parse-short-options
+                                            (seq-filter #'docopt-short-option-p options)))
+                                (docopt--parse-whitespaces))))
+
+
+;; TODO: Remove
 (defun docopt-argv--parse-stacked-short-option (shortcut)
   "Parse a stacked short option from the Docopt SHORTCUT options."
   (eval `(parsec-or ,@(thread-last (docopt-options-shortcut-options shortcut)
@@ -218,13 +261,7 @@
 
 (cl-defmethod docopt-argv-parser ((shortcut docopt-options-shortcut))
   "Return an argument vector parser for the options SHORTCUT."
-  (apply #'append (eval `(parsec-sepby
-                          (parsec-or
-                           (parsec-try (docopt-argv--parse-stacked-options (quote ,shortcut)))
-                           ,@(seq-map (lambda (option) `(list (docopt-argv-parser (quote ,option))))
-                                      (docopt-options-shortcut-options shortcut)))
-                          (parsec-try (parsec-and (docopt--parse-spaces1)
-                                                  (parsec-lookahead (parsec-str "-"))))))))
+  (parsec-optional (docopt-argv--parse-options (docopt-options-shortcut-options shortcut))))
 
 (cl-defmethod docopt-argv-parser ((group docopt-optional-group))
   "Return an argument vector parser for the GROUP."

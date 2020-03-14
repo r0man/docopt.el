@@ -164,8 +164,20 @@
     (expect (parsec-with-input "" (docopt-argv-parser shortcut))
             :to-equal nil))
 
-  (it "should parse a single short option"
+  (it "should parse a single short option, not separated"
+    (expect (parsec-with-input "-ax" (docopt-argv-parser shortcut))
+            :to-equal (list (docopt-short-option
+                             :object-name "a"
+                             :argument (docopt-argument :object-name "A" :value "x")))))
+
+  (it "should parse a single short option, separated by \"=\""
     (expect (parsec-with-input "-a=x" (docopt-argv-parser shortcut))
+            :to-equal (list (docopt-short-option
+                             :object-name "a"
+                             :argument (docopt-argument :object-name "A" :value "x")))))
+
+  (it "should parse a single short option, separated by \" \""
+    (expect (parsec-with-input "-a x" (docopt-argv-parser shortcut))
             :to-equal (list (docopt-short-option
                              :object-name "a"
                              :argument (docopt-argument :object-name "A" :value "x")))))
