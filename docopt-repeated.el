@@ -40,29 +40,9 @@
     :documentation "The repeated object."))
   "A class representing a repeatable Docopt object.")
 
-(defclass docopt-repeatable ()
-  ((repeat
-    :initarg :repeat
-    :initform nil
-    :accessor docopt-repeat-p
-    :documentation "Whether the object is repeatable or not."))
-  "A class representing a repeatable Docopt argument or group.")
-
-(cl-defgeneric docopt-set-repeated (object repeat)
-  "Set the :repeat slot of OBJECT to REPEAT.")
-
-(cl-defmethod docopt-set-repeated ((object docopt-repeatable) repeat)
-  "Set the :repeat slot of OBJECT to REPEAT."
-  (oset object :repeat repeat))
-
-(cl-defmethod docopt-set-repeated ((object t) repeat)
-  "Set the :repeat slot of OBJECT to REPEAT." nil)
-
 (defun docopt-make-repeated (object)
   "Make a new Docopt argument using OBJECT."
-  (let ((repeated (make-instance 'docopt-repeated :object object)))
-    (docopt-set-repeated object t)
-    repeated))
+  (docopt-repeated :object (docopt-set-repeat object t)))
 
 (cl-defmethod docopt-collect-arguments ((repeated docopt-repeated))
   "Collect the arguments from the Docopt REPEATED."
@@ -78,10 +58,24 @@
 
 (cl-defmethod docopt-walk ((repeated docopt-repeated) f)
   "Walk the REPEATED of an abstract syntax tree and apply F on it."
-  (let ((repeated (copy-sequence repeated)))
-    (with-slots (object) repeated
-      (setq object (docopt-walk object f))
-      (funcall f repeated))))
+  (with-slots (object) repeated
+    (setq object (docopt-walk object f))
+    (funcall f repeated)))
+
+;; Repeatable
+
+(defclass docopt-repeatable ()
+  ((repeat
+    :initarg :repeat
+    :initform nil
+    :accessor docopt-repeat-p
+    :documentation "Whether the object can be repeated or not."))
+  "A class providing a :repeat slot for a Docopt object.")
+
+(cl-defmethod docopt-set-repeat ((object docopt-repeatable) value)
+  "Set the :repeat slot of OBJECT to VALUE."
+  (oset object :repeat value)
+  object)
 
 (provide 'docopt-repeated)
 

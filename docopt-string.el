@@ -39,6 +39,7 @@
 (require 'docopt-repeated)
 (require 'docopt-standard-input)
 (require 'docopt-usage-pattern)
+(require 'docopt-util)
 (require 's)
 
 (defcustom docopt-string-options-width 20
@@ -99,12 +100,12 @@
 
 (cl-defmethod docopt-string ((argument docopt-argument))
   "Convert the Docopt usage ARGUMENT to a string."
-  (let ((name (eieio-object-name-string argument)))
+  (let ((name (docopt-argument-name argument)))
     (if (s-uppercase? name) name (concat "<" name ">"))))
 
 (cl-defmethod docopt-string ((command docopt-command))
   "Convert the Docopt usage COMMAND to a string."
-  (oref command object-name))
+  (docopt-command-name command))
 
 (cl-defmethod docopt-string ((either docopt-either))
   "Convert the Docopt EITHER to a string."
@@ -116,11 +117,11 @@
 
 (cl-defmethod docopt-string ((option docopt-long-option))
   "Convert the Docopt long OPTION to a string."
-  (concat "--" (oref option object-name) (docopt-string--option-argument option)))
+  (concat "--" (docopt-option-name option) (docopt-string--option-argument option)))
 
 (cl-defmethod docopt-string ((option docopt-short-option))
   "Convert the Docopt short OPTION to a string."
-  (concat "-" (oref option object-name) (docopt-string--option-argument option)))
+  (concat "-" (docopt-option-name option) (docopt-string--option-argument option)))
 
 (cl-defmethod docopt-string ((group docopt-optional-group))
   "Convert the Docopt usage GROUP to a string."
@@ -134,7 +135,7 @@
                      (docopt-string--examples (docopt-program-examples program)))
     (seq-remove #'s-blank-p)
     (s-join "\n\n")
-    (s-trim)))
+    (docopt-strip)))
 
 (cl-defmethod docopt-string ((repeated docopt-repeated))
   "Convert the Docopt usage REPEATED to a string."

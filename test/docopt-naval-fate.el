@@ -29,6 +29,7 @@
 
 ;;; Code:
 
+(require 'docopt)
 (require 'parsec)
 (require 's)
 
@@ -80,78 +81,78 @@
 (defvar docopt-naval-fate-option-drifting
   (docopt-long-option
    :description "Drifting mine."
-   :object-name "drifting"
+   :name "drifting"
    :prefixes '("driftin" "drifti" "drift" "drif" "dri" "dr" "d")))
 
 (defvar docopt-naval-fate-option-h
   (docopt-short-option
    :description "Show this screen."
-   :object-name "h"
+   :name "h"
    :synonym "help"))
 
 (defvar docopt-naval-fate-option-help
   (docopt-long-option
    :description "Show this screen."
-   :object-name "help"
+   :name "help"
    :prefixes '("hel" "he" "h")
    :synonym "h"))
 
 (defvar docopt-naval-fate-option-moored
   (docopt-long-option
    :description "Moored (anchored) mine."
-   :object-name "moored"
+   :name "moored"
    :prefixes '("moore" "moor" "moo" "mo" "m")))
 
 (defvar docopt-naval-fate-option-speed
   (docopt-long-option
-   :argument (docopt-argument :object-name "kn" :default "10")
+   :argument (docopt-argument :name "kn" :default "10")
    :description "Speed in knots [default: 10]."
-   :object-name "speed"
+   :name "speed"
    :prefixes '("spee" "spe" "sp" "s")))
 
 (defvar docopt-naval-fate-option-version
   (docopt-long-option
    :description "Show version."
-   :object-name "version"
+   :name "version"
    :prefixes '("versio" "versi" "vers" "ver" "ve" "v")))
 
 ;; Usage patterns
 
 (defvar docopt-naval-fate-pattern-ship-new
   (docopt-make-usage-pattern
-   (docopt-command :object-name "naval_fate")
-   (docopt-command :object-name "ship")
-   (docopt-command :object-name "new")
-   (docopt-make-repeated (docopt-argument :object-name "name"))))
+   (docopt-command :name "naval_fate")
+   (docopt-command :name "ship")
+   (docopt-command :name "new")
+   (docopt-make-repeated (docopt-argument :name "name"))))
 
 (defvar docopt-naval-fate-pattern-ship-name
   (docopt-make-usage-pattern
-   (docopt-command :object-name "naval_fate")
-   (docopt-command :object-name "ship")
-   (docopt-argument :object-name "name")
-   (docopt-command :object-name "move")
-   (docopt-argument :object-name "x")
-   (docopt-argument :object-name "y")
+   (docopt-command :name "naval_fate")
+   (docopt-command :name "ship")
+   (docopt-argument :name "name" :repeat t)
+   (docopt-command :name "move")
+   (docopt-argument :name "x")
+   (docopt-argument :name "y")
    (docopt-make-optional-group docopt-naval-fate-option-speed)))
 
 (defvar docopt-naval-fate-pattern-ship-shoot
   (docopt-make-usage-pattern
-   (docopt-command :object-name "naval_fate")
-   (docopt-command :object-name "ship")
-   (docopt-command :object-name "shoot")
-   (docopt-argument :object-name "x")
-   (docopt-argument :object-name "y")))
+   (docopt-command :name "naval_fate")
+   (docopt-command :name "ship")
+   (docopt-command :name "shoot")
+   (docopt-argument :name "x")
+   (docopt-argument :name "y")))
 
 (defvar docopt-naval-fate-pattern-mine
   (docopt-make-usage-pattern
-   (docopt-command :object-name "naval_fate")
-   (docopt-command :object-name "mine")
+   (docopt-command :name "naval_fate")
+   (docopt-command :name "mine")
    (docopt-make-required-group
     (docopt-make-either
-     (list (docopt-command :object-name "set"))
-     (list (docopt-command :object-name "remove"))))
-   (docopt-argument :object-name "x")
-   (docopt-argument :object-name "y")
+     (list (docopt-command :name "set"))
+     (list (docopt-command :name "remove"))))
+   (docopt-argument :name "x")
+   (docopt-argument :name "y")
    (docopt-make-optional-group
     (docopt-make-either
      (list docopt-naval-fate-option-moored)
@@ -159,14 +160,14 @@
 
 (defvar docopt-naval-fate-pattern-help
   (docopt-make-usage-pattern
-   (docopt-command :object-name "naval_fate")
+   (docopt-command :name "naval_fate")
    (docopt-make-either
     (list docopt-naval-fate-option-h)
     (list docopt-naval-fate-option-help))))
 
 (defvar docopt-naval-fate-pattern-version
   (docopt-make-usage-pattern
-   (docopt-command :object-name "naval_fate")
+   (docopt-command :name "naval_fate")
    docopt-naval-fate-option-version))
 
 (defvar docopt-naval-fate

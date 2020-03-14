@@ -31,6 +31,7 @@
 
 (require 'docopt-generic)
 (require 'eieio)
+(require 'subr-x)
 
 (defclass docopt-usage-pattern ()
   ((command
@@ -47,13 +48,20 @@
     :type (or list null)))
   "A class representing a Docopt usage pattern.")
 
+(cl-defmethod clone ((pattern docopt-usage-pattern) &rest params)
+  "Return a copy of the usage PATTERN and apply PARAMS."
+  (let ((copy (apply #'cl-call-next-method usage-pattern params)))
+    (with-slots (command expressions) copy
+      (setq command (clone (docopt-usage-pattern-command argument)))
+      (setq expressions (clone (docopt-usage-pattern-expressions argument)))
+      copy)))
+
 (cl-defmethod docopt-walk ((pattern docopt-usage-pattern) f)
   "Walk the usage PATTERN of an abstract syntax tree and apply F on it."
-  (let ((pattern (copy-sequence pattern)))
-    (with-slots (command expressions) pattern
-      (setq command (docopt-walk command f))
-      (setq expressions (docopt-walk expressions f))
-      (funcall f pattern))))
+  (with-slots (command expressions) pattern
+    (setq command (docopt-walk command f))
+    (setq expressions (docopt-walk expressions f))
+    (funcall f pattern)))
 
 (cl-defmethod docopt-collect-arguments ((usage-pattern docopt-usage-pattern))
   "Collect the arguments from the Docopt USAGE-PATTERN."
@@ -71,11 +79,25 @@
   "Make a new Docopt usage pattern with COMMAND and EXPRESSIONS."
   (make-instance 'docopt-usage-pattern :command command :expressions expressions))
 
-(defun docopt-usage-pattern-options (usage-pattern)
-  "Return the options of the USAGE-PATTERN."
-  (seq-mapcat (lambda (expr)
-                (docopt-usage-pattern-expr-option expr))
-              (docopt-usage-pattern-expressions usage-pattern)))
+(defun docopt-usage-pattern-collect-repeatable (usage-pattern)
+  "Collect all repeatable elements in USAGE-PATTERN."
+  (let ((result nil))
+    (docopt-walk usage-pattern
+                 (lambda (element)
+                   (when (docopt-repeatable-child-p element)
+                     (setq result (cons element result)))
+                   element))
+    (reverse result)))
+
+(defun docopt-usage-pattern-set-repeat (usage-pattern)
+  "Set the :repeat slot of repeatable elements occurring more then once in USAGE-PATTERN to t."
+  (thread-last (docopt-usage-pattern-collect-repeatable usage-pattern)
+    (seq-group-by (lambda (element)
+                    (cons (eieio-object-class-name element)
+                          (docopt-name element))))
+    (seq-map #'cdr)
+    (seq-filter (lambda (group) (> (length group) 1)))
+    (seq-map (lambda (group) (docopt-set-repeat group t)))))
 
 (provide 'docopt-usage-pattern)
 

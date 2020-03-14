@@ -29,13 +29,28 @@
 
 ;;; Code:
 
+(require 'dash)
 (require 'docopt-generic)
 (require 'docopt-optional)
+(require 'docopt-repeated)
 (require 'eieio)
 (require 'eieio-base)
 
-(defclass docopt-command (docopt-optionable eieio-named) ()
+(defclass docopt-command (docopt-optionable docopt-repeatable)
+  ((name
+    :accessor docopt-command-name
+    :documentation "The name of the command."
+    :initarg :name
+    :initform nil
+    :type (or string null)))
   "A class representing a Docopt command.")
+
+(cl-defmethod clone ((command docopt-command) &rest params)
+  "Return a copy of the COMMAND and apply PARAMS."
+  (let ((copy (apply #'cl-call-next-method command params)))
+    (with-slots (name optional) copy
+      (setq name (clone (docopt-command-name command)))
+      copy)))
 
 (cl-defmethod docopt-collect-arguments ((_ docopt-command))
   "Collect the arguments from the Docopt COMMAND." nil)
@@ -45,17 +60,20 @@
 
 (cl-defmethod docopt-collect-commands ((lst list))
   "Collect the commands from the list LST."
-  (docopt--flatten (seq-map #'docopt-collect-commands lst)))
+  (-flatten (seq-map #'docopt-collect-commands lst)))
 
 (cl-defmethod docopt-collect-options ((_ docopt-command))
   "Collect the options from the Docopt COMMAND." nil)
 
+(cl-defmethod docopt-name ((command docopt-command))
+  "Return the name of COMMAND."
+  (docopt-command-name command))
+
 (cl-defmethod docopt-walk ((command docopt-command) f)
   "Walk the COMMAND of an abstract syntax tree and apply F on it."
-  (let ((command (copy-sequence command)))
-    (with-slots (object-name) command
-      (setq object-name (docopt-walk object-name f))
-      (funcall f command))))
+  (with-slots (name) command
+    (setq name (docopt-walk name f))
+    (funcall f command)))
 
 (provide 'docopt-command)
 

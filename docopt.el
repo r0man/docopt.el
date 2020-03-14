@@ -32,6 +32,7 @@
 
 (require 'docopt-argv)
 (require 'docopt-parser)
+(require 'docopt-util)
 (require 'parsec)
 (require 's)
 
@@ -39,18 +40,20 @@
 (defun docopt-parse (s)
   "Parse the Docopt program from S."
   (let ((program (parsec-with-input s (docopt--parse-program))))
-    (oset program :source (s-trim s))
+    (when (docopt--parsec-error-p program)
+      (signal 'docopt-invalid-program program))
+    (oset program :source (docopt-strip s))
     program))
 
 ;;;###autoload
 (defun docopt-eval-ast (program s)
   "Parse the argument vector from S using the Docopt PROGRAM."
-  (docopt--parse-argv program s))
+  (docopt-argv-parse program s))
 
 ;;;###autoload
 (defun docopt-eval (program s)
   "Parse the argument vector from S using the Docopt PROGRAM."
-  (docopt--argv-to-alist program (docopt--parse-argv program s)))
+  (docopt--argv-to-alist program (docopt-argv-parse program s)))
 
 (provide 'docopt)
 

@@ -30,10 +30,13 @@
 ;;; Code:
 
 (require 'buttercup)
+(require 'cl-print)
 (require 'docopt)
 (require 'docopt-testcase)
 (require 'f)
-(require 'test-helper)
+;; (require 'test-helper)
+
+(setf cl-print-readably t)
 
 (defun docopt-test-define-it (example)
   "Define a Buttercup test for the Docopt TESTCASE and EXAMPLE."
@@ -44,38 +47,41 @@
 (defun docopt-test-define-describe (testcase)
   "Define a Buttercup test suite for the Docopt TESTCASE."
   (let ((program (docopt-testcase-program testcase)))
-    (describe (format "Parsing the Docopt program:\n\n%s" (docopt-string program))
+    (describe (format "Parsing the Docopt program:\n\n%s"
+                      (docopt-program-source program))
       (seq-doseq (example (docopt-testcase-test testcase))
         (docopt-test-define-it example)))))
 
 ;;; docopt-test.el ends here
 
-(setq my-program
-      (docopt-parse "
-Usage:
-  prog [-]
-"))
+;; (setq my-program (docopt-parse "Usage: prog -v ..."))
 
-;; (docopt-string my-program)
-;; (docopt-eval my-program "prog")
-;; (docopt-eval my-program "prog --input a.txt --input=b.txt")
+(setq my-program (docopt-parse "usage: prog [-o <o>]...
 
-;; (docopt-eval-ast my-program "prog -v arg")
-;; (docopt-eval-ast my-program "prog -b -a")
+options: -o <o>  [default: x y]"))
 
-;; (docopt-eval my-program "prog -p root")
-;; (docopt-eval-ast my-program "prog -a cmd")
-;; (docopt-eval my-program "prog")
-;; (docopt-eval my-program "prog -a -r -m Hello")
-;; (docopt-eval my-program "prog -a -r -m Hello -m -s -g")
+;; (docopt-eval my-program "prog -o this")
+;; (docopt-eval my-program "prog 20 40")
 
-;; (docopt-eval my-program "prog -armyourass")
+;; (docopt-eval-ast my-program "prog -vv")
 
-;; (seq-doseq (testcase (docopt-parse-testcases (f-read-text "test/testcases.docopt")))
-;;   (docopt-test-define-describe testcase))
+;; (docopt-eval-ast my-program "prog -a -r -myourass")
 
-(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 16))
+;; (setq my-program
+;;       (docopt-parse "usage: prog (NAME | --foo NAME)
+
+;; options: --foo
+;; "))
+
+;; (docopt-eval-ast my-program "prog -a")
+
+;; (pp (car (last (docopt-parse-testcases (f-read-text "testcases.docopt")))))
+
+(seq-doseq (testcase (docopt-parse-testcases (f-read-text "test/testcases.docopt")))
   (docopt-test-define-describe testcase))
+
+;; (seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 17))
+;;   (docopt-test-define-describe testcase))
 
 ;; (setq my-testcase (nth 5 (docopt-parse-testcases (f-read-text "test/testcases.docopt"))))
 ;; (docopt-test-define-describe my-testcase)

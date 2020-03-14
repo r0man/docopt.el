@@ -61,10 +61,9 @@
 
 (cl-defmethod docopt-walk ((shortcut docopt-options-shortcut) f)
   "Walk the SHORTCUT of an abstract syntax tree and apply F on it."
-  (let ((shortcut (copy-sequence shortcut)))
-    (with-slots (options) shortcut
-      (setq options (docopt-walk options f))
-      (funcall f shortcut))))
+  (with-slots (options) shortcut
+    (setq options (docopt-walk options f))
+    (funcall f shortcut)))
 
 (defun docopt-make-options-shortcut (&rest options)
   "Make a new Docopt options shortcut using OPTIONS."

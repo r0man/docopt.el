@@ -35,19 +35,7 @@
 (require 'seq)
 
 (defclass docopt-program ()
-  ((arguments
-    :accessor docopt-program-arguments
-    :documentation "The arguments of the program."
-    :initarg :arguments
-    :initform nil
-    :type (or list null))
-   (header
-    :accessor docopt-program-header
-    :documentation "The header of the program."
-    :initarg :header
-    :initform nil
-    :type (or string null))
-   (examples
+  ((examples
     :accessor docopt-program-examples
     :documentation "The examples of the program."
     :initarg :examples
@@ -59,12 +47,12 @@
     :initarg :footer
     :initform nil
     :type (or string null))
-   (usage
-    :accessor docopt-program-usage
-    :documentation "The usage information of the program."
-    :initarg :usage
+   (header
+    :accessor docopt-program-header
+    :documentation "The header of the program."
+    :initarg :header
     :initform nil
-    :type (or list null))
+    :type (or string null))
    (options
     :accessor docopt-program-options
     :documentation "The options of the program."
@@ -76,7 +64,13 @@
     :documentation "The source of the program."
     :initarg :source
     :initform nil
-    :type (or string null)))
+    :type (or string null))
+   (usage
+    :accessor docopt-program-usage
+    :documentation "The usage information of the program."
+    :initarg :usage
+    :initform nil
+    :type (or list null)))
   "A class representing a Docopt program.")
 
 (cl-defmethod docopt-collect-arguments ((program docopt-program))
@@ -94,17 +88,36 @@
    (seq-mapcat #'docopt-collect-options (docopt-program-usage program))
    (docopt-program-options program)))
 
+(cl-defmethod clone ((program docopt-program) &rest params)
+  "Return a copy of the usage PROGRAM and apply PARAMS."
+  (let ((copy (apply #'cl-call-next-method program params)))
+    (with-slots (examples footer header options source usage) copy
+      (setq examples (clone (docopt-program-examples program)))
+      (setq footer (clone (docopt-program-footer program)))
+      (setq header (clone (docopt-program-header program)))
+      (setq options (clone (docopt-program-options program)))
+      (setq source (clone (docopt-program-source program)))
+      (setq usage (clone (docopt-program-usage program)))
+      copy)))
+
 (cl-defmethod docopt-equal ((program docopt-program) other)
   "Return t if PROGRAM and OTHER are equal-ish."
-  (with-slots (arguments usage options) program
+  (with-slots (usage options) program
     (and (docopt-program-p other)
-         (equal arguments (oref other :arguments))
-         (equal usage (oref other :usage))
-         (equal options (oref other :options)))))
+         (equal usage (docopt-program-usage other))
+         (equal options (docopt-program-options other)))))
+
+(defun docopt-program-long-options (program)
+  "Return the long options of PROGRAM."
+  (seq-filter #'docopt-long-option-p (docopt-program-options program)))
+
+(defun docopt-program-short-options (program)
+  "Return the short options of PROGRAM."
+  (seq-filter #'docopt-short-option-p (docopt-program-options program)))
 
 (defun docopt-program-option (program name)
   "Return the long or short option of PROGRAM by NAME."
-  (seq-find (lambda (option) (equal name (oref option object-name)))
+  (seq-find (lambda (option) (equal name (docopt-option-name option)))
             (docopt-program-options program)))
 
 (defun docopt-program-set-sections (program sections)
@@ -116,7 +129,7 @@
 (defun docopt-program-argv-normalize (program)
   "Return a list of normalized Docopt argv elements for PROGRAM."
   (seq-concatenate 'list
-                   (docopt-program-arguments program)
+                   (docopt-remove-duplicates (docopt-collect-arguments program))
                    (docopt-collect-commands program)
                    (seq-remove (lambda (option)
                                  (and (docopt-short-option-p option)
@@ -125,13 +138,11 @@
 
 (cl-defmethod docopt-walk ((program docopt-program) f)
   "Walk the PROGRAM of an abstract syntax tree and apply F on it."
-  (let ((program (copy-sequence program)))
-    (with-slots (arguments header examples footer usage options) program
-      (setq arguments (docopt-walk arguments f))
-      (setq header (docopt-walk header f))
-      (setq examples (docopt-walk examples f))
-      (setq usage (docopt-walk usage f))
-      (funcall f program))))
+  (with-slots (header examples footer usage options) program
+    (setq header (docopt-walk header f))
+    (setq examples (docopt-walk examples f))
+    (setq usage (docopt-walk usage f))
+    (funcall f program)))
 
 (defun docopt-program-remove-unknown-options (program)
   "Remove all options from PROGRAM that are not defined in the options section."
@@ -144,33 +155,12 @@
                          (setq members (delete-dups
                                         (seq-filter (lambda (member)
                                                       (if (docopt-option-child-p member)
-                                                          (docopt-program-option program (eieio-object-name-string member))
+                                                          (docopt-program-option program (docopt-option-name member))
                                                         t))
                                                     members)))
                          element))
                       (t element))))
     program))
-
-;; (defun docopt-walk-options (program)
-;;   (docopt-walk program (lambda (element)
-;;                          (cond
-;;                           ((docopt-option-child-p element)
-;;                            element)
-
-;;                           ((docopt-group-child-p element)
-;;                            (docopt-group-members element))
-
-;;                           ((docopt-either-p element)
-;;                            (docopt--flatten (apply #'append (docopt-either-members element))))
-
-;;                           ((docopt-repeated-p element)
-;;                            (list (docopt-repeated-object element)))
-
-;;                           ((docopt-usage-pattern-p element)
-;;                            (apply #'append (docopt-usage-pattern-expressions element)))
-
-;;                           ((docopt-program-p element)
-;;                            (seq-mapcat #'docopt--flatten (docopt-program-usage element)))))))
 
 (provide 'docopt-program)
 

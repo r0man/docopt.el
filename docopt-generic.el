@@ -32,6 +32,18 @@
 (require 'cl-lib)
 (require 'seq)
 
+(cl-defmethod clone ((lst list))
+  "Return a copy of LST."
+  (copy-sequence lst))
+
+(cl-defmethod clone ((v vector))
+  "Return a copy of V."
+  (copy-sequence v))
+
+(cl-defmethod clone ((s string))
+  "Return a copy of S."
+  (copy-sequence s))
+
 (cl-defgeneric docopt-collect-arguments (object)
   "Collect the arguments from the Docopt OBJECT.")
 
@@ -48,16 +60,30 @@
   "Return t if OBJECT-1 and OBJECT-2 are equal-ish."
   (equal object-1 object-2))
 
+(cl-defgeneric docopt-name (object)
+  "Return the name of OBJECT.")
+
+(cl-defgeneric docopt-set-repeat (object value)
+  "Set the :repeat slot of OBJECT to VALUE.")
+
+(cl-defmethod docopt-set-repeat ((lst list) value)
+  "Set the :repeat slot of the LST elements to VALUE."
+  (seq-map (lambda (element) (docopt-set-repeat element value)) lst))
+
 (cl-defgeneric docopt-walk (object f)
   "Walk the OBJECT of an abstract syntax tree and apply F on it.")
 
 (cl-defmethod docopt-walk ((lst list) f)
   "Walk the list LST of an abstract syntax tree and apply F on it."
-  (seq-map (lambda (element) (docopt-walk element f)) lst))
+  (funcall f (seq-map (lambda (element) (docopt-walk element f)) lst)))
 
 (cl-defmethod docopt-walk ((s string) f)
   "Walk the string S of an abstract syntax tree and apply F on it."
   (funcall f s))
+
+(cl-defmethod docopt-walk ((v vector) f)
+  "Walk the vector V of an abstract syntax tree and apply F on it."
+  (funcall f v))
 
 (provide 'docopt-generic)
 

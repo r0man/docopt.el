@@ -30,10 +30,10 @@
 ;;; Code:
 
 (require 'docopt-generic)
-(require 'docopt-repeated)
+(require 'docopt-optional)
 (require 'eieio)
 
-(defclass docopt-group (docopt-repeatable)
+(defclass docopt-group ()
   ((members
     :accessor docopt-group-members
     :documentation "The argument of the option."
@@ -42,23 +42,38 @@
     :type (or list null)))
   "A class representing a Docopt group.")
 
+(cl-defmethod clone ((group docopt-group) &rest params)
+  "Return a copy of the GROUP and apply PARAMS."
+  (let ((copy (apply #'cl-call-next-method group params)))
+    (oset copy :members (clone (docopt-group-members group)))
+    copy))
+
+(cl-defmethod docopt-set-repeat ((group docopt-group) value)
+  "Set the :repeat slot of the GROUP members to VALUE."
+  (docopt-set-repeat (docopt-group-members group) value)
+  group)
+
 (cl-defmethod docopt-walk ((group docopt-group) f)
   "Walk the GROUP of an abstract syntax tree and apply F on it."
-  (let ((group (copy-sequence group)))
-    (with-slots (members) group
-      (setq members (docopt-walk members f))
-      (funcall f group))))
+  (with-slots (members) group
+    (setq members (docopt-walk members f))
+    (funcall f group)))
 
 ;;; Optional Group
 
-(defclass docopt-optional-group (docopt-group) ()
+(defclass docopt-optional-group (docopt-group docopt-optionable) ()
   "A class representing a required Docopt group.")
 
 (defun docopt-make-optional-group (&rest members)
   "Make a new optional Docopt group with MEMBERS."
-  (let ((group (make-instance 'docopt-optional-group :members members)))
-    (seq-doseq (member members) (docopt-set-optional member t))
+  (let ((group (docopt-optional-group :members members)))
+    (docopt-set-optional group t)
     group))
+
+(cl-defmethod docopt-set-optional ((group docopt-optional-group) optional)
+  "Set the :optional slot of the GROUP members to OPTIONAL."
+  (cl-call-next-method group optional)
+  (docopt-set-optional (docopt-group-members group) optional))
 
 ;;; Required Group
 

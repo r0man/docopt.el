@@ -30,10 +30,11 @@
 ;;; Code:
 
 (require 'docopt-generic)
+(require 'docopt-optional)
 (require 'eieio)
 (require 'seq)
 
-(defclass docopt-either ()
+(defclass docopt-either (docopt-optionable)
   ((members
     :accessor docopt-either-members
     :documentation "The members of the either."
@@ -41,6 +42,18 @@
     :initform nil
     :type (or list null)))
   "A class representing a Docopt either.")
+
+(cl-defmethod clone ((either docopt-either) &rest params)
+  "Return a copy of EITHER and apply PARAMS."
+  (let ((copy (apply #'cl-call-next-method either params)))
+    (with-slots (members) copy
+      (setq members (clone (docopt-either-members either)))
+      copy)))
+
+(cl-defmethod docopt-set-repeat ((either docopt-either) value)
+  "Set the :repeat slot of the EITHER members to VALUE."
+  (docopt-set-repeat (docopt-either-members either) value)
+  either)
 
 (defun docopt-make-either (&rest members)
   "Make a new Docopt argument using MEMBERS and OPTIONAL."
@@ -64,10 +77,9 @@
 
 (cl-defmethod docopt-walk ((either docopt-either) f)
   "Walk the EITHER of an abstract syntax tree and apply F on it."
-  (let ((either (copy-sequence either)))
-    (with-slots (members) either
-      (setq members (docopt-walk members f))
-      (funcall f either))))
+  (with-slots (members) either
+    (setq members (docopt-walk members f))
+    (funcall f either)))
 
 (provide 'docopt-either)
 

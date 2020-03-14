@@ -32,168 +32,235 @@
 (require 'buttercup)
 (require 'docopt)
 (require 'docopt-argv)
+(require 'docopt-naval-fate)
 (require 'test-helper)
 
 (describe "The `docopt-argv-parser` parser"
+  :var ((program (docopt-parse docopt-naval-fate-str)))
 
   (it "should parse an argument"
     (expect (parsec-with-input "my-arg"
-              (docopt-argv-parser (docopt-argument :object-name "ARG")))
-            :to-equal (docopt-argument :object-name "ARG" :value "my-arg")))
+              (docopt-argv-parser program (docopt-argument :name "ARG")))
+            :to-equal (docopt-argument :name "ARG" :value "my-arg")))
+
+  (it "should not parse an argument starting with a dash"
+    (expect (car (parsec-with-input "-my-arg"
+                   (docopt-argv-parser program (docopt-argument :name "ARG"))))
+            :to-equal 'parsec-error))
 
   (it "should parse a short option"
     (expect (parsec-with-input "-h"
-              (docopt-argv-parser (docopt-short-option :object-name "h")))
-            :to-equal (docopt-short-option :object-name "h")))
+              (docopt-argv-parser program (docopt-short-option :name "h")))
+            :to-equal (docopt-short-option :name "h")))
 
   (it "should parse a long option"
     (expect (parsec-with-input "--help"
-              (docopt-argv-parser (docopt-long-option :object-name "help")))
-            :to-equal (docopt-long-option :object-name "help")))
+              (docopt-argv-parser program (docopt-long-option :name "help")))
+            :to-equal (docopt-long-option :name "help")))
+
+  (it "should parse a long option prefix"
+    (expect (parsec-with-input "--hel"
+              (docopt-argv-parser program (docopt-long-option :name "help" :prefixes '("hel"))))
+            :to-equal (docopt-long-option :name "help" :prefixes '("hel"))))
 
   (it "should parse a long option with argument separated by equals sign"
-    (expect (parsec-with-input "--speed=10"
-              (docopt-argv-parser
-               (docopt-long-option :object-name "speed" :argument (docopt-argument :object-name "kn"))))
-            :to-equal (docopt-long-option :object-name "speed" :argument (docopt-argument :object-name "kn" :value "10"))))
+    (expect (parsec-with-input "--speed=20"
+              (docopt-argv-parser program (docopt-long-option :name "speed" :argument (docopt-argument :name "kn"))))
+            :to-equal (docopt-long-option :name "speed" :argument (docopt-argument :name "kn" :value "20"))))
 
   (it "should parse a long option with argument separated by whitespace"
     (expect (parsec-with-input "--speed 10"
-              (docopt-argv-parser
-               (docopt-long-option :object-name "speed" :argument (docopt-argument :object-name "kn"))))
-            :to-equal (docopt-long-option :object-name "speed" :argument (docopt-argument :object-name "kn" :value "10"))))
+              (docopt-argv-parser program (docopt-long-option :name "speed" :argument (docopt-argument :name "kn"))))
+            :to-equal (docopt-long-option :name "speed" :argument (docopt-argument :name "kn" :value "10"))))
 
   (it "should parse a command"
     (expect (parsec-with-input "naval_fate"
-              (docopt-argv-parser (docopt-command :object-name "naval_fate")))
-            :to-equal (docopt-command :object-name "naval_fate")))
+              (docopt-argv-parser program (docopt-command :name "naval_fate")))
+            :to-equal (docopt-command :name "naval_fate")))
 
   (it "should parse a list of arguments"
-    (expect (parsec-with-input "a b"
-              (docopt-argv-parser
-               (parsec-with-input "A B" (docopt--parse-usage-expr))))
-            :to-equal (list (docopt-argument :object-name "A" :value "a")
-                            (docopt-argument :object-name "B" :value "b"))))
+    (expect (parsec-with-input "a b" (docopt-argv-parser program (parsec-with-input "A B" (docopt--parse-usage-expr))))
+            :to-equal (list (docopt-argument :name "A" :value "a")
+                            (docopt-argument :name "B" :value "b"))))
 
   (it "should parse an optional group"
-    (expect (parsec-with-input "a b"
-              (docopt-argv-parser
-               (parsec-with-input "[A B]" (docopt--parse-usage-expr))))
-            :to-equal (list (docopt-argument :object-name "A" :value "a" :optional t)
-                            (docopt-argument :object-name "B" :value "b" :optional t))))
+    (expect (parsec-with-input "a b" (docopt-argv-parser program (parsec-with-input "[A B]" (docopt--parse-usage-expr))))
+            :to-equal (list (docopt-argument :name "A" :value "a" :optional t)
+                            (docopt-argument :name "B" :value "b" :optional t))))
+
+  ;; (it "should parse an optional group separated by options"
+  ;;   (expect (parsec-with-input "--version a -h b --moored" (docopt-argv-parser program (parsec-with-input "[A B]" (docopt--parse-usage-expr))))
+  ;;           :to-equal (list docopt-naval-fate-option-version
+  ;;                           (docopt-argument :name "A" :value "a" :optional t)
+  ;;                           docopt-naval-fate-option-h
+  ;;                           (docopt-argument :name "B" :value "b" :optional t)
+  ;;                           docopt-naval-fate-option-moored)))
 
   (it "should parse a required group"
-    (expect (parsec-with-input "a b"
-              (docopt-argv-parser
-               (parsec-with-input "(A B)" (docopt--parse-usage-expr))))
-            :to-equal (list (docopt-argument :object-name "A" :value "a")
-                            (docopt-argument :object-name "B" :value "b"))))
+    (expect (parsec-with-input "a b" (docopt-argv-parser program (parsec-with-input "(A B)" (docopt--parse-usage-expr))))
+            :to-equal (list (docopt-argument :name "A" :value "a")
+                            (docopt-argument :name "B" :value "b"))))
 
   (it "should parse a usage pattern"
     (expect (parsec-with-input "naval_fate --help"
-              (docopt-argv-parser
-               (parsec-with-input "Usage: naval_fate -h | --help"
-                 (docopt--parse-usage))))
-            :to-equal (list (docopt-command :object-name "naval_fate")
-                            (docopt-long-option :object-name "help"))))
+              (docopt-argv-parser program
+                                  (parsec-with-input "Usage: naval_fate -h | --help"
+                                    (docopt--parse-usage))))
+            :to-equal (list (docopt-command :name "naval_fate")
+                            (docopt-long-option :name "help"))))
 
   (it "should parse a sequence of short options"
-    (let ((options (list (docopt-short-option :object-name "a")
-                         (docopt-short-option :object-name "b")
-                         (docopt-short-option :object-name "c"))))
-      (expect (parsec-with-input "-a -b -c" (docopt-argv-parser options))
+    (let ((options (list (docopt-short-option :name "a")
+                         (docopt-short-option :name "b")
+                         (docopt-short-option :name "c"))))
+      (expect (parsec-with-input "-a -b -c" (docopt-argv-parser program options))
               :to-equal options))))
 
 (describe "Parsing an either"
-  :var ((exprs (parsec-with-input "a|-b|--c" (docopt--parse-usage-expr))))
+  :var ((program (docopt-parse docopt-naval-fate-str))
+        (exprs (parsec-with-input "a|-b|--c" (docopt--parse-usage-expr))))
 
   (it "should parse the branch with a command"
-    (expect (parsec-with-input "a" (docopt-argv-parser exprs))
-            :to-equal (list (docopt-command :object-name "a"))))
+    (expect (parsec-with-input "a" (docopt-argv-parser program exprs))
+            :to-equal (list (docopt-command :name "a"))))
 
   (it "should parse the branch with a short option"
-    (expect (parsec-with-input "-b" (docopt-argv-parser exprs))
-            :to-equal (list (docopt-short-option :object-name "b"))))
+    (expect (parsec-with-input "-b" (docopt-argv-parser program exprs))
+            :to-equal (list (docopt-short-option :name "b"))))
 
   (it "should parse the branch with a long option"
-    (expect (parsec-with-input "--c" (docopt-argv-parser exprs))
-            :to-equal (list (docopt-long-option :object-name "c")))))
+    (expect (parsec-with-input "--c" (docopt-argv-parser program exprs))
+            :to-equal (list (docopt-long-option :name "c")))))
 
 (describe "Parsing optional short options within an either"
-  :var ((exprs (parsec-with-input "[-a|-b]" (docopt--parse-usage-expr))))
+  :var ((program (docopt-parse docopt-naval-fate-str))
+        (exprs (parsec-with-input "[-a|-b]" (docopt--parse-usage-expr))))
 
   (it "should parse the empty string"
-    (expect (parsec-with-input "" (docopt-argv-parser exprs))
+    (expect (parsec-with-input "" (docopt-argv-parser program exprs))
             :to-equal nil))
 
   (it "should parse the first branch"
-    (expect (parsec-with-input "-a" (docopt-argv-parser exprs))
-            :to-equal (list (docopt-short-option :object-name "a"))))
+    (expect (parsec-with-input "-a" (docopt-argv-parser program exprs))
+            :to-equal (list (docopt-short-option :name "a"))))
 
   (it "should parse the second branch"
-    (expect (parsec-with-input "-b" (docopt-argv-parser exprs))
-            :to-equal (list (docopt-short-option :object-name "b")))))
+    (expect (parsec-with-input "-b" (docopt-argv-parser program exprs))
+            :to-equal (list (docopt-short-option :name "b")))))
 
 (describe "Parsing a command followed by optional short options within an either"
-  :var ((exprs (parsec-with-input "cmd [-a|-b]" (docopt--parse-usage-expr))))
+  :var ((program (docopt-parse docopt-naval-fate-str))
+        (exprs (parsec-with-input "cmd [-a|-b]" (docopt--parse-usage-expr))))
 
   (it "should parse just the command"
-    (expect (parsec-with-input "cmd" (docopt-argv-parser exprs))
-            :to-equal (list (docopt-command :object-name "cmd"))))
+    (expect (parsec-with-input "cmd" (docopt-argv-parser program exprs))
+            :to-equal (list (docopt-command :name "cmd"))))
 
   (it "should parse the command and the first branch"
-    (expect (parsec-with-input "cmd -a" (docopt-argv-parser exprs))
-            :to-equal  (list (docopt-command :object-name "cmd")
-                             (docopt-short-option :object-name "a"))))
+    (expect (parsec-with-input "cmd -a" (docopt-argv-parser program exprs))
+            :to-equal  (list (docopt-command :name "cmd")
+                             (docopt-short-option :name "a"))))
 
   (it "should parse the command and the second branch"
-    (expect (parsec-with-input "cmd -b" (docopt-argv-parser exprs))
-            :to-equal  (list (docopt-command :object-name "cmd")
-                             (docopt-short-option :object-name "b")))))
+    (expect (parsec-with-input "cmd -b" (docopt-argv-parser program exprs))
+            :to-equal  (list (docopt-command :name "cmd")
+                             (docopt-short-option :name "b")))))
 
-(describe "Parsing an options shortcut"
-  :var ((shortcut (docopt-make-options-shortcut
-                   (docopt-long-option :object-name "aa")
-                   (docopt-short-option :object-name "a" :argument (docopt-argument :object-name "A"))
-                   (docopt-long-option :object-name "bb")
-                   (docopt-short-option :object-name "b")
-                   (docopt-short-option :object-name "c")
-                   (docopt-long-option :object-name "c" :argument (docopt-argument :object-name "C")))))
+(describe "Parsing Naval Fate options"
+  :var ((program (docopt-parse docopt-naval-fate-str)))
 
   (it "should parse no options"
-    (expect (parsec-with-input "" (docopt-argv-parser shortcut))
+    (expect (parsec-with-input "" (docopt-argv--parse-options program))
             :to-equal nil))
 
   (it "should parse a single short option"
-    (expect (parsec-with-input "-a=x" (docopt-argv-parser shortcut))
-            :to-equal (list (docopt-short-option
-                             :object-name "a"
-                             :argument (docopt-argument :object-name "A" :value "x")))))
+    (expect (parsec-with-input "-h" (docopt-argv--parse-options program))
+            :to-equal (list docopt-naval-fate-option-h)))
 
   (it "should parse a single long option"
-    (expect (parsec-with-input "--aa" (docopt-argv-parser shortcut))
-            :to-equal (list (docopt-long-option :object-name "aa"))))
+    (expect (parsec-with-input "--help" (docopt-argv--parse-options program))
+            :to-equal (list docopt-naval-fate-option-help)))
 
-  (it "should parse multiple option"
-    (expect (parsec-with-input "-a=x -b --bb --aa" (docopt-argv-parser shortcut))
-            :to-equal (list (docopt-short-option
-                             :object-name "a"
-                             :argument (docopt-argument :object-name "A" :value "x"))
-                            (docopt-short-option :object-name "b")
-                            (docopt-long-option :object-name "bb")
-                            (docopt-long-option :object-name "aa"))))
+  (it "should parse a multiple options"
+    (expect (parsec-with-input "-h --moored --version" (docopt-argv--parse-options program))
+            :to-equal (list docopt-naval-fate-option-h
+                            docopt-naval-fate-option-moored
+                            docopt-naval-fate-option-version))))
+
+(describe "Parsing program options"
+  :var ((program (docopt-parse "Usage: program
+Options:
+  --aa=AA
+  --bb
+  -a=A
+  -b
+  -c
+")))
+
+  (it "should parse a single short option without argument"
+    (expect (parsec-with-input "-b" (docopt-argv--parse-options program))
+            :to-equal (list (docopt-short-option :name "b"))))
+
+  (it "should parse a single short option with argument separated by equals sign"
+    (expect (parsec-with-input "-a=x" (docopt-argv--parse-options program))
+            :to-equal (list (docopt-short-option :name "a" :argument (docopt-argument :name "A" :value "x")))))
+
+  (it "should parse a single short option with argument separated whitespace"
+    (expect (parsec-with-input "-ax" (docopt-argv--parse-options program))
+            :to-equal (list (docopt-short-option :name "a" :argument (docopt-argument :name "A" :value "x")))))
+
+  (it "should parse a single short option with argument not separated"
+    (expect (parsec-with-input "-ax" (docopt-argv--parse-options program))
+            :to-equal (list (docopt-short-option :name "a" :argument (docopt-argument :name "A" :value "x")))))
+
+  (it "should parse a single long option with argument separated by equals sign"
+    (expect (parsec-with-input "--aa=x" (docopt-argv--parse-options program))
+            :to-equal (list (docopt-long-option :name "aa" :argument (docopt-argument :name "AA" :value "x")))))
+
+  (it "should parse a single long option with argument separated by whitespace"
+    (expect (parsec-with-input "--aa x" (docopt-argv--parse-options program))
+            :to-equal (list (docopt-long-option :name "aa" :argument (docopt-argument :name "AA" :value "x")))))
+
+  (it "should parse multiple options"
+    (expect (parsec-with-input "-a=x -b --bb --aa=x" (docopt-argv--parse-options program))
+            :to-equal (list (docopt-short-option :name "a" :argument (docopt-argument :name "A" :value "x"))
+                            (docopt-short-option :name "b")
+                            (docopt-long-option :name "bb")
+                            (docopt-long-option :name "aa" :argument (docopt-argument :name "AA" :value "x")))))
 
   (it "should parse multiple stacked option"
-    (expect (parsec-with-input "--aa -bca=x -b --bb --aa" (docopt-argv-parser shortcut))
-            :to-equal (list (docopt-long-option :object-name "aa")
-                            (docopt-short-option :object-name "b")
-                            (docopt-short-option :object-name "c")
-                            (docopt-short-option
-                             :object-name "a"
-                             :argument (docopt-argument :object-name "A" :value "x"))
-                            (docopt-short-option :object-name "b")
-                            (docopt-long-option :object-name "bb")
-                            (docopt-long-option :object-name "aa")))))
+    (expect (parsec-with-input "--aa=x -bca=x -b --bb --aa=x" (docopt-argv--parse-options program))
+            :to-equal (list (docopt-long-option :name "aa" :argument (docopt-argument :name "AA" :value "x"))
+                            (docopt-short-option :name "b")
+                            (docopt-short-option :name "c")
+                            (docopt-short-option :name "a" :argument (docopt-argument :name "A" :value "x"))
+                            (docopt-short-option :name "b")
+                            (docopt-long-option :name "bb")
+                            (docopt-long-option :name "aa" :argument (docopt-argument :name "AA" :value "x")))))
+
+  (it "should parse a single short option with a pending space"
+    (expect (parsec-with-input "-b "
+              (parsec-collect (docopt-argv--parse-options program)
+                              (parsec-str " ")))
+            :to-equal (list (list (docopt-short-option :name "b")) " ")))
+
+  ;; (it "should parse multiple stacked option and other elements"
+  ;;   (expect (parsec-with-input "--aa=x -bca=x -b --bb --aa=x X"
+  ;;             (parsec-collect (docopt-argv--parse-options program)
+  ;;                             (parsec-str " X")))
+  ;;           :to-equal (list (list (docopt-long-option :name "aa")
+  ;;                                 (docopt-short-option :name "b")
+  ;;                                 (docopt-short-option :name "c")
+  ;;                                 (docopt-short-option
+  ;;                                  :name "a"
+  ;;                                  :argument (docopt-argument :name "A" :value "x"))
+  ;;                                 (docopt-short-option :name "b")
+  ;;                                 (docopt-long-option :name "bb")
+  ;;                                 (docopt-long-option :name "aa"))
+  ;;                           " X")))
+  )
+
+;; (setq program (docopt-parse docopt-naval-fate-str))
 
 (describe "The `docopt-eval` function"
   :var ((program (docopt-parse docopt-naval-fate-str)))
@@ -205,7 +272,7 @@
                         (--moored . t)
                         (--speed . "10")
                         (--version)
-                        (<name>)
+                        (<name> . [])
                         (<x> . "1")
                         (<y> . "2")
                         (mine . t)
@@ -223,7 +290,7 @@
                         (--moored)
                         (--speed . "10")
                         (--version)
-                        (<name>)
+                        (<name> . [])
                         (<x> . "1")
                         (<y> . "2")
                         (mine . t)
@@ -241,7 +308,7 @@
                         (--moored)
                         (--speed . "10")
                         (--version)
-                        (<name>)
+                        (<name> . [])
                         (<x> . "1")
                         (<y> . "2")
                         (mine . t)
@@ -259,7 +326,7 @@
                         (--moored)
                         (--speed . "20")
                         (--version)
-                        (<name> . "SHIP-123")
+                        (<name> . ["SHIP-123"])
                         (<x> . "1")
                         (<y> . "2")
                         (mine)
@@ -280,27 +347,30 @@
 
   (it "should parse \"naval_fate --help\""
     (expect (docopt-eval-ast program "naval_fate --help")
-            :to-equal (list docopt-naval-fate-option-help)))
+            :to-equal (list (docopt-command :name "naval_fate")
+                            docopt-naval-fate-option-help)))
 
   (it "should parse \"naval_fate ship SHIP-123 move 1 2 --speed=20\""
     (expect (docopt-eval-ast program "naval_fate ship SHIP-123 move 1 2 --speed=20")
-            :to-equal (list (docopt-command :object-name "ship")
-                            (docopt-argument :object-name "name" :value "SHIP-123")
-                            (docopt-command :object-name "move")
-                            (docopt-argument :object-name "x" :value "1")
-                            (docopt-argument :object-name "y" :value "2")
+            :to-equal (list (docopt-command :name "naval_fate")
+                            (docopt-command :name "ship")
+                            (docopt-argument :name "name" :value "SHIP-123" :repeat t)
+                            (docopt-command :name "move")
+                            (docopt-argument :name "x" :value "1")
+                            (docopt-argument :name "y" :value "2")
                             (docopt-long-option
-                             :argument (docopt-argument :object-name "kn" :default "10" :value "20")
+                             :argument (docopt-argument :name "kn" :default "10" :value "20")
                              :description "Speed in knots [default: 10]."
-                             :object-name "speed"
+                             :name "speed"
                              :optional t
                              :prefixes '("spee" "spe" "sp" "s")))))
 
   (it "should parse \"naval_fate ship new SHIP-1 SHIP-2\""
     (expect (docopt-eval-ast program "naval_fate ship new SHIP-1 SHIP-2")
-            :to-equal (list (docopt-command :object-name "ship")
-                            (docopt-command :object-name "new")
-                            (docopt-argument :object-name "name" :value "SHIP-1" :repeat t)
-                            (docopt-argument :object-name "name" :value "SHIP-2" :repeat t)))))
+            :to-equal (list (docopt-command :name "naval_fate")
+                            (docopt-command :name "ship")
+                            (docopt-command :name "new")
+                            (docopt-argument :name "name" :value "SHIP-1" :repeat t)
+                            (docopt-argument :name "name" :value "SHIP-2" :repeat t)))))
 
 ;;; docopt-argv-test.el ends here

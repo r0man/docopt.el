@@ -31,6 +31,7 @@
 
 (require 'buttercup)
 (require 'cl-lib)
+(require 'docopt-argv)
 (require 'docopt-parser)
 (require 'docopt-util)
 (require 'eieio)
@@ -108,15 +109,15 @@
 
 (defun docopt--parse-testcase-usage ()
   "Parse the Docopt testcase usage."
-  (s-trim (parsec-and (docopt--parse-testcase-usage-start)
-                      (parsec-return (parsec-until-s (docopt--parse-testcase-usage-end))
-                        (docopt--parse-whitespaces)))))
+  (docopt-strip (parsec-and (docopt--parse-testcase-usage-start)
+                            (parsec-return (parsec-until-s (docopt--parse-testcase-usage-end))
+                              (docopt--parse-whitespaces)))))
 
 (defun docopt--parse-testcase-program ()
   "Parse the Docopt testcase program."
   (let ((usage (docopt--parse-testcase-usage)))
     (let ((program (parsec-with-input usage (docopt--parse-program))))
-      (oset program :source (s-trim usage))
+      (oset program :source (docopt-strip usage))
       (if (docopt-program-p program)
           program
         (error "Can't parse Docopt program: %s" usage)))))
@@ -155,13 +156,6 @@
 
 (defun docopt--parse-testcase-example ()
   "Parse a Docopt testcase example."
-  (parsec-return (parsec-collect
-                  (docopt--parse-testcase-argv)
-                  (docopt--parse-testcase-expected))
-    (docopt--parse-whitespaces)))
-
-(defun docopt--parse-testcase-example ()
-  "Parse a Docopt testcase example."
   (seq-let [argv expected]
       (parsec-return (parsec-collect
                       (docopt--parse-testcase-argv)
@@ -194,7 +188,7 @@
   "Test the Docopt EXAMPLE of the PROGRAM."
   (let ((argv (docopt-testcase-example-argv example)))
     (condition-case exception
-        (let* ((ast (docopt--parse-argv program argv))
+        (let* ((ast (docopt-argv-parse program argv))
                (expected (docopt-testcase-example-expected example)))
           (oset example :ast ast)
           (if (docopt--parsec-error-p ast)
@@ -204,10 +198,23 @@
                     (oset example :actual exception))))
     example))
 
+(defun docopt--testcase-test-example (program example)
+  "Test the Docopt EXAMPLE of the PROGRAM."
+  (let ((argv (docopt-testcase-example-argv example)))
+    (condition-case exception
+        (let* ((ast (docopt-argv-parse program argv))
+               (expected (docopt-testcase-example-expected example)))
+          (oset example :ast ast)
+          (if (docopt--parsec-error-p ast)
+              (oset example :actual 'user-error)
+            (oset example :actual (docopt--argv-to-alist program ast))))
+      (error (oset example :actual 'user-error)))
+    example))
+
 (defun docopt-testcase-test (testcase)
   "Test the Docopt examples of TESTCASE."
   (let ((program (docopt-testcase-program testcase)))
-    (message "Testing program:\n%s" (docopt-string program))
+    (message "Testing program:\n%s\n" (docopt-program-source program))
     (seq-map (lambda (example)
                (docopt--testcase-test-example program example))
              (docopt-testcase-examples testcase))))

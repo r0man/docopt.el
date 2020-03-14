@@ -1,4 +1,4 @@
-;;; docopt-util.el --- The Docopt utility functions -*- lexical-binding: t -*-
+;;; docopt-util-test.el --- The Docopt util tests -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019-2020 r0man
 
@@ -12,7 +12,7 @@
 
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or (at
+;; published by the Free Software Foundation; util version 3, or (at
 ;; your option) any later version.
 ;;
 ;; This program is distributed in the hope that it will be useful, but
@@ -25,27 +25,18 @@
 
 ;;; Commentary:
 
-;; The Docopt utility functions
+;; The Docopt util tests
 
 ;;; Code:
 
-(require 'docopt-generic)
-(require 'cl-lib)
-(require 's)
+(require 'buttercup)
+(require 'docopt-util)
 
-(defun docopt-strip (s)
-  "Trim S, return nil if only the empty string is left."
-  (let ((s (s-trim s)))
-    (unless (s-blank-p s) s)))
+(describe "Stripping a string"
+  (it "should remove whitespace at the beginning and end"
+    (expect (docopt-strip " \nA\n ") :to-equal "A"))
 
-(defun docopt--parsec-error-p (result)
-  "Return t if the car of RESULT is a 'parsec-error."
-  (and (sequencep result) (equal 'parsec-error (car result))))
+  (it "should return when only a blank string is left"
+    (expect (docopt-strip " \n\n ") :to-equal nil)))
 
-(defun docopt-remove-duplicates (lst)
-  "Remove duplicate Docopt objects from LST."
-  (cl-remove-duplicates lst :test #'docopt-equal))
-
-(provide 'docopt-util)
-
-;;; docopt-util.el ends here
+;;; docopt-util-test.el ends here

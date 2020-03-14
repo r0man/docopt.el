@@ -29,32 +29,49 @@
 
 ;;; Code:
 
+(require 'dash)
 (require 'docopt-generic)
-(require 'docopt-repeated)
 (require 'docopt-optional)
+(require 'docopt-repeated)
+(require 'docopt-util)
 (require 'eieio)
 (require 'eieio-base)
 
-(defclass docopt-argument (docopt-repeatable docopt-optionable eieio-named)
+(defclass docopt-argument (docopt-optionable docopt-repeatable)
   ((default
      :accessor docopt-argument-default
      :documentation "The default of the argument."
      :initarg :default
      :initform nil
-     :type (or string null))
+     :type (or string vector null))
+   (name
+    :accessor docopt-argument-name
+    :documentation "The name of the argument."
+    :initarg :name
+    :initform nil
+    :type (or string null))
    (value
     :accessor docopt-argument-value
     :documentation "The value of the argument."
     :initarg :value
     :initform nil
-    :type (or string null)))
+    :type (or string vector null)))
   "A class representing a Docopt argument.")
+
+(cl-defmethod clone ((argument docopt-argument) &rest params)
+  "Return a copy of the ARGUMENT and apply PARAMS."
+  (let ((copy (apply #'cl-call-next-method argument params)))
+    (with-slots (default value name) copy
+      (setq default (clone (docopt-argument-default argument)))
+      (setq name (clone (docopt-argument-name argument)))
+      (setq value (clone (docopt-argument-value argument)))
+      copy)))
 
 (cl-defmethod docopt-equal ((argument docopt-argument) object)
   "Return t if ARGUMENT and OBJECT are equal-ish."
   (and (docopt-argument-p object)
-       (string= (eieio-object-name-string argument)
-                (eieio-object-name-string object))))
+       (string= (docopt-argument-name argument)
+                (docopt-argument-name object))))
 
 (cl-defmethod docopt-collect-arguments ((argument docopt-argument))
   "Collect the arguments from the Docopt ARGUMENT."
@@ -62,7 +79,7 @@
 
 (cl-defmethod docopt-collect-arguments ((lst list))
   "Collect the arguments from the list LST."
-  (docopt--flatten (seq-map #'docopt-collect-arguments lst)))
+  (-flatten (seq-map #'docopt-collect-arguments lst)))
 
 (cl-defmethod docopt-collect-commands ((argument docopt-argument))
   "Collect the commands from the Docopt ARGUMENT." nil)
@@ -70,23 +87,26 @@
 (cl-defmethod docopt-collect-options ((_ docopt-argument))
   "Collect the options from the Docopt OPTION." nil)
 
+(cl-defmethod docopt-name ((argument docopt-argument))
+  "Return the name of ARGUMENT."
+  (docopt-argument-name argument))
+
 (cl-defmethod docopt-walk ((argument docopt-argument) f)
   "Walk the ARGUMENT of an abstract syntax tree and apply F on it."
-  (let ((argument (copy-sequence argument)))
-    (with-slots (default object-name value) argument
-      (setq default (docopt-walk default f))
-      (setq object-name (docopt-walk object-name f))
-      (setq value (docopt-walk value f))
-      (funcall f argument))))
+  (with-slots (default name value) argument
+    (setq default (docopt-walk default f))
+    (setq name (docopt-walk name f))
+    (setq value (docopt-walk value f))
+    (funcall f argument)))
 
 (defun docopt-argument-merge (argument-1 argument-2)
   "Merge ARGUMENT-2 into ARGUMENT-1."
   (cond
    ((and argument-1 argument-2)
-    (with-slots (default object-name value) argument-1
-      (setq default (or default (oref argument-2 :default)))
-      (setq value (or value (oref argument-2 :value)))
-      (setq object-name (or object-name (oref argument-2 :object-name)))
+    (with-slots (default name value) argument-1
+      (setq default (or default (docopt-argument-default argument-2)))
+      (setq value (or value (docopt-argument-value argument-2)))
+      (setq name (or name (docopt-argument-name argument-2)))
       argument-1))
    (argument-1 argument-1)
    (argument-2 argument-2)))

@@ -45,9 +45,12 @@
 (cl-defmethod docopt-collect-options ((_ docopt-standard-input))
   "Collect the options from the Docopt STANDARD-INPUT." nil)
 
+(cl-defmethod docopt-name ((standard-input docopt-standard-input))
+  "Return the name of STANDARD-INPUT." "-")
+
 (cl-defmethod docopt-walk ((standard-input docopt-standard-input) f)
   "Walk the STANDARD-INPUT of an abstract syntax tree and apply F on it."
-  (funcall f (copy-sequence standard-input)))
+  (funcall f standard-input))
 
 (provide 'docopt-standard-input)
 
