@@ -48,6 +48,10 @@
     (expect (docopt-program-option program "help")
             :to-equal docopt-naval-fate-option-help))
 
+  (it "long option should return the long option by prefix"
+    (expect (docopt-program-option program "he")
+            :to-equal docopt-naval-fate-option-help))
+
   (it "short option should return the short option"
     (expect (docopt-program-option program "h")
             :to-equal docopt-naval-fate-option-h)))

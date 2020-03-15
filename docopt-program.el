@@ -104,8 +104,14 @@
 
 (defun docopt-program-option (program name)
   "Return the long or short option of PROGRAM by NAME."
-  (seq-find (lambda (option) (equal name (oref option object-name)))
+  (seq-find (lambda (option)
+              (or (string= name (object-name-string option))
+                  (and (docopt-long-option-p option)
+                       (seq-find (lambda (prefix) (string= name prefix))
+                                 (docopt-long-option-prefixes option)))))
             (docopt-program-options program)))
+
+(docopt-program-option docopt-naval-fate "hel")
 
 (defun docopt-program-set-sections (program sections)
   "Set the sections of the PROGRAM to SECTIONS."
