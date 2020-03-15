@@ -280,11 +280,13 @@
 
   (it "should parse \"naval_fate --help\""
     (expect (docopt-eval-ast program "naval_fate --help")
-            :to-equal (list docopt-naval-fate-option-help)))
+            :to-equal (list (docopt-command :object-name "naval_fate")
+                            docopt-naval-fate-option-help)))
 
   (it "should parse \"naval_fate ship SHIP-123 move 1 2 --speed=20\""
     (expect (docopt-eval-ast program "naval_fate ship SHIP-123 move 1 2 --speed=20")
-            :to-equal (list (docopt-command :object-name "ship")
+            :to-equal (list (docopt-command :object-name "naval_fate")
+                            (docopt-command :object-name "ship")
                             (docopt-argument :object-name "name" :value "SHIP-123")
                             (docopt-command :object-name "move")
                             (docopt-argument :object-name "x" :value "1")
@@ -298,7 +300,8 @@
 
   (it "should parse \"naval_fate ship new SHIP-1 SHIP-2\""
     (expect (docopt-eval-ast program "naval_fate ship new SHIP-1 SHIP-2")
-            :to-equal (list (docopt-command :object-name "ship")
+            :to-equal (list (docopt-command :object-name "naval_fate")
+                            (docopt-command :object-name "ship")
                             (docopt-command :object-name "new")
                             (docopt-argument :object-name "name" :value "SHIP-1" :repeat t)
                             (docopt-argument :object-name "name" :value "SHIP-2" :repeat t)))))

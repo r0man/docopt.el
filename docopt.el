@@ -43,14 +43,14 @@
     program))
 
 ;;;###autoload
-(defun docopt-eval-ast (program s)
-  "Parse the argument vector from S using the Docopt PROGRAM."
-  (docopt--parse-argv program s))
+(defun docopt-eval-ast (program argv)
+  "Parse the Docopt command line argument vector ARGV with PROGRAM."
+  (docopt-argv-parse program argv))
 
 ;;;###autoload
-(defun docopt-eval (program s)
-  "Parse the argument vector from S using the Docopt PROGRAM."
-  (docopt--argv-to-alist program (docopt--parse-argv program s)))
+(defun docopt-eval (program argv)
+  "Evaluate the Docopt command line argument vector ARGV with PROGRAM."
+  (docopt-argv-eval program argv))
 
 (provide 'docopt)
 

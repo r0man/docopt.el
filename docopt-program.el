@@ -106,12 +106,11 @@
   "Return the long or short option of PROGRAM by NAME."
   (seq-find (lambda (option)
               (or (string= name (object-name-string option))
-                  (and (docopt-long-option-p option)
-                       (seq-find (lambda (prefix) (string= name prefix))
-                                 (docopt-long-option-prefixes option)))))
+                  ;; (and (docopt-long-option-p option)
+                  ;;      (seq-find (lambda (prefix) (string= name prefix))
+                  ;;                (docopt-long-option-prefixes option)))
+                  ))
             (docopt-program-options program)))
-
-(docopt-program-option docopt-naval-fate "hel")
 
 (defun docopt-program-set-sections (program sections)
   "Set the sections of the PROGRAM to SECTIONS."
@@ -130,7 +129,7 @@
                                (docopt-program-options program))))
 
 (cl-defmethod docopt-walk ((program docopt-program) f)
-  "Walk the PROGRAM of an abstract syntax tree and apply F on it."
+  "Walk the PROGRAM and apply F on it."
   (let ((program (copy-sequence program)))
     (with-slots (arguments header examples footer usage options) program
       (setq arguments (docopt-walk arguments f))

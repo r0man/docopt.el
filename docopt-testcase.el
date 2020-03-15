@@ -194,7 +194,7 @@
   "Test the Docopt EXAMPLE of the PROGRAM."
   (let ((argv (docopt-testcase-example-argv example)))
     (condition-case exception
-        (let* ((ast (docopt--parse-argv program argv))
+        (let* ((ast (docopt-argv-parse program argv))
                (expected (docopt-testcase-example-expected example)))
           (oset example :ast ast)
           (if (docopt--parsec-error-p ast)
