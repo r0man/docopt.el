@@ -64,64 +64,87 @@
              `(docopt-argv-parser ,element))))
          lst))))
 
+;; (defun docopt--parse-argv-simple-list* (lst)
+;;   "Parse the Docopt argument vector LST."
+;;   (let ((num-elements (length lst)))
+;;     (if (equal 1 num-elements)
+;;         `(docopt-argv-parser ,(car lst)))
+;;     `(parsec-collect
+;;       ,@(seq-map-indexed
+;;          (lambda (element index)
+;;            (cond
+;;             ((zerop index)
+;;              `(docopt-argv-parser ,element))
+;;             ((docopt-optionable-child-p element)
+;;              `(parsec-optional
+;;                (parsec-try
+;;                 (parsec-and
+;;                  (docopt--parse-spaces1)
+;;                  (docopt-argv-parser ,element)))))
+;;             (t
+;;              `(parsec-and
+;;                (docopt--parse-spaces1)
+;;                (docopt-argv-parser ,element)))))
+;;          lst))))
+
 (defun docopt--parse-argv-simple-list (lst)
   "Parse the Docopt argument vector LST."
   (docopt--flatten (eval (docopt--parse-argv-simple-list* lst))))
 
-(defun docopt-argv--parse-option-list (lst)
-  "Parse the list LST of Docopt options in any order."
-  (let ((options (apply #'append (eval `(parsec-sepby
-                                         (parsec-or ,@(seq-map (lambda (option) `(list (docopt-argv-parser ,option))) lst))
-                                         (parsec-try (parsec-and (docopt--parse-spaces1)
-                                                                 (parsec-lookahead (parsec-str "-")))))))))
-    (let ((expected-options (seq-map #'eieio-object-name-string lst))
-          (found-options (seq-map #'eieio-object-name-string options)))
-      (when-let ((difference (cl-set-difference expected-options found-options)))
-        (parsec-stop
-         :message (format "Missing options: %s" difference)
-         :expected expected-options
-         :found expected-options)))
-    options))
+;; (defun docopt-argv--parse-option-list (lst)
+;;   "Parse the list LST of Docopt options in any order."
+;;   (let ((options (apply #'append (eval `(parsec-sepby
+;;                                          (parsec-or ,@(seq-map (lambda (option) `(list (docopt-argv-parser ,option))) lst))
+;;                                          (parsec-try (parsec-and (docopt--parse-spaces1)
+;;                                                                  (parsec-lookahead (parsec-str "-")))))))))
+;;     (let ((expected-options (seq-map #'eieio-object-name-string lst))
+;;           (found-options (seq-map #'eieio-object-name-string options)))
+;;       (when-let ((difference (cl-set-difference expected-options found-options)))
+;;         (parsec-stop
+;;          :message (format "Missing options: %s" difference)
+;;          :expected expected-options
+;;          :found expected-options)))
+;;     options))
 
-(defun docopt--parse-argv-stacked-list (lst)
-  "Parse the Docopt argument vector LST."
-  (parsec-or (docopt--flatten (docopt-argv-parser (docopt-argv--stack-short-options lst)))
-             (docopt-argv--parse-option-list lst)))
+;; (defun docopt--parse-argv-stacked-list (lst)
+;;   "Parse the Docopt argument vector LST."
+;;   (parsec-or (docopt--flatten (docopt-argv-parser (docopt-argv--stack-short-options lst)))
+;;              (docopt-argv--parse-option-list lst)))
 
-(defun docopt-argv--stack-short-options (lst)
-  "Parse the Docopt argument vector LST."
-  (thread-last lst
-    (-partition-by (lambda (element) (not (docopt-short-option-p element))))
-    (seq-mapcat (lambda (group)
-                  (thread-last (-partition-after-pred
-                                (lambda (element)
-                                  (and (docopt-short-option-p element)
-                                       (docopt-option-argument element)))
-                                group)
-                    (seq-map (lambda (group)
-                               (if (docopt-short-option-p (car group))
-                                   (make-instance 'docopt-stacked-short-options :members group)
-                                 group))))))
-    (docopt--flatten)))
+;; (defun docopt-argv--stack-short-options (lst)
+;;   "Parse the Docopt argument vector LST."
+;;   (thread-last lst
+;;     (-partition-by (lambda (element) (not (docopt-short-option-p element))))
+;;     (seq-mapcat (lambda (group)
+;;                   (thread-last (-partition-after-pred
+;;                                 (lambda (element)
+;;                                   (and (docopt-short-option-p element)
+;;                                        (docopt-option-argument element)))
+;;                                 group)
+;;                     (seq-map (lambda (group)
+;;                                (if (docopt-short-option-p (car group))
+;;                                    (make-instance 'docopt-stacked-short-options :members group)
+;;                                  group))))))
+;;     (docopt--flatten)))
 
-(defun docopt-argv-stack-start-regex (option)
-  "Return the regular expression to parse a stacked short OPTION at the beginning."
-  (concat "-" (eieio-object-name-string option)))
+;; (defun docopt-argv-stack-start-regex (option)
+;;   "Return the regular expression to parse a stacked short OPTION at the beginning."
+;;   (concat "-" (eieio-object-name-string option)))
 
-(defun docopt-argv-stack-element-regex (option)
-  "Return the regular expression to parse a stacked short OPTION."
-  (let ((name (eieio-object-name-string option)))
-    (if (docopt-option-argument option)
-        (concat "\\(\s*-\\)?" name "\\(=\\|[\s]+\\)?\\([^\s]+\\)")
-      (concat "\\(\s*-\\)?" name))))
+;; (defun docopt-argv-stack-element-regex (option)
+;;   "Return the regular expression to parse a stacked short OPTION."
+;;   (let ((name (eieio-object-name-string option)))
+;;     (if (docopt-option-argument option)
+;;         (concat "\\(\s*-\\)?" name "\\(=\\|[\s]+\\)?\\([^\s]+\\)")
+;;       (concat "\\(\s*-\\)?" name))))
 
-(defun docopt-argv-stack-regex (options)
-  "Return the regular expression to parse the stacked short OPTIONS."
-  (with-slots (members) options
-    (concat (docopt-argv-stack-start-regex (car members))
-            (thread-last (seq-drop members 1)
-              (seq-map (lambda (option) (docopt-argv-stack-element-regex option)))
-              (s-join "")))))
+;; (defun docopt-argv-stack-regex (options)
+;;   "Return the regular expression to parse the stacked short OPTIONS."
+;;   (with-slots (members) options
+;;     (concat (docopt-argv-stack-start-regex (car members))
+;;             (thread-last (seq-drop members 1)
+;;               (seq-map (lambda (option) (docopt-argv-stack-element-regex option)))
+;;               (s-join "")))))
 
 (defun docopt--parse-argv-long-option-argument (option)
   "Parse the argument of the OPTION command line argument."
@@ -193,23 +216,64 @@
 
 (defun docopt-argv--parse-options (options)
   "Parse the argument vector for OPTIONS."
-  (apply #'append (parsec-sepby (parsec-or (docopt-argv--parse-long-options
-                                            (seq-filter #'docopt-long-option-p options))
-                                           (docopt-argv--parse-short-options
-                                            (seq-filter #'docopt-short-option-p options)))
-                                (docopt--parse-whitespaces))))
+  (apply #'append (parsec-optional
+                   (parsec-sepby
+                    (parsec-or
+                     (docopt-argv--parse-long-options
+                      (seq-filter #'docopt-long-option-p options))
+                     (docopt-argv--parse-short-options
+                      (seq-filter #'docopt-short-option-p options)))
+                    (parsec-try
+                     (parsec-and
+                      (docopt--parse-whitespaces)
+                      (parsec-lookahead (parsec-str "-"))))))))
 
+;; (parsec-with-input "-ax -b X"
+;;   (parsec-collect
+;;    (docopt-argv-parser shortcut)
+;;    (parsec-str " X")))
+
+;; (defun docopt-argv--parse-options-1 (options)
+;;   "Parse the argument vector for OPTIONS."
+;;   (parsec-or (docopt-argv--parse-long-options
+;;               (seq-filter #'docopt-long-option-p options))
+;;              (docopt-argv--parse-short-options
+;;               (seq-filter #'docopt-short-option-p options))))
+
+;; (defun docopt-argv--parse-options (options)
+;;   "Parse the argument vector for OPTIONS."
+;;   (parsec-collect
+;;    (docopt-argv--parse-options-1 options)
+;;    (parsec-optional
+;;     (parsec-try
+;;      (parsec-many1
+;;       (parsec-and
+;;        (docopt--parse-whitespaces)
+;;        (docopt-argv--parse-options-1 options)))))))
+
+;; (parsec-with-input "-x -x  "
+;;   (parsec-collect
+;;    (docopt-argv-parser
+;;     #s(docopt-options-shortcut
+;;        (#s(docopt-short-option nil "x" nil "" nil))))
+;;    (parsec-many-s (parsec-any-ch))))
+
+;; (parsec-with-input "-x a"
+;;   (docopt-argv-parser
+;;    (list #s(docopt-options-shortcut
+;;             (#s(docopt-short-option nil "x" nil "" nil)))
+;;          #s(docopt-command nil "a"))))
 
 ;; TODO: Remove
-(defun docopt-argv--parse-stacked-short-option (shortcut)
-  "Parse a stacked short option from the Docopt SHORTCUT options."
-  (eval `(parsec-or ,@(thread-last (docopt-options-shortcut-options shortcut)
-                        (seq-filter #'docopt-short-option-p)
-                        (seq-map (lambda (option) `(parsec-try (docopt-argv--parse-short-option ,option))))))))
+;; (defun docopt-argv--parse-stacked-short-option (shortcut)
+;;   "Parse a stacked short option from the Docopt SHORTCUT options."
+;;   (eval `(parsec-or ,@(thread-last (docopt-options-shortcut-options shortcut)
+;;                         (seq-filter #'docopt-short-option-p)
+;;                         (seq-map (lambda (option) `(parsec-try (docopt-argv--parse-short-option ,option))))))))
 
-(defun docopt-argv--parse-stacked-options (shortcut)
-  "Parse stacked short options from the Docopt SHORTCUT options."
-  (parsec-and (parsec-str "-") (parsec-many1 (docopt-argv--parse-stacked-short-option shortcut))))
+;; (defun docopt-argv--parse-stacked-options (shortcut)
+;;   "Parse stacked short options from the Docopt SHORTCUT options."
+;;   (parsec-and (parsec-str "-") (parsec-many1 (docopt-argv--parse-stacked-short-option shortcut))))
 
 (cl-defgeneric docopt-argv-parser (object)
   "Return an argument vector parser for OBJECT.")
@@ -231,15 +295,25 @@
   (eval `(parsec-or ,@(seq-map (lambda (member) `(docopt-argv-parser (quote ,member)))
                                (docopt-either-members either)))))
 
+;; (cl-defmethod docopt-argv-parser ((lst list))
+;;   "Return an argument vector parser for the LST."
+;;   (cond ((seq-find #'docopt-short-option-p lst)
+;;          (docopt--parse-argv-stacked-list (docopt--flatten lst)))
+;;         (t (docopt--parse-argv-simple-list (docopt--flatten lst)))))
+
 (cl-defmethod docopt-argv-parser ((lst list))
   "Return an argument vector parser for the LST."
-  (cond ((seq-find #'docopt-short-option-p lst)
-         (docopt--parse-argv-stacked-list (docopt--flatten lst)))
-        (t (docopt--parse-argv-simple-list (docopt--flatten lst)))))
+  (docopt--parse-argv-simple-list (docopt--flatten lst)))
 
 (cl-defmethod docopt-argv-parser ((option docopt-long-option))
   "Return an argument vector parser for the long OPTION."
   (parsec-try (parsec-and (parsec-str "--") (docopt-argv--parse-long-option option))))
+
+(cl-defmethod docopt-argv-parser :around ((object docopt-optionable))
+  "Parse the optional OBJECT."
+  (if (docopt-optional-p object)
+      (parsec-optional (cl-call-next-method object))
+    (cl-call-next-method object)))
 
 (cl-defmethod docopt-argv-parser ((options docopt-stacked-short-options))
   "Return an argument vector parser for the stacked short OPTIONS."
@@ -302,8 +376,13 @@
                            (docopt--parse-spaces)
                            (docopt-argv-parser expressions)))
            (parsec-eof)))
+      (pp (docopt-collect-options pattern))
+      (pp (seq-filter #'docopt-option-child-p exprs))
       (cons (docopt-command command)
             (if (listp exprs) exprs (list exprs))))))
+
+;; (docopt-eval my-program "prog -b -a")
+;; (-permutations (list "-a" "-b" "-c"))
 
 ;; alist symbol
 
@@ -391,3 +470,97 @@
 (provide 'docopt-argv)
 
 ;;; docopt-argv.el ends here
+
+(defun docopt-argv--interpose-around (sep lst)
+  (cond
+   ((and (equal sep (car lst)) (equal sep (car (last lst))))
+    (append (cons (car lst) (-interpose sep (cdr (butlast lst 1))))
+            (list (car (last lst)))))
+
+   ((equal sep (car lst))
+    (append (cons (car lst) (-interpose sep (cdr lst)))
+            (list sep)))
+
+   ((equal sep (car (last lst)))
+    (append (cons sep (-interpose sep (butlast lst)))
+            (last lst)))
+
+   (t (append (cons sep (-interpose sep lst)) (list sep)))))
+
+;; (docopt-argv--interpose-around "x" (list 1 2 3))
+;; (docopt-argv--interpose-around "x" (list 1 2 3 "x"))
+;; (docopt-argv--interpose-around "x" (list "x" 1 2 3))
+;; (docopt-argv--interpose-around "x" (list "x" 1 2 3 "x"))
+
+;; (parsec-with-input "-x"
+;;   (docopt-argv-parser
+;;    #s(docopt-options-shortcut
+;;       (#s(docopt-short-option nil "x" nil "" nil)))))
+
+(defun docopt-argv--interleave-options (program)
+  (let ((options (apply #'docopt-make-options-shortcut (docopt-program-options program))))
+    (docopt-walk program (lambda (element)
+                           (cond
+                            ((docopt-group-child-p element)
+                             (with-slots (members) element
+                               (setq members (docopt-argv--interpose-around options members))
+                               element))
+
+                            ((docopt-either-p element)
+                             element)
+
+                            ((docopt-usage-pattern-p element)
+                             (with-slots (expressions) element
+                               (setq expressions (docopt-argv--interpose-around options expressions))
+                               element))
+
+                            (t element))))))
+
+(defun docopt-argv--interleave-options (program)
+  (let ((options (apply #'docopt-make-options-shortcut (docopt-program-options program))))
+    (docopt-walk program (lambda (element)
+                           (cond
+                            ((docopt-group-child-p element)
+                             (with-slots (members) element
+                               (setq members (docopt-argv--interpose-around options (seq-remove #'docopt-option-child-p members)))
+                               element))
+
+                            ((docopt-either-p element)
+                             element)
+
+                            ((docopt-usage-pattern-p element)
+                             (with-slots (expressions) element
+                               (setq expressions (docopt-argv--interpose-around options (seq-remove #'docopt-option-child-p expressions)))
+                               element))
+
+                            (t element))))))
+
+;; (docopt--parse-argv my-program "prog -a -r -myourass")
+;; (docopt--parse-argv (docopt-argv--interleave-options my-program) "prog -armyourass")
+
+;; ;; (equal #s(docopt-options-shortcut
+;; ;;           (#s(docopt-short-option nil "x" nil "" nil)))
+;; ;;        #s(docopt-options-shortcut
+;; ;;           (#s(docopt-short-option nil "x" nil "" nil))))
+
+;; (parsec-with-input ""
+;;   (docopt-argv-parser
+;;    (docopt-command :object-name "c")))
+
+;; (oref #s(docopt-command nil "c" :optional t) :optional)
+;; (oref (docopt-command :object-name "c" :optional t) :optional)
+
+;; ;; (docopt-optional #s(docopt-command nil "c" :optional nil))
+
+;; (parsec-with-input "a c"
+;;   (docopt-argv-parser
+;;    (list (docopt-command :object-name "a")
+;;          (docopt-command :object-name "b" :optional t)
+;;          (docopt-command :object-name "c" :optional t))))
+
+;; (docopt--parse-argv-simple-list*
+;;  (list (docopt-command :object-name "a")
+;;        (docopt-command :object-name "b" :optional t)
+;;        (docopt-command :object-name "c" :optional t)))
+
+;; (docopt-optionable-child-p (docopt-command :object-name "c" :optional t))

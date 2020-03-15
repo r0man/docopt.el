@@ -205,7 +205,22 @@
                              :argument (docopt-argument :object-name "A" :value "x"))
                             (docopt-short-option :object-name "b")
                             (docopt-long-option :object-name "bb")
-                            (docopt-long-option :object-name "aa")))))
+                            (docopt-long-option :object-name "aa"))))
+
+  (it "should parse multiple stacked option and other elements"
+    (expect (parsec-with-input "--aa -bca=x -b --bb --aa X"
+              (parsec-collect (docopt-argv-parser shortcut)
+                              (parsec-str " X")))
+            :to-equal (list (list (docopt-long-option :object-name "aa")
+                                  (docopt-short-option :object-name "b")
+                                  (docopt-short-option :object-name "c")
+                                  (docopt-short-option
+                                   :object-name "a"
+                                   :argument (docopt-argument :object-name "A" :value "x"))
+                                  (docopt-short-option :object-name "b")
+                                  (docopt-long-option :object-name "bb")
+                                  (docopt-long-option :object-name "aa"))
+                            " X"))))
 
 (describe "The `docopt-eval` function"
   :var ((program (docopt-parse docopt-naval-fate-str)))

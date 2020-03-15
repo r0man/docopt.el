@@ -31,6 +31,7 @@
 
 (require 'docopt-generic)
 (require 'docopt-repeated)
+(require 'docopt-optional)
 (require 'eieio)
 
 (defclass docopt-group (docopt-repeatable)
@@ -51,12 +52,13 @@
 
 ;;; Optional Group
 
-(defclass docopt-optional-group (docopt-group) ()
+(defclass docopt-optional-group (docopt-group docopt-optionable) ()
   "A class representing a required Docopt group.")
 
 (defun docopt-make-optional-group (&rest members)
   "Make a new optional Docopt group with MEMBERS."
   (let ((group (make-instance 'docopt-optional-group :members members)))
+    (docopt-set-optional group t)
     (seq-doseq (member members) (docopt-set-optional member t))
     group))
 

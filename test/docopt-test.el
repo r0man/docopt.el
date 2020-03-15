@@ -53,14 +53,24 @@
 (setq my-program
       (docopt-parse "
 Usage:
-  prog [options]
+  prog -a -b
 
 Options:
-  -p=PATH
+  -a
+  -b
 "))
 
+;; (docopt-eval my-program "prog")
+;; (docopt-eval my-program "prog -a -b")
+
+;; (docopt-eval my-program "prog -b -a")
+;; (docopt-eval-ast my-program "prog -a -r")
+;; (docopt-eval-ast my-program "prog -a -r -m yourass")
+;; (docopt-eval-ast my-program "prog -a -r -myourass")
+;; (docopt-eval-ast my-program "prog -armyourass")
+
 ;; (docopt-string my-program)
-;; (docopt-eval my-program "prog -p")
+;; (docopt-eval my-program "prog -armyourass")
 ;; (docopt-eval my-program "prog --input a.txt --input=b.txt")
 
 ;; (docopt-eval-ast my-program "prog -v arg")
