@@ -151,31 +151,56 @@
             :to-equal  (list (docopt-command :object-name "cmd")
                              (docopt-short-option :object-name "b")))))
 
-(describe "Parsing an options shortcut"
-  :var ((shortcut (docopt-make-options-shortcut
-                   (docopt-long-option :object-name "aa")
-                   (docopt-short-option :object-name "a" :argument (docopt-argument :object-name "A"))
-                   (docopt-long-option :object-name "bb")
-                   (docopt-short-option :object-name "b")
-                   (docopt-short-option :object-name "c")
-                   (docopt-long-option :object-name "c" :argument (docopt-argument :object-name "C")))))
+(describe "Matching a command line argument vector"
+  :var ((program (docopt-parse docopt-naval-fate-str)))
+
+  (it "should match a command"
+    (expect (docopt-argv--match program (docopt-command :object-name "set") (list "set" "x"))
+            :to-equal (list (list (docopt-command :object-name "set")) (list "x"))))
+
+  (it "should match the first branch of an either"
+    (expect (docopt-argv--match program (docopt-make-either
+                                         (list (docopt-command :object-name "set"))
+                                         (list (docopt-command :object-name "remove"))) (list "set" "x"))
+            :to-equal (list (list (docopt-command :object-name "set")) (list "x"))))
+
+  (it "should match the second branch of an either"
+    (expect (docopt-argv--match program (docopt-make-either
+                                         (list (docopt-command :object-name "set"))
+                                         (list (docopt-command :object-name "remove"))) (list "remove" "x"))
+            :to-equal (list (list (docopt-command :object-name "remove")) (list "x"))))
+
+  (it "should match the second branch of an either branch in a required group"
+    (expect (docopt-argv--match program (docopt-make-required-group
+                                         (docopt-make-either
+                                          (list (docopt-command :object-name "set"))
+                                          (list (docopt-command :object-name "remove")))) (list "remove" "x"))
+            :to-equal (list (list (docopt-command :object-name "remove")) (list "x")))))
+
+(describe "Parsing an options"
+  :var ((options (list (docopt-long-option :object-name "aa")
+                       (docopt-short-option :object-name "a" :argument (docopt-argument :object-name "A"))
+                       (docopt-long-option :object-name "bb")
+                       (docopt-short-option :object-name "b")
+                       (docopt-short-option :object-name "c")
+                       (docopt-long-option :object-name "c" :argument (docopt-argument :object-name "C")))))
 
   (it "should parse no options"
-    (expect (parsec-with-input "" (docopt-argv-parser shortcut))
+    (expect (parsec-with-input "" (docopt-argv--parse-options options))
             :to-equal nil))
 
   (it "should parse a single short option"
-    (expect (parsec-with-input "-a=x" (docopt-argv-parser shortcut))
+    (expect (parsec-with-input "-a=x" (docopt-argv--parse-options options))
             :to-equal (list (docopt-short-option
                              :object-name "a"
                              :argument (docopt-argument :object-name "A" :value "x")))))
 
   (it "should parse a single long option"
-    (expect (parsec-with-input "--aa" (docopt-argv-parser shortcut))
+    (expect (parsec-with-input "--aa" (docopt-argv--parse-options options))
             :to-equal (list (docopt-long-option :object-name "aa"))))
 
   (it "should parse multiple option"
-    (expect (parsec-with-input "-a=x -b --bb --aa" (docopt-argv-parser shortcut))
+    (expect (parsec-with-input "-a=x -b --bb --aa" (docopt-argv--parse-options options))
             :to-equal (list (docopt-short-option
                              :object-name "a"
                              :argument (docopt-argument :object-name "A" :value "x"))
@@ -184,7 +209,7 @@
                             (docopt-long-option :object-name "aa"))))
 
   (it "should parse multiple stacked option"
-    (expect (parsec-with-input "--aa -bca=x -b --bb --aa" (docopt-argv-parser shortcut))
+    (expect (parsec-with-input "--aa -bca=x -b --bb --aa" (docopt-argv--parse-options options))
             :to-equal (list (docopt-long-option :object-name "aa")
                             (docopt-short-option :object-name "b")
                             (docopt-short-option :object-name "c")
