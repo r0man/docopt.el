@@ -224,9 +224,10 @@
 
 (cl-defmethod docopt-argv--match (program (argument docopt-argument) arguments)
   "Match the ARGUMENT of PROGRAM against the ARGUMENTS."
-  (let ((argument (docopt-copy argument)))
-    (oset argument :value (car arguments))
-    (list (list argument) (cdr arguments))))
+  (when (car arguments)
+    (let ((argument (docopt-copy argument)))
+      (oset argument :value (car arguments))
+      (list (list argument) (cdr arguments)))))
 
 (cl-defmethod docopt-argv--match (program (command docopt-command) arguments)
   "Match the COMMAND of PROGRAM against the ARGUMENTS."
@@ -307,7 +308,15 @@
   (thread-last (docopt-program-usage program)
     (seq-map (lambda (pattern) (docopt-argv--match program pattern arguments)))
     (seq-remove #'null)
-    (caar)))
+    (seq-map (lambda (result)
+               (seq-let [pattern-match pending-arguments] result
+                 (let ((options (seq-map (lambda (argument)
+                                           (when (docopt-option-child-p argument)
+                                             (docopt-program-option program (object-name-string argument))))
+                                         pending-arguments)))
+                   (when (cl-every #'docopt-option-child-p options)
+                     (append pattern-match options))))))
+    (car)))
 
 (defun docopt-argv--tokens (program argv)
   "Parse the Docopt command line argument vector ARGV with PROGRAM."
@@ -337,6 +346,5 @@
 ;; (docopt-argv-parse docopt-naval-fate "naval_fate --help")
 ;; (docopt-argv-parse docopt-naval-fate "naval_fate --version")
 ;; (docopt-argv-parse docopt-naval-fate "naval_fate -h")
-;; (docopt-argv-parse docopt-naval-fate "naval_fate ship --help")
 ;; (docopt-argv-parse docopt-naval-fate "naval_fate ship SHIP-123 move 1 2 --speed=20")
 ;; (docopt-argv-parse docopt-naval-fate "naval_fate ship new SHIP-1 SHIP-2")
