@@ -102,15 +102,33 @@
          (equal usage (oref other :usage))
          (equal options (oref other :options)))))
 
-(defun docopt-program-option (program name)
-  "Return the long or short option of PROGRAM by NAME."
+(defun docopt-program-long-options (program)
+  "Return the long options of PROGRAM."
+  (seq-filter #'docopt-long-option-p (docopt-program-options program)))
+
+(defun docopt-program-long-option-by-name (program name)
+  "Return the long option of PROGRAM by NAME."
   (seq-find (lambda (option)
               (or (string= name (object-name-string option))
-                  ;; (and (docopt-long-option-p option)
-                  ;;      (seq-find (lambda (prefix) (string= name prefix))
-                  ;;                (docopt-long-option-prefixes option)))
-                  ))
-            (docopt-program-options program)))
+                  (seq-find (lambda (prefix) (string= name prefix))
+                            (docopt-long-option-prefixes option))))
+            (docopt-program-long-options program)))
+
+(defun docopt-program-short-options (program)
+  "Return the short options of PROGRAM."
+  (seq-filter #'docopt-short-option-p (docopt-program-options program)))
+
+(defun docopt-program-short-option-by-name (program name)
+  "Return the long option of PROGRAM by NAME."
+  (seq-find (lambda (option) (string= name (object-name-string option)))
+            (docopt-program-short-options program)))
+
+(defun docopt-program-option (program name-or-option)
+  "Return the long or short option of PROGRAM by NAME-OR-OPTION."
+  (if (docopt-option-child-p name-or-option)
+      (docopt-program-option program (object-name-string name-or-option))
+    (or (docopt-program-short-option-by-name program name-or-option)
+        (docopt-program-long-option-by-name program name-or-option))))
 
 (defun docopt-program-set-sections (program sections)
   "Set the sections of the PROGRAM to SECTIONS."

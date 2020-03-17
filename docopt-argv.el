@@ -224,10 +224,11 @@
 
 (cl-defmethod docopt-argv--match (program (argument docopt-argument) arguments)
   "Match the ARGUMENT of PROGRAM against the ARGUMENTS."
-  (when (car arguments)
-    (let ((argument (docopt-copy argument)))
-      (oset argument :value (car arguments))
-      (list (list argument) (cdr arguments)))))
+  (when-let ((value (car arguments)))
+    (when (stringp value)
+      (let ((argument (docopt-copy argument)))
+        (oset argument :value value)
+        (list (list argument) (cdr arguments))))))
 
 (cl-defmethod docopt-argv--match (program (command docopt-command) arguments)
   "Match the COMMAND of PROGRAM against the ARGUMENTS."
@@ -268,6 +269,67 @@
                           (error "match-error")))))
                   lst (list nil arguments))
     (error (list nil arguments))))
+
+(cl-defmethod docopt-argv--match (program (lst list) arguments)
+  "Match the list LST of PROGRAM against the ARGUMENTS."
+  (seq-reduce (lambda (state element)
+                (seq-let [result arguments] state
+                  (seq-let [match pending] (docopt-argv--match program element arguments)
+                    (if match
+                        (list (append result match) pending)
+                      nil))))
+              lst (list nil arguments)))
+
+(cl-defmethod docopt-argv--match (program (lst list) arguments)
+  "Match the list LST of PROGRAM against the ARGUMENTS."
+  (condition-case exception
+      (seq-reduce (lambda (state element)
+                    (seq-let [result arguments] state
+                      (seq-let [match pending] (docopt-argv--match program element arguments)
+                        (cond
+                         (match (list (append result match) pending))
+                         ((docopt-optionable-child-p element)
+                          (list result arguments))
+                         (t (error "match-error"))))))
+                  lst (list nil arguments))
+    (error (list nil arguments))))
+
+
+(cl-defmethod docopt-argv--match (program (lst list) arguments)
+  "Match the list LST of PROGRAM against the ARGUMENTS."
+  (condition-case exception
+      (seq-reduce (lambda (state element)
+                    (seq-let [result current] state
+                      (seq-let [match pending] (docopt-argv--match program element current)
+                        (cond
+                         (match (list (append result match) pending))
+                         ((docopt-optionable-child-p element)
+                          (list result current))
+                         (t (error "match-error"))))))
+                  lst (list nil arguments))
+    (error (list nil arguments))))
+
+(cl-defmethod docopt-argv--match (program (lst list) arguments)
+  "Match the list LST of PROGRAM against the ARGUMENTS."
+  (let ((matches nil))
+    (while (and lst arguments)
+      (let ((argument (car arguments))
+            (element (car lst)))
+        (seq-let [match pending-arguments] (docopt-argv--match program element arguments)
+          (let ((matched-option (docopt-program-option program argument)))
+            (cond
+             (match
+              (setq arguments pending-arguments
+                    lst (cdr lst)
+                    matches (cons match matches)))
+             (matched-option
+              (setq arguments (cdr arguments)
+                    matches (cons matched-option matches)))
+             ((and (docopt-optionable-child-p element)
+                   (docopt-optional-p element))
+              (setq lst (cdr lst)))
+             (t (setq matches nil lst nil)))))))
+    (list (docopt--flatten (reverse matches)) arguments)))
 
 (cl-defmethod docopt-argv--match (program (option docopt-option) arguments)
   "Match the OPTION of PROGRAM against the ARGUMENTS."
@@ -346,5 +408,5 @@
 ;; (docopt-argv-parse docopt-naval-fate "naval_fate --help")
 ;; (docopt-argv-parse docopt-naval-fate "naval_fate --version")
 ;; (docopt-argv-parse docopt-naval-fate "naval_fate -h")
-;; (docopt-argv-parse docopt-naval-fate "naval_fate ship SHIP-123 move 1 2 --speed=20")
+;; (docopt-argv-parse docopt-naval-fate "naval_fate -h ship SHIP-123  move 1 2 --speed=20")
 ;; (docopt-argv-parse docopt-naval-fate "naval_fate ship new SHIP-1 SHIP-2")

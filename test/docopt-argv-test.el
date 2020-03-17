@@ -63,93 +63,94 @@
                (docopt-long-option :object-name "speed" :argument (docopt-argument :object-name "kn"))))
             :to-equal (docopt-long-option :object-name "speed" :argument (docopt-argument :object-name "kn" :value "10"))))
 
-  (it "should parse a command"
-    (expect (parsec-with-input "naval_fate"
-              (docopt-argv-parser (docopt-command :object-name "naval_fate")))
-            :to-equal (docopt-command :object-name "naval_fate")))
+  ;; (it "should parse a command"
+  ;;   (expect (parsec-with-input "naval_fate"
+  ;;             (docopt-argv-parser (docopt-command :object-name "naval_fate")))
+  ;;           :to-equal (docopt-command :object-name "naval_fate")))
 
-  (it "should parse a list of arguments"
-    (expect (parsec-with-input "a b"
-              (docopt-argv-parser
-               (parsec-with-input "A B" (docopt--parse-usage-expr))))
-            :to-equal (list (docopt-argument :object-name "A" :value "a")
-                            (docopt-argument :object-name "B" :value "b"))))
+  ;; (it "should parse a list of arguments"
+  ;;   (expect (parsec-with-input "a b"
+  ;;             (docopt-argv-parser
+  ;;              (parsec-with-input "A B" (docopt--parse-usage-expr))))
+  ;;           :to-equal (list (docopt-argument :object-name "A" :value "a")
+  ;;                           (docopt-argument :object-name "B" :value "b"))))
 
-  (it "should parse an optional group"
-    (expect (parsec-with-input "a b"
-              (docopt-argv-parser
-               (parsec-with-input "[A B]" (docopt--parse-usage-expr))))
-            :to-equal (list (docopt-argument :object-name "A" :value "a" :optional t)
-                            (docopt-argument :object-name "B" :value "b" :optional t))))
+  ;; (it "should parse an optional group"
+  ;;   (expect (parsec-with-input "a b"
+  ;;             (docopt-argv-parser
+  ;;              (parsec-with-input "[A B]" (docopt--parse-usage-expr))))
+  ;;           :to-equal (list (docopt-argument :object-name "A" :value "a" :optional t)
+  ;;                           (docopt-argument :object-name "B" :value "b" :optional t))))
 
-  (it "should parse a required group"
-    (expect (parsec-with-input "a b"
-              (docopt-argv-parser
-               (parsec-with-input "(A B)" (docopt--parse-usage-expr))))
-            :to-equal (list (docopt-argument :object-name "A" :value "a")
-                            (docopt-argument :object-name "B" :value "b"))))
+  ;; (it "should parse a required group"
+  ;;   (expect (parsec-with-input "a b"
+  ;;             (docopt-argv-parser
+  ;;              (parsec-with-input "(A B)" (docopt--parse-usage-expr))))
+  ;;           :to-equal (list (docopt-argument :object-name "A" :value "a")
+  ;;                           (docopt-argument :object-name "B" :value "b"))))
 
-  (it "should parse a usage pattern"
-    (expect (parsec-with-input "naval_fate --help"
-              (docopt-argv-parser
-               (parsec-with-input "Usage: naval_fate -h | --help"
-                 (docopt--parse-usage))))
-            :to-equal (list (docopt-command :object-name "naval_fate")
-                            (docopt-long-option :object-name "help"))))
+  ;; (it "should parse a usage pattern"
+  ;;   (expect (parsec-with-input "naval_fate --help"
+  ;;             (docopt-argv-parser
+  ;;              (parsec-with-input "Usage: naval_fate -h | --help"
+  ;;                (docopt--parse-usage))))
+  ;;           :to-equal (list (docopt-command :object-name "naval_fate")
+  ;;                           (docopt-long-option :object-name "help"))))
 
-  (it "should parse a sequence of short options"
-    (let ((options (list (docopt-short-option :object-name "a")
-                         (docopt-short-option :object-name "b")
-                         (docopt-short-option :object-name "c"))))
-      (expect (parsec-with-input "-a -b -c" (docopt-argv-parser options))
-              :to-equal options))))
+  ;; (it "should parse a sequence of short options"
+  ;;   (let ((options (list (docopt-short-option :object-name "a")
+  ;;                        (docopt-short-option :object-name "b")
+  ;;                        (docopt-short-option :object-name "c"))))
+  ;;     (expect (parsec-with-input "-a -b -c" (docopt-argv-parser options))
+  ;;             :to-equal options)))
+  )
 
-(describe "Parsing an either"
-  :var ((exprs (parsec-with-input "a|-b|--c" (docopt--parse-usage-expr))))
+;; (describe "Parsing an either"
+;;   :var ((exprs (parsec-with-input "a|-b|--c" (docopt--parse-usage-expr))))
 
-  (it "should parse the branch with a command"
-    (expect (parsec-with-input "a" (docopt-argv-parser exprs))
-            :to-equal (list (docopt-command :object-name "a"))))
+;;   (it "should parse the branch with a command"
+;;     (expect (parsec-with-input "a" (docopt-argv-parser exprs))
+;;             :to-equal (list (docopt-command :object-name "a"))))
 
-  (it "should parse the branch with a short option"
-    (expect (parsec-with-input "-b" (docopt-argv-parser exprs))
-            :to-equal (list (docopt-short-option :object-name "b"))))
+;;   (it "should parse the branch with a short option"
+;;     (expect (parsec-with-input "-b" (docopt-argv-parser exprs))
+;;             :to-equal (list (docopt-short-option :object-name "b"))))
 
-  (it "should parse the branch with a long option"
-    (expect (parsec-with-input "--c" (docopt-argv-parser exprs))
-            :to-equal (list (docopt-long-option :object-name "c")))))
+;;   (it "should parse the branch with a long option"
+;;     (expect (parsec-with-input "--c" (docopt-argv-parser exprs))
+;;             :to-equal (list (docopt-long-option :object-name "c")))))
 
-(describe "Parsing optional short options within an either"
-  :var ((exprs (parsec-with-input "[-a|-b]" (docopt--parse-usage-expr))))
+;; (describe "Parsing optional short options within an either"
+;;   :var ((exprs (parsec-with-input "[-a|-b]" (docopt--parse-usage-expr))))
 
-  (it "should parse the empty string"
-    (expect (parsec-with-input "" (docopt-argv-parser exprs))
-            :to-equal nil))
+;;   (it "should parse the empty string"
+;;     (expect (parsec-with-input "" (docopt-argv-parser exprs))
+;;             :to-equal nil))
 
-  (it "should parse the first branch"
-    (expect (parsec-with-input "-a" (docopt-argv-parser exprs))
-            :to-equal (list (docopt-short-option :object-name "a"))))
+;;   (it "should parse the first branch"
+;;     (expect (parsec-with-input "-a" (docopt-argv-parser exprs))
+;;             :to-equal (list (docopt-short-option :object-name "a"))))
 
-  (it "should parse the second branch"
-    (expect (parsec-with-input "-b" (docopt-argv-parser exprs))
-            :to-equal (list (docopt-short-option :object-name "b")))))
+;;   (it "should parse the second branch"
+;;     (expect (parsec-with-input "-b" (docopt-argv-parser exprs))
+;;             :to-equal (list (docopt-short-option :object-name "b")))))
 
-(describe "Parsing a command followed by optional short options within an either"
-  :var ((exprs (parsec-with-input "cmd [-a|-b]" (docopt--parse-usage-expr))))
+;; (describe "Parsing a command followed by optional short options within an either"
+;;   :var ((exprs (parsec-with-input "cmd [-a|-b]" (docopt--parse-usage-expr))))
 
-  (it "should parse just the command"
-    (expect (parsec-with-input "cmd" (docopt-argv-parser exprs))
-            :to-equal (list (docopt-command :object-name "cmd"))))
+;;   (it "should parse just the command"
+;;     (expect (parsec-with-input "cmd" (docopt-argv-parser exprs))
+;;             :to-equal (list (docopt-command :object-name "cmd"))))
 
-  (it "should parse the command and the first branch"
-    (expect (parsec-with-input "cmd -a" (docopt-argv-parser exprs))
-            :to-equal  (list (docopt-command :object-name "cmd")
-                             (docopt-short-option :object-name "a"))))
+;;   (it "should parse the command and the first branch"
+;;     (expect (parsec-with-input "cmd -a" (docopt-argv-parser exprs))
+;;             :to-equal  (list (docopt-command :object-name "cmd")
+;;                              (docopt-short-option :object-name "a"))))
 
-  (it "should parse the command and the second branch"
-    (expect (parsec-with-input "cmd -b" (docopt-argv-parser exprs))
-            :to-equal  (list (docopt-command :object-name "cmd")
-                             (docopt-short-option :object-name "b")))))
+;;   (it "should parse the command and the second branch"
+;;     (expect (parsec-with-input "cmd -b" (docopt-argv-parser exprs))
+;;             :to-equal  (list (docopt-command :object-name "cmd")
+;;                              (docopt-short-option :object-name "b")))))
 
 (describe "Matching a command line argument vector"
   :var ((program (docopt-parse docopt-naval-fate-str)))
