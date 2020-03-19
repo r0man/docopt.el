@@ -332,4 +332,12 @@
                             (docopt-argument :object-name "name" :value "SHIP-1" :repeat t)
                             (docopt-argument :object-name "name" :value "SHIP-2" :repeat t)))))
 
+;; (docopt-argv-eval docopt-naval-fate "naval_fate ship new SHIP-1 SHIP-2")
+;; (docopt-argv-parse docopt-naval-fate "--speed=20")
+;; (docopt-argv-parse docopt-naval-fate "naval_fate --help")
+;; (docopt-argv-parse docopt-naval-fate "naval_fate --version")
+;; (docopt-argv-parse docopt-naval-fate "naval_fate -h ship SHIP-123  move 1 2 --speed=20")
+;; (docopt-argv-parse docopt-naval-fate "naval_fate -h")
+;; (docopt-argv-parse docopt-naval-fate "naval_fate ship new SHIP-1 SHIP-2")
+
 ;;; docopt-argv-test.el ends here

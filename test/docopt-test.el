@@ -52,9 +52,7 @@
 
 (setq my-program
       (docopt-parse "
-Usage:
-  prog [-]
-"))
+Usage: prog"))
 
 ;; (docopt-string my-program)
 ;; (docopt-eval my-program "prog")
@@ -75,6 +73,12 @@ Usage:
 ;;   (docopt-test-define-describe testcase))
 
 ;; (seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 16))
+;;   (docopt-test-define-describe testcase))
+
+(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 1))
+  (docopt-test-define-describe testcase))
+
+;; (seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "testcases.docopt")) 1))
 ;;   (docopt-test-define-describe testcase))
 
 ;; (setq my-testcase (nth 5 (docopt-parse-testcases (f-read-text "test/testcases.docopt"))))

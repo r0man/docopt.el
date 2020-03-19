@@ -66,7 +66,7 @@
   (it "should parse a user error"
     (expect (parsec-with-input "$ prog --xxx\n\"user-error\""
               (docopt--parse-testcase-example))
-            :to-equal (docopt-testcase-example :argv "prog --xxx" :expected 'user-error))))
+            :to-equal (docopt-testcase-example :argv "prog --xxx" :expected 'docopt-user-error))))
 
 (describe "The `docopt-testcase-program` parser"
 

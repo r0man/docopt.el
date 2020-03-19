@@ -194,26 +194,24 @@
 
 (defun docopt--argv-to-alist (program exprs)
   "Convert the Docopt EXPRS for PROGRAM to an alist."
-  (if (docopt--parsec-error-p exprs)
-      exprs
-    (let ((result (thread-last (seq-remove #'null exprs)
-                    (seq-map (lambda (element) (docopt-argv--alist-element element t)))
-                    (seq-group-by #'car)
-                    (seq-map #'cdr)
-                    (seq-map (lambda (group)
-                               (cons (caar group)
-                                     (let ((values (seq-map #'cdr group)))
-                                       (cond
-                                        ((= 1 (length values))
-                                         (car values))
-                                        ((cl-every (lambda (x) (equal t x)) values)
-                                         (length values))
-                                        (t (apply #'vector values)))))))
-                    (seq-sort-by #'car #'string<))))
-      (seq-doseq (element (docopt-argv--program-alist program))
-        (unless (assoc (car element) result)
-          (setq result (cons element result))))
-      (seq-sort-by #'car #'string< result))))
+  (let ((result (thread-last (seq-remove #'null exprs)
+                  (seq-map (lambda (element) (docopt-argv--alist-element element t)))
+                  (seq-group-by #'car)
+                  (seq-map #'cdr)
+                  (seq-map (lambda (group)
+                             (cons (caar group)
+                                   (let ((values (seq-map #'cdr group)))
+                                     (cond
+                                      ((= 1 (length values))
+                                       (car values))
+                                      ((cl-every (lambda (x) (equal t x)) values)
+                                       (length values))
+                                      (t (apply #'vector values)))))))
+                  (seq-sort-by #'car #'string<))))
+    (seq-doseq (element (docopt-argv--program-alist program))
+      (unless (assoc (car element) result)
+        (setq result (cons element result))))
+    (seq-sort-by #'car #'string< result)))
 
 (defun docopt-argv--parse-argument ()
   "Parse an argument of a command line argument vector."
@@ -346,10 +344,12 @@
   "Match the PATTERN of PROGRAM against the ARGUMENTS."
   (seq-let [command command-arguments]
       (docopt-argv--match program (docopt-usage-pattern-command pattern) arguments)
-    (seq-let [expressions expression-arguments]
-        (docopt-argv--match program (docopt-usage-pattern-expressions pattern) command-arguments)
-      (when expressions
-        (list (append command expressions) expression-arguments)))))
+    (if command-arguments
+        (seq-let [expressions expression-arguments]
+            (docopt-argv--match program (docopt-usage-pattern-expressions pattern) command-arguments)
+          (when expressions
+            (list (append command expressions) expression-arguments)))
+      (list command command-arguments))))
 
 ;; (docopt-argv-parse program "naval_fate mine set 1 2")
 
@@ -380,6 +380,8 @@
                      (append pattern-match options))))))
     (car)))
 
+;; (docopt-eval my-program "prog")
+
 (defun docopt-argv--tokens (program argv)
   "Parse the Docopt command line argument vector ARGV with PROGRAM."
   (parsec-with-input argv
@@ -398,15 +400,11 @@
 
 (defun docopt-argv-eval (program argv)
   "Evaluate the Docopt command line argument vector ARGV with PROGRAM."
-  (docopt--argv-to-alist program (cdr (docopt-argv-parse program argv))))
+  (let ((ast (docopt-argv-parse program argv)))
+    (if (car ast)
+        (docopt--argv-to-alist program (cdr ast))
+      'docopt-user-error)))
 
 (provide 'docopt-argv)
 
 ;;; docopt-argv.el ends here
-
-;; (docopt-argv-parse docopt-naval-fate "--speed=20")
-;; (docopt-argv-parse docopt-naval-fate "naval_fate --help")
-;; (docopt-argv-parse docopt-naval-fate "naval_fate --version")
-;; (docopt-argv-parse docopt-naval-fate "naval_fate -h")
-;; (docopt-argv-parse docopt-naval-fate "naval_fate -h ship SHIP-123  move 1 2 --speed=20")
-;; (docopt-argv-parse docopt-naval-fate "naval_fate ship new SHIP-1 SHIP-2")

@@ -132,7 +132,7 @@
   (parsec-return (parsec-str "\"user-error\"")
     (parsec-optional (parsec-try (docopt--parse-testcase-comment)))
     (parsec-eol-or-eof))
-  'user-error)
+  'docopt-user-error)
 
 (defun docopt--parse-testcase-expected-data ()
   "Parse the Docopt testcase expected result data."
@@ -196,10 +196,8 @@
     (condition-case exception
         (let* ((ast (docopt-argv-parse program argv))
                (expected (docopt-testcase-example-expected example)))
-          (oset example :ast ast)
-          (if (docopt--parsec-error-p ast)
-              (oset example :actual 'user-error)
-            (oset example :actual (docopt--argv-to-alist program ast))))
+          (oset example :ast (docopt-argv-parse program argv))
+          (oset example :actual (docopt-eval program argv)))
       (error (progn (message "Test \"%s\": ERROR:%s " argv exception)
                     (oset example :actual exception))))
     example))
