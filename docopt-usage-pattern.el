@@ -30,6 +30,8 @@
 ;;; Code:
 
 (require 'docopt-generic)
+(require 'docopt-option)
+(require 'docopt-optional)
 (require 'eieio)
 
 (defclass docopt-usage-pattern ()
@@ -75,6 +77,13 @@
   "Return the options of the USAGE-PATTERN."
   (seq-mapcat (lambda (expr)
                 (docopt-usage-pattern-expr-option expr))
+              (docopt-usage-pattern-expressions usage-pattern)))
+
+(defun docopt-usage-pattern-root-required-options (usage-pattern)
+  "Return the required root options of the USAGE-PATTERN."
+  (seq-filter (lambda (expr)
+                (and (docopt-option-child-p expr)
+                     (not (docopt-optional-p expr))))
               (docopt-usage-pattern-expressions usage-pattern)))
 
 (provide 'docopt-usage-pattern)

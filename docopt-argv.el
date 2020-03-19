@@ -347,9 +347,12 @@
     (if command-arguments
         (seq-let [expressions expression-arguments]
             (docopt-argv--match program (docopt-usage-pattern-expressions pattern) command-arguments)
-          (when expressions
+          (when (and expressions
+                     (cl-every (lambda (option) (seq-find (lambda (expr) (docopt-equal option expr)) expressions))
+                               (docopt-usage-pattern-root-required-options pattern)))
             (list (append command expressions) expression-arguments)))
-      (list command command-arguments))))
+      (unless (docopt-usage-pattern-root-required-options pattern)
+        (list command command-arguments)))))
 
 (cl-defmethod docopt-argv--match (program (shortcut docopt-options-shortcut) arguments)
   "Match the SHORTCUT of PROGRAM against the ARGUMENTS."

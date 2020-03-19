@@ -53,17 +53,16 @@
 (setq my-program
       (docopt-parse "
 Usage:
-  prog [options]
+  prog -a -b
 
 Options:
-  -a                   Add
-  -m=<msg>             Message
-  -r                   Remote
+  -a
+  -b
 "))
 
 ;; (docopt-string my-program)
 
-(docopt-argv-parse my-program "prog -a -r -m Hello")
+(docopt-argv-eval my-program "prog")
 (docopt-eval my-program "prog -a -r -m Hello")
 ;; (docopt-eval my-program "prog --input a.txt --input=b.txt")
 
@@ -84,7 +83,7 @@ Options:
 ;; (seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 16))
 ;;   (docopt-test-define-describe testcase))
 
-(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 11))
+(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 15))
   (docopt-test-define-describe testcase))
 
 ;; (seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "testcases.docopt")) 1))
