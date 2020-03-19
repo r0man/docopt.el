@@ -52,10 +52,13 @@
 
 (setq my-program
       (docopt-parse "
-Usage: prog"))
+Usage: prog [options]
+
+Options: -a  All.
+"))
 
 ;; (docopt-string my-program)
-;; (docopt-eval my-program "prog")
+;; (docopt-eval my-program "prog -x")
 ;; (docopt-eval my-program "prog --input a.txt --input=b.txt")
 
 ;; (docopt-eval-ast my-program "prog -v arg")
@@ -75,7 +78,7 @@ Usage: prog"))
 ;; (seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 16))
 ;;   (docopt-test-define-describe testcase))
 
-(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 1))
+(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 4))
   (docopt-test-define-describe testcase))
 
 ;; (seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "testcases.docopt")) 1))

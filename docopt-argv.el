@@ -351,7 +351,8 @@
             (list (append command expressions) expression-arguments)))
       (list command command-arguments))))
 
-;; (docopt-argv-parse program "naval_fate mine set 1 2")
+(cl-defmethod docopt-argv--match (program (shortcut docopt-options-shortcut) arguments)
+  "Match the SHORTCUT of PROGRAM against the ARGUMENTS." nil)
 
 (cl-defmethod docopt-argv--match (program (repeated docopt-repeated) arguments)
   "Match the REPEATED of PROGRAM against the ARGUMENTS."

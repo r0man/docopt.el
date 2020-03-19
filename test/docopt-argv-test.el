@@ -339,5 +339,6 @@
 ;; (docopt-argv-parse docopt-naval-fate "naval_fate -h ship SHIP-123  move 1 2 --speed=20")
 ;; (docopt-argv-parse docopt-naval-fate "naval_fate -h")
 ;; (docopt-argv-parse docopt-naval-fate "naval_fate ship new SHIP-1 SHIP-2")
+;; (docopt-argv-parse docopt-naval-fate "naval_fate mine set 1 2")
 
 ;;; docopt-argv-test.el ends here
