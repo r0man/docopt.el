@@ -56,11 +56,15 @@ Usage:
   prog [options]
 
 Options:
-  -p=PATH
+  -a                   Add
+  -m=<msg>             Message
+  -r                   Remote
 "))
 
 ;; (docopt-string my-program)
-(docopt-eval my-program "prog -p home/")
+
+(docopt-argv-parse my-program "prog -a -r -m Hello")
+(docopt-eval my-program "prog -a -r -m Hello")
 ;; (docopt-eval my-program "prog --input a.txt --input=b.txt")
 
 ;; (docopt-eval-ast my-program "prog -v arg")
@@ -80,7 +84,7 @@ Options:
 ;; (seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 16))
 ;;   (docopt-test-define-describe testcase))
 
-(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 10))
+(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 11))
   (docopt-test-define-describe testcase))
 
 ;; (seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "testcases.docopt")) 1))

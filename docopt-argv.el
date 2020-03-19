@@ -362,7 +362,7 @@
                   synonym (oref option :synonym)
                   arguments (cdr arguments)
                   results (cons argument results))))))
-    (reverse results)))
+    (list (reverse results) arguments)))
 
 (cl-defmethod docopt-argv--match (program (repeated docopt-repeated) arguments)
   "Match the REPEATED of PROGRAM against the ARGUMENTS."
@@ -390,8 +390,6 @@
                    (when (cl-every #'docopt-option-child-p options)
                      (append pattern-match options))))))
     (car)))
-
-;; (docopt-eval my-program "prog")
 
 (defun docopt-argv--tokens (program argv)
   "Parse the Docopt command line argument vector ARGV with PROGRAM."
