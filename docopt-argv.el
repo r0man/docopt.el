@@ -352,7 +352,17 @@
       (list command command-arguments))))
 
 (cl-defmethod docopt-argv--match (program (shortcut docopt-options-shortcut) arguments)
-  "Match the SHORTCUT of PROGRAM against the ARGUMENTS." nil)
+  "Match the SHORTCUT of PROGRAM against the ARGUMENTS."
+  (let ((results nil))
+    (while (and arguments (docopt-option-child-p (car arguments)))
+      (let ((argument (car arguments)))
+        (when-let ((option (docopt-program-option program argument)))
+          (with-slots (description synonym) argument
+            (setq description (oref option :description)
+                  synonym (oref option :synonym)
+                  arguments (cdr arguments)
+                  results (cons argument results))))))
+    (reverse results)))
 
 (cl-defmethod docopt-argv--match (program (repeated docopt-repeated) arguments)
   "Match the REPEATED of PROGRAM against the ARGUMENTS."
