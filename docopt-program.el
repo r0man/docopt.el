@@ -102,6 +102,14 @@
          (equal usage (oref other :usage))
          (equal options (oref other :options)))))
 
+(defun docopt-program-long-options (program)
+  "Return the long options of PROGRAM."
+  (seq-filter #'docopt-long-option-p (docopt-program-options program)))
+
+(defun docopt-program-short-options (program)
+  "Return the short options of PROGRAM."
+  (seq-filter #'docopt-short-option-p (docopt-program-options program)))
+
 (defun docopt-program-option (program name)
   "Return the long or short option of PROGRAM by NAME."
   (seq-find (lambda (option) (equal name (oref option object-name)))
