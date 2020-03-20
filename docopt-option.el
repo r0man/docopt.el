@@ -63,7 +63,7 @@
        (string= (eieio-object-name-string option)
                 (eieio-object-name-string object))
        (docopt-equal (docopt-option-argument option)
-                      (docopt-option-argument object))))
+                     (docopt-option-argument object))))
 
 (cl-defmethod docopt-walk ((option docopt-option) f)
   "Walk the OPTION of an abstract syntax tree and apply F on it."
@@ -225,6 +225,34 @@ ARGUMENT and ARGUMENT-NAME slots of the instance."
          (cons option-2 options)))
      options-2)
     (seq-sort-by #'eieio-object-name-string #'string<)))
+
+(cl-defgeneric docopt-option-name-regex (option)
+  "Return the regular expressions for the OPTION name.")
+
+(cl-defmethod docopt-option-name-regex ((option docopt-long-option))
+  "Return the regular expressions for the long OPTION name."
+  (thread-last (cons (object-name-string option) (docopt-long-option-prefixes option))
+    (seq-map (lambda (name) (concat "\\(?:--\\(" name "\\)\\)")))
+    (s-join "\\|")))
+
+(cl-defmethod docopt-option-name-regex ((option docopt-short-option))
+  "Return the regular expressions for the shot OPTION name."
+  (concat "-\\(" (object-name-string option) "\\)"))
+
+(cl-defgeneric docopt-option-regex (option)
+  "Return the regular expressions for the OPTION.")
+
+(cl-defmethod docopt-option-regex ((option docopt-long-option))
+  "Return the regular expressions for the long OPTION."
+  (concat "\\(?:" (docopt-option-name-regex option) "\\)"
+          (when-let ((argument (docopt-option-argument option)))
+            "\s*[= ]\s*\\([^ ]+\\)")))
+
+(cl-defmethod docopt-option-regex ((option docopt-short-option))
+  "Return the regular expressions for the shot OPTION."
+  (concat "\\(?:" (docopt-option-name-regex option) "\\)"
+          (when-let ((argument (docopt-option-argument option)))
+            "\s*[= ]\s*\\([^ ]+\\)")))
 
 (provide 'docopt-option)
 
