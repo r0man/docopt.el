@@ -183,7 +183,7 @@
 
 (defun docopt-argv--parse-long-options (options)
   "Parse the long OPTIONS."
-  (list (eval `(parsec-or ,@(seq-map (lambda (long-option) `(docopt-argv-parser ,long-option))
+  (list (eval `(parsec-or ,@(seq-map (lambda (long-option) `(parsec-try (docopt-argv-parser ,long-option)))
                                      (seq-filter #'docopt-long-option-p options))))))
 
 (defun docopt-argv--parse-short-options-stacked-arg-0 (options)
@@ -292,7 +292,7 @@
 
 (cl-defmethod docopt-argv-parser ((either docopt-either))
   "Return an argument vector parser for the EITHER."
-  (eval `(parsec-or ,@(seq-map (lambda (member) `(docopt-argv-parser (quote ,member)))
+  (eval `(parsec-or ,@(seq-map (lambda (member) `(parsec-try (docopt-argv-parser (quote ,member))))
                                (docopt-either-members either)))))
 
 ;; (cl-defmethod docopt-argv-parser ((lst list))
@@ -307,7 +307,7 @@
 
 (cl-defmethod docopt-argv-parser ((option docopt-long-option))
   "Return an argument vector parser for the long OPTION."
-  (parsec-try (parsec-and (parsec-str "--") (docopt-argv--parse-long-option option))))
+  (parsec-and (parsec-try (parsec-str "--")) (docopt-argv--parse-long-option option)))
 
 (cl-defmethod docopt-argv-parser :around ((object docopt-optionable))
   "Parse the optional OBJECT."
@@ -327,7 +327,7 @@
 
 (cl-defmethod docopt-argv-parser ((option docopt-short-option))
   "Return an argument vector parser for the short OPTION."
-  (parsec-try (parsec-and (parsec-str "-") (docopt-argv--parse-short-option option))))
+  (parsec-and (parsec-try (parsec-str "-")) (docopt-argv--parse-short-option option)))
 
 (cl-defmethod docopt-argv-parser ((repeated docopt-repeated))
   "Return an argument vector parser for the REPEATED."

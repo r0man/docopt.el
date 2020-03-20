@@ -186,7 +186,7 @@
     (expect (parsec-with-input "--aa" (docopt-argv-parser shortcut))
             :to-equal (list (docopt-long-option :object-name "aa"))))
 
-  (it "should parse multiple option"
+  (it "should parse multiple options"
     (expect (parsec-with-input "-a=x -b --bb --aa" (docopt-argv-parser shortcut))
             :to-equal (list (docopt-short-option
                              :object-name "a"
