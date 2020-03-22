@@ -53,7 +53,7 @@
 (setq my-program
       (docopt-parse "
 Usage:
-  prog -a -b
+  prog (-a -b)
 
 Options:
   -a
@@ -63,7 +63,9 @@ Options:
 ;; (parsec-with-input "prog -armyourass"
 ;;   (docopt-argv--parse-options my-program))
 
+(docopt-eval-ast my-program "prog -b -a")
 (docopt-eval-ast my-program "prog -a -b")
+
 (docopt-eval-ast my-program "prog -b -a")
 ;; (docopt-eval my-program "prog -a -r -myourass")
 ;; (docopt-eval my-program "prog -ar")

@@ -38,6 +38,15 @@
 (require 'parsec)
 (require 's)
 
+(defun docopt-argv--parse-exprs-any-order (program exprs)
+  "Parse the EXPRS of PROGRAM in any order."
+  (eval `(parsec-and
+          (docopt--parse-spaces)
+          (parsec-or
+           ,@(seq-map (lambda (exprs)
+                        `(docopt-argv-parser ,program (quote ,exprs)))
+                      (-permutations exprs))))))
+
 (defun docopt--parse-argv-simple-list* (program lst)
   "Return the form to parse the LST of PROGRAM."
   (let ((num-elements (length lst)))
@@ -224,7 +233,10 @@
 
 (cl-defmethod docopt-argv-parser (program (group docopt-required-group))
   "Return an argument vector parser for PROGRAM and GROUP."
-  (docopt-argv-parser program (docopt-group-members group)))
+  (with-slots (members) group
+    (if (cl-every #'docopt-option-child-p members)
+        (docopt-argv--parse-exprs-any-order program members)
+      (docopt-argv-parser program members))))
 
 (cl-defmethod docopt-argv-parser (program (standard-input docopt-standard-input))
   "Return an argument vector parser for PROGRAM and STANDARD-INPUT."
@@ -243,12 +255,7 @@
                ((zerop num-expressions)
                 (parsec-and (docopt--parse-spaces) nil))
                ((cl-every #'docopt-option-child-p expressions)
-                (eval `(parsec-and
-                        (docopt--parse-spaces)
-                        (parsec-or
-                         ,@(seq-map (lambda (exprs)
-                                      `(docopt-argv-parser ,program (quote ,exprs)))
-                                    (-permutations expressions))))))
+                (docopt-argv--parse-exprs-any-order program expressions))
                (t (parsec-and
                    (docopt--parse-spaces)
                    (docopt-argv-parser program expressions))))
