@@ -171,15 +171,14 @@
   "Parse the short OPTION separator."
   (parsec-optional (docopt--parse-short-option-separator)))
 
-;; (parsec-with-input "-h"
-;;   (docopt-argv--parse-option-name docopt-naval-fate-option-h))
-
 (cl-defgeneric docopt-argv-parser (program object)
   "Return an argument vector parser for PROGRAM and OBJECT.")
 
 (cl-defmethod docopt-argv-parser (program (argument docopt-argument))
   "Return an argument vector parser for PROGRAM and ARGUMENT."
-  (when-let ((value (docopt--parse-argv-identifier)))
+  (when-let ((value (parsec-and
+                     (parsec-lookahead (parsec-none-of ?-))
+                     (parsec-re "[^ ]+"))))
     (let ((argument (docopt-copy argument)))
       (oset argument :value value)
       argument)))

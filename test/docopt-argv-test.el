@@ -42,6 +42,11 @@
               (docopt-argv-parser program (docopt-argument :object-name "ARG")))
             :to-equal (docopt-argument :object-name "ARG" :value "my-arg")))
 
+  (it "should not parse an argument starting with a dash"
+    (expect (car (parsec-with-input "-my-arg"
+                   (docopt-argv-parser program (docopt-argument :object-name "ARG"))))
+            :to-equal 'parsec-error))
+
   (it "should parse a short option"
     (expect (parsec-with-input "-h"
               (docopt-argv-parser program (docopt-short-option :object-name "h")))
