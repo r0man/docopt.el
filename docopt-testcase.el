@@ -108,15 +108,15 @@
 
 (defun docopt--parse-testcase-usage ()
   "Parse the Docopt testcase usage."
-  (s-trim (parsec-and (docopt--parse-testcase-usage-start)
-                      (parsec-return (parsec-until-s (docopt--parse-testcase-usage-end))
-                        (docopt--parse-whitespaces)))))
+  (docopt-strip (parsec-and (docopt--parse-testcase-usage-start)
+                            (parsec-return (parsec-until-s (docopt--parse-testcase-usage-end))
+                              (docopt--parse-whitespaces)))))
 
 (defun docopt--parse-testcase-program ()
   "Parse the Docopt testcase program."
   (let ((usage (docopt--parse-testcase-usage)))
     (let ((program (parsec-with-input usage (docopt--parse-program))))
-      (oset program :source (s-trim usage))
+      (oset program :source (docopt-strip usage))
       (if (docopt-program-p program)
           program
         (error "Can't parse Docopt program: %s" usage)))))

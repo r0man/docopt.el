@@ -391,9 +391,8 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 (defun docopt--split-line (line)
   "Trim and split the LINE."
-  (let ((line (s-trim line)))
-    (unless (s-blank-p line)
-      (s-split "\s+" line ))))
+  (when-let ((line (docopt-strip line)))
+    (s-split "\s+" line )))
 
 (defun docopt--parse-example-line ()
   "Parse a Docopt example line."
@@ -419,8 +418,8 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 (defun docopt--parse-program-header ()
   "Parse and set the Docopt PROGRAM header."
-  (let ((header (s-trim (parsec-until-s (parsec-lookahead (parsec-re "\\([[:alnum:]]+\\):"))))))
-    (unless (s-blank-p header) (list :header header))))
+  (when-let ((header (docopt-strip (parsec-until-s (parsec-lookahead (parsec-re "\\([[:alnum:]]+\\):"))))))
+    (list :header header)))
 
 (defun docopt--parse-program-examples ()
   "Parse and set the Docopt PROGRAM examples."

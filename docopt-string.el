@@ -39,6 +39,7 @@
 (require 'docopt-repeated)
 (require 'docopt-standard-input)
 (require 'docopt-usage-pattern)
+(require 'docopt-util)
 (require 's)
 
 (defcustom docopt-string-options-width 20
@@ -134,7 +135,7 @@
                      (docopt-string--examples (docopt-program-examples program)))
     (seq-remove #'s-blank-p)
     (s-join "\n\n")
-    (s-trim)))
+    (docopt-strip)))
 
 (cl-defmethod docopt-string ((repeated docopt-repeated))
   "Convert the Docopt usage REPEATED to a string."
