@@ -55,7 +55,6 @@
   (let ((copy (copy-sequence command)))
     (with-slots (object-name optional) copy
       (setq object-name (docopt-copy (object-name-string command)))
-      (setq optional (docopt-copy (docopt-command-optional command)))
       copy)))
 
 (cl-defmethod docopt-walk ((command docopt-command) f)
