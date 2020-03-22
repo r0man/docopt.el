@@ -30,10 +30,11 @@
 ;;; Code:
 
 (require 'docopt-argument)
-(require 'docopt-optional)
 (require 'docopt-generic)
+(require 'docopt-optional)
 (require 'eieio)
 (require 'eieio-base)
+(require 'subr-x)
 
 (defclass docopt-option (docopt-optionable eieio-named)
   ((argument
@@ -149,9 +150,9 @@
     (docopt-option-set-default option default)))
 
 (defun docopt-option-set-synonym (option synonym)
-  "Set the :synonym slot of OPTION to :object-name of SYNONYM."
+  "Set the :synonym slot of OPTION to SYNONYM."
   (when (and option synonym)
-    (oset option :synonym (oref synonym :object-name))))
+    (oset option :synonym (eieio-object-name-string synonym))))
 
 (defun docopt-option-link (long-option short-option description default)
   "Link LONG-OPTION and SHORT-OPTION using DESCRIPTION and DEFAULT."
@@ -162,8 +163,8 @@
     (docopt-option-set-description-and-default short-option description default)
     (docopt-option-set-synonym short-option long-option))
   (when (and long-option short-option)
-    (let ((long-opt-arg (oref long-option :argument))
-          (short-opt-arg (oref short-option :argument)))
+    (let ((long-opt-arg (docopt-option-argument long-option))
+          (short-opt-arg (docopt-option-argument short-option)))
       (oset long-option :argument (or long-opt-arg short-opt-arg))
       (oset short-option :argument (or short-opt-arg long-opt-arg))))
   (list long-option short-option))
@@ -171,8 +172,8 @@
 (defun docopt-option-prefixes (option skip-options)
   "Return the prefixes for OPTION computed from the SKIP-OPTIONS."
   (let ((skip-names (thread-last (seq-map #'eieio-object-name-string skip-options)
-                      (delete (oref option :object-name))
-                      (delete (oref option :synonym))))
+                      (delete (eieio-object-name-string option))
+                      (delete (docopt-option-synonym option))))
         (option-name (eieio-object-name-string option)) )
     (thread-last (number-sequence 1 (- (length option-name) 1))
       (seq-map (lambda (length) (substring option-name 0 length)))
@@ -208,11 +209,10 @@ ARGUMENT and ARGUMENT-NAME slots of the instance."
   (cond
    ((and option-1 option-2)
     (with-slots (argument description synonym object-name) option-1
-      ;; (setq argument (or argument (oref option-2 :argument)))
-      (setq argument (docopt-argument-merge argument (oref option-2 :argument)))
-      (setq description (or description (oref option-2 :description)))
-      (setq object-name (or object-name (oref option-2 :object-name)))
-      (setq synonym (or synonym (oref option-2 :synonym)))
+      (setq argument (docopt-argument-merge argument (docopt-option-argument option-2)))
+      (setq description (or description (docopt-option-description option-2)))
+      (setq object-name (or object-name (eieio-object-name-string option-2)))
+      (setq synonym (or synonym (docopt-option-synonym option-2)))
       option-1))
    ((option-1 option-1))
    ((option-2 option-2))))
@@ -230,34 +230,6 @@ ARGUMENT and ARGUMENT-NAME slots of the instance."
          (cons option-2 options)))
      options-2)
     (seq-sort-by #'eieio-object-name-string #'string<)))
-
-(cl-defgeneric docopt-option-name-regex (option)
-  "Return the regular expressions for the OPTION name.")
-
-(cl-defmethod docopt-option-name-regex ((option docopt-long-option))
-  "Return the regular expressions for the long OPTION name."
-  (thread-last (cons (eieio-object-name-string option) (docopt-long-option-prefixes option))
-    (seq-map (lambda (name) (concat "\\(?:--\\(" name "\\)\\)")))
-    (s-join "\\|")))
-
-(cl-defmethod docopt-option-name-regex ((option docopt-short-option))
-  "Return the regular expressions for the shot OPTION name."
-  (concat "-\\(" (eieio-object-name-string option) "\\)"))
-
-(cl-defgeneric docopt-option-regex (option)
-  "Return the regular expressions for the OPTION.")
-
-(cl-defmethod docopt-option-regex ((option docopt-long-option))
-  "Return the regular expressions for the long OPTION."
-  (concat "\\(?:" (docopt-option-name-regex option) "\\)"
-          (when-let ((argument (docopt-option-argument option)))
-            "\s*[= ]\s*\\([^ ]+\\)")))
-
-(cl-defmethod docopt-option-regex ((option docopt-short-option))
-  "Return the regular expressions for the shot OPTION."
-  (concat "\\(?:" (docopt-option-name-regex option) "\\)"
-          (when-let ((argument (docopt-option-argument option)))
-            "\s*[= ]\s*\\([^ ]+\\)")))
 
 (provide 'docopt-option)
 

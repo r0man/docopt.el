@@ -41,48 +41,4 @@
              (docopt-program-options docopt-naval-fate))
             :to-equal '("hel" "he" "h"))))
 
-(describe "The option name regex"
-
-  (it "should match a long option name"
-    (expect (s-match (docopt-option-name-regex docopt-naval-fate-option-help) "--help")
-            :to-equal '("--help" "help")))
-
-  (it "should match a long option prefix"
-    (expect (s-match (docopt-option-name-regex docopt-naval-fate-option-help) "--hel")
-            :to-equal '("--hel" nil "hel")))
-
-  (it "should match a short option name"
-    (expect (s-match (docopt-option-name-regex docopt-naval-fate-option-h) "-h")
-            :to-equal '("-h" "h"))))
-
-(describe "The option regex"
-
-  (it "should match a long option without argument"
-    (expect (s-match (docopt-option-regex docopt-naval-fate-option-help) "--help")
-            :to-equal '("--help" "help")))
-
-  (it "should match a long option prefix without argument"
-    (expect (s-match (docopt-option-regex docopt-naval-fate-option-help) "--hel")
-            :to-equal '("--hel" nil "hel")))
-
-  (it "should match a long option with argument"
-    (expect (s-match (docopt-option-regex docopt-naval-fate-option-speed) "--speed=20")
-            :to-equal '("--speed=20" "speed" nil nil nil nil "20")))
-
-  (it "should match a long option prefix with argument"
-    (expect (s-match (docopt-option-regex docopt-naval-fate-option-speed) "--spe=20")
-            :to-equal '("--spe=20" nil nil "spe" nil nil "20")))
-
-  (it "should match a short option without argument"
-    (expect (s-match (docopt-option-regex docopt-naval-fate-option-h) "-h")
-            :to-equal '("-h" "h")))
-
-  (it "should match a short option with argument"
-    (expect (s-match (docopt-option-regex
-                      (docopt-short-option
-                       :object-name "p"
-                       :argument (docopt-argument :object-name "PATH")))
-                     "-p=path")
-            :to-equal '("-p=path" "p" "path"))))
-
 ;;; docopt-option-test.el ends here

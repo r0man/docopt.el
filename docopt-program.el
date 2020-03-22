@@ -111,9 +111,9 @@
   "Return t if PROGRAM and OTHER are equal-ish."
   (with-slots (arguments usage options) program
     (and (docopt-program-p other)
-         (equal arguments (oref other :arguments))
-         (equal usage (oref other :usage))
-         (equal options (oref other :options)))))
+         (equal arguments (docopt-program-arguments other))
+         (equal usage (docopt-program-usage other))
+         (equal options (docopt-program-options other)))))
 
 (defun docopt-program-long-options (program)
   "Return the long options of PROGRAM."
@@ -171,27 +171,6 @@
                          element))
                       (t element))))
     program))
-
-;; (defun docopt-walk-options (program)
-;;   (docopt-walk program (lambda (element)
-;;                          (cond
-;;                           ((docopt-option-child-p element)
-;;                            element)
-
-;;                           ((docopt-group-child-p element)
-;;                            (docopt-group-members element))
-
-;;                           ((docopt-either-p element)
-;;                            (docopt--flatten (apply #'append (docopt-either-members element))))
-
-;;                           ((docopt-repeated-p element)
-;;                            (list (docopt-repeated-object element)))
-
-;;                           ((docopt-usage-pattern-p element)
-;;                            (apply #'append (docopt-usage-pattern-expressions element)))
-
-;;                           ((docopt-program-p element)
-;;                            (seq-mapcat #'docopt--flatten (docopt-program-usage element)))))))
 
 (provide 'docopt-program)
 

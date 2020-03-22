@@ -30,8 +30,9 @@
 ;;; Code:
 
 (require 'docopt-generic)
-(require 'docopt-repeated)
 (require 'docopt-optional)
+(require 'docopt-repeated)
+(require 'docopt-util)
 (require 'eieio)
 (require 'eieio-base)
 
@@ -93,9 +94,9 @@
   (cond
    ((and argument-1 argument-2)
     (with-slots (default object-name value) argument-1
-      (setq default (or default (oref argument-2 :default)))
-      (setq value (or value (oref argument-2 :value)))
-      (setq object-name (or object-name (oref argument-2 :object-name)))
+      (setq default (or default (docopt-argument-default argument-2)))
+      (setq value (or value (docopt-argument-value argument-2)))
+      (setq object-name (or object-name (eieio-object-name-string argument-2)))
       argument-1))
    (argument-1 argument-1)
    (argument-2 argument-2)))

@@ -41,8 +41,6 @@
 (defun docopt--parse-argv-simple-list* (program lst)
   "Return the form to parse the LST of PROGRAM."
   (let ((num-elements (length lst)))
-    (if (equal 1 num-elements)
-        `(docopt-argv-parser ,program ,(car lst)))
     `(parsec-collect
       ,@(seq-map-indexed
          (lambda (element index)

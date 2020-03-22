@@ -31,7 +31,9 @@
 
 (require 'buttercup)
 (require 'cl-lib)
+(require 'docopt-argv)
 (require 'docopt-parser)
+(require 'docopt-string)
 (require 'docopt-util)
 (require 'eieio)
 (require 'json)
@@ -152,13 +154,6 @@
   "Parse the Docopt testcase expected result."
   (parsec-or (docopt--parse-testcase-expected-error)
              (docopt--parse-testcase-expected-data)))
-
-(defun docopt--parse-testcase-example ()
-  "Parse a Docopt testcase example."
-  (parsec-return (parsec-collect
-                  (docopt--parse-testcase-argv)
-                  (docopt--parse-testcase-expected))
-    (docopt--parse-whitespaces)))
 
 (defun docopt--parse-testcase-example ()
   "Parse a Docopt testcase example."
