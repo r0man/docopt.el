@@ -238,11 +238,20 @@
         (parsec-try
          (parsec-collect
           (docopt--parse-command-name)
-          (parsec-return (if (zerop num-expressions)
-                             (parsec-and (docopt--parse-spaces) nil)
-                           (parsec-and
-                            (docopt--parse-spaces)
-                            (docopt-argv-parser program expressions)))
+          (parsec-return
+              (cond
+               ((zerop num-expressions)
+                (parsec-and (docopt--parse-spaces) nil))
+               ((cl-every #'docopt-option-child-p expressions)
+                (eval `(parsec-and
+                        (docopt--parse-spaces)
+                        (parsec-or
+                         ,@(seq-map (lambda (exprs)
+                                      `(docopt-argv-parser ,program (quote ,exprs)))
+                                    (-permutations expressions))))))
+               (t (parsec-and
+                   (docopt--parse-spaces)
+                   (docopt-argv-parser program expressions))))
             (parsec-eof))))
       (cons (docopt-command command)
             (if (listp exprs) exprs (list exprs))))))
