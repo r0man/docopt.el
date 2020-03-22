@@ -40,6 +40,23 @@
                 x (list x)))
           list))
 
+(defun docopt-interpose-around (sep lst)
+  "Add SEP to the beginning and end of LST and interpose it's elements."
+  (cond
+   ((and (equal sep (car lst)) (equal sep (car (last lst))))
+    (append (cons (car lst) (-interpose sep (cdr (butlast lst 1))))
+            (list (car (last lst)))))
+
+   ((equal sep (car lst))
+    (append (cons (car lst) (-interpose sep (cdr lst)))
+            (list sep)))
+
+   ((equal sep (car (last lst)))
+    (append (cons sep (-interpose sep (butlast lst)))
+            (last lst)))
+
+   (t (append (cons sep (-interpose sep lst)) (list sep)))))
+
 (defun docopt-strip (s)
   "Trim S, return nil if only the empty string is left."
   (let ((s (s-trim s)))
