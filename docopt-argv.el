@@ -135,14 +135,14 @@
 
 (cl-defmethod docopt-argv--parse-option-name ((option docopt-long-option))
   "Parse the long OPTION name."
-  (thread-last (cons (object-name-string option) (docopt-long-option-prefixes option))
+  (thread-last (cons (eieio-object-name-string option) (docopt-long-option-prefixes option))
     (seq-map (lambda (name) (concat "\\(?:--\\(" name "\\)\\)")))
     (s-join "\\|")
     (parsec-re)))
 
 (cl-defmethod docopt-argv--parse-option-name ((option docopt-short-option))
   "Parse the short OPTION name."
-  (parsec-str (concat "-" (object-name-string option))))
+  (parsec-str (concat "-" (eieio-object-name-string option))))
 
 (cl-defgeneric docopt-argv--parse-option-separator (option)
   "Parse the OPTION separator.")

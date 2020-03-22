@@ -55,7 +55,7 @@
   (let ((copy (copy-sequence argument)))
     (with-slots (default value object-name) copy
       (setq default (docopt-copy (docopt-argument-default argument)))
-      (setq object-name (docopt-copy (object-name-string argument)))
+      (setq object-name (docopt-copy (eieio-object-name-string argument)))
       (setq value (docopt-copy (docopt-argument-value argument)))
       copy)))
 

@@ -236,13 +236,13 @@ ARGUMENT and ARGUMENT-NAME slots of the instance."
 
 (cl-defmethod docopt-option-name-regex ((option docopt-long-option))
   "Return the regular expressions for the long OPTION name."
-  (thread-last (cons (object-name-string option) (docopt-long-option-prefixes option))
+  (thread-last (cons (eieio-object-name-string option) (docopt-long-option-prefixes option))
     (seq-map (lambda (name) (concat "\\(?:--\\(" name "\\)\\)")))
     (s-join "\\|")))
 
 (cl-defmethod docopt-option-name-regex ((option docopt-short-option))
   "Return the regular expressions for the shot OPTION name."
-  (concat "-\\(" (object-name-string option) "\\)"))
+  (concat "-\\(" (eieio-object-name-string option) "\\)"))
 
 (cl-defgeneric docopt-option-regex (option)
   "Return the regular expressions for the OPTION.")
