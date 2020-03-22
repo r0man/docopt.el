@@ -58,8 +58,8 @@
 
 (cl-defmethod docopt-equal ((option docopt-option) object)
   "Return t if OPTION and OBJECT are equal-ish."
-  (and (equal (object-class option)
-              (object-class object))
+  (and (equal (eieio-object-class option)
+              (eieio-object-class object))
        (string= (eieio-object-name-string option)
                 (eieio-object-name-string object))
        (docopt-equal (docopt-option-argument option)
