@@ -124,17 +124,6 @@
   "Format the short option NAME."
   (concat "-" name))
 
-;;; Stacked Short Options
-
-(defclass docopt-stacked-short-options ()
-  ((members
-    :accessor docopt-stacked-short-options-members
-    :documentation "The members of the stacked short options."
-    :initarg :members
-    :initform nil
-    :type (or list null)))
-  "A class representing stacked Docopt short options.")
-
 (cl-defmethod docopt-collect-arguments ((_ docopt-option))
   "Collect the arguments from the Docopt OPTION." nil)
 

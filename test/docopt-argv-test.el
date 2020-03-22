@@ -368,7 +368,7 @@ Options:
                              :argument (docopt-argument :object-name "kn" :default "10" :value "20")
                              :description "Speed in knots [default: 10]."
                              :object-name "speed"
-                             :optional t
+                             ;; :optional t
                              :prefixes '("spee" "spe" "sp" "s")))))
 
   (it "should parse \"naval_fate ship new SHIP-1 SHIP-2\""
