@@ -233,6 +233,12 @@ Options:
                             (docopt-long-option :object-name "bb")
                             (docopt-long-option :object-name "aa" :argument (docopt-argument :object-name "AA" :value "x")))))
 
+  (it "should parse a single short option with a pending space"
+    (expect (parsec-with-input "-b "
+              (parsec-collect (docopt-argv--parse-options program)
+                              (parsec-str " ")))
+            :to-equal (list (list (docopt-short-option :object-name "b")) " ")))
+
   ;; (it "should parse multiple stacked option and other elements"
   ;;   (expect (parsec-with-input "--aa=x -bca=x -b --bb --aa=x X"
   ;;             (parsec-collect (docopt-argv--parse-options program)

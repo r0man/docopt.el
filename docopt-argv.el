@@ -137,11 +137,12 @@
 
 (defun docopt-argv--parse-options (program)
   "Parse the options of PROGRAM."
-  (thread-last  (parsec-sepby
-                 (parsec-or
-                  (docopt-argv--parse-long-options program)
-                  (docopt-argv--parse-short-options program))
-                 (docopt--parse-whitespaces))
+  (thread-last (parsec-sepby
+                (parsec-or
+                 (docopt-argv--parse-long-options program)
+                 (docopt-argv--parse-short-options program))
+                (parsec-try (parsec-and (docopt--parse-whitespaces)
+                                        (parsec-lookahead (parsec-str "-")))))
     (apply #'append)
     (seq-remove #'null)))
 
