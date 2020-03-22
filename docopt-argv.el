@@ -40,12 +40,8 @@
 
 (defun docopt-argv--parse-exprs-any-order (program exprs)
   "Parse the EXPRS of PROGRAM in any order."
-  (eval `(parsec-and
-          (docopt--parse-spaces)
-          (parsec-or
-           ,@(seq-map (lambda (exprs)
-                        `(docopt-argv-parser ,program (quote ,exprs)))
-                      (-permutations exprs))))))
+  (eval `(parsec-or ,@(seq-map (lambda (exprs) `(docopt-argv-parser ,program (quote ,exprs)))
+                               (-permutations exprs)))))
 
 (defun docopt--parse-argv-simple-list* (program lst)
   "Return the form to parse the LST of PROGRAM."
@@ -255,7 +251,9 @@
                ((zerop num-expressions)
                 (parsec-and (docopt--parse-spaces) nil))
                ((cl-every #'docopt-option-child-p expressions)
-                (docopt-argv--parse-exprs-any-order program expressions))
+                (parsec-and
+                 (docopt--parse-spaces)
+                 (docopt-argv--parse-exprs-any-order program expressions)))
                (t (parsec-and
                    (docopt--parse-spaces)
                    (docopt-argv-parser program expressions))))
