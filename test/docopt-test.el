@@ -38,29 +38,35 @@
 (defun docopt-test-define-it (example)
   "Define a Buttercup test for the Docopt TESTCASE and EXAMPLE."
   (it (format "should parse: %s" (docopt-testcase-example-argv example))
-    (expect (docopt-testcase-example-actual example)
-            :to-equal (docopt-testcase-example-expected example))))
+      (expect (docopt-testcase-example-actual example)
+              :to-equal (docopt-testcase-example-expected example))))
 
 (defun docopt-test-define-describe (testcase)
   "Define a Buttercup test suite for the Docopt TESTCASE."
   (let ((program (docopt-testcase-program testcase)))
     (describe (format "Parsing the Docopt program:\n\n%s" (docopt-string program))
-      (seq-doseq (example (docopt-testcase-test testcase))
-        (docopt-test-define-it example)))))
+              (seq-doseq (example (docopt-testcase-test testcase))
+                (docopt-test-define-it example)))))
 
 ;;; docopt-test.el ends here
 
 (setq my-program
       (docopt-parse "
 Usage:
-  prog -a -b
+  prog [-a -r -m=<msg>]
 
 Options:
-  -a
-  -b
+  -a                   Add
+  -m=<msg>             Message
+  -r                   Remote
 "))
 
-;; (docopt-eval my-program "prog")
+(parsec-with-input "prog -armyourass"
+  (docopt-argv--parse-options my-program))
+
+(docopt-eval-ast my-program "prog -armyourass")
+(docopt-eval my-program "prog -a -r -myourass")
+(docopt-eval my-program "prog -ar")
 ;; (docopt-eval my-program "prog -a -b")
 
 ;; (docopt-eval my-program "prog -b -a")
@@ -87,8 +93,8 @@ Options:
 ;; (seq-doseq (testcase (docopt-parse-testcases (f-read-text "test/testcases.docopt")))
 ;;   (docopt-test-define-describe testcase))
 
-;; (seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 16))
-;;   (docopt-test-define-describe testcase))
+(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 14))
+  (docopt-test-define-describe testcase))
 
 ;; (setq my-testcase (nth 5 (docopt-parse-testcases (f-read-text "test/testcases.docopt"))))
 ;; (docopt-test-define-describe my-testcase)

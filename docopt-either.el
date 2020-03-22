@@ -30,10 +30,11 @@
 ;;; Code:
 
 (require 'docopt-generic)
+(require 'docopt-optional)
 (require 'eieio)
 (require 'seq)
 
-(defclass docopt-either ()
+(defclass docopt-either (docopt-optionable)
   ((members
     :accessor docopt-either-members
     :documentation "The members of the either."

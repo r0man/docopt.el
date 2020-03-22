@@ -57,10 +57,14 @@
 
 (defun docopt-make-optional-group (&rest members)
   "Make a new optional Docopt group with MEMBERS."
-  (let ((group (make-instance 'docopt-optional-group :members members)))
+  (let ((group (docopt-optional-group :members members)))
     (docopt-set-optional group t)
-    (seq-doseq (member members) (docopt-set-optional member t))
     group))
+
+(cl-defmethod docopt-set-optional ((group docopt-optional-group) optional)
+  "Set the :optional slot of the GROUP members to OPTIONAL."
+  (cl-call-next-method group optional)
+  (docopt-set-optional (docopt-group-members group) optional))
 
 ;;; Required Group
 

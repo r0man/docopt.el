@@ -44,6 +44,10 @@
 (cl-defgeneric docopt-set-optional (object optional)
   "Set the :optional slot of OBJECT to OPTIONAL.")
 
+(cl-defmethod docopt-set-optional ((lst list) optional)
+  "Set the :optional slot of the elements of LST to OPTIONAL."
+  (seq-doseq (element lst) (docopt-set-optional element optional)))
+
 (cl-defmethod docopt-set-optional ((object docopt-optionable) optional)
   "Set the :optional slot of OBJECT to OPTIONAL."
   (oset object :optional optional))

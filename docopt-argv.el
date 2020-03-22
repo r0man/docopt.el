@@ -111,9 +111,9 @@
 
 (defun docopt-argv--parse-short-options-stacked-arg-0 (program)
   "Parse the stacked short options of PROGRAM that don't have an argument."
-  (parsec-many (eval `(parsec-or ,@(seq-map (lambda (option)
-                                              `(docopt-argv--parse-short-option-name ,program ,option))
-                                            (seq-remove #'docopt-option-argument (docopt-program-short-options program)))))))
+  (parsec-many1 (eval `(parsec-or ,@(seq-map (lambda (option)
+                                               `(docopt-argv--parse-short-option-name ,program ,option))
+                                             (seq-remove #'docopt-option-argument (docopt-program-short-options program)))))))
 
 (defun docopt-argv--parse-short-options-stacked-arg-1 (program)
   "Parse the stacked short options of PROGRAM that have an argument."
@@ -123,26 +123,30 @@
 
 (defun docopt-argv--parse-short-options (program)
   "Parse the short options of PROGRAM."
-  (thread-last (parsec-and
-                (parsec-str "-")
-                (parsec-or
-                 (parsec-collect
-                  (docopt-argv--parse-short-options-stacked-arg-0 program)
-                  (parsec-optional (docopt-argv--parse-short-options-stacked-arg-1 program)))
-                 (parsec-collect
-                  (parsec-optional (docopt-argv--parse-short-options-stacked-arg-0 program))
-                  (docopt-argv--parse-short-options-stacked-arg-1 program))))
+  (thread-last (parsec-with-error-message
+                   (format "Can't parse short options: %s" (cdr parsec-last-error-message))
+                 (parsec-and
+                  (parsec-str "-")
+                  (parsec-or
+                   (parsec-collect
+                    (docopt-argv--parse-short-options-stacked-arg-0 program)
+                    (parsec-optional (docopt-argv--parse-short-options-stacked-arg-1 program)))
+                   (parsec-collect
+                    (parsec-optional (docopt-argv--parse-short-options-stacked-arg-0 program))
+                    (docopt-argv--parse-short-options-stacked-arg-1 program)))))
     (seq-remove #'null)
     (docopt--flatten)))
 
 (defun docopt-argv--parse-options (program)
   "Parse the options of PROGRAM."
-  (thread-last (parsec-sepby
-                (parsec-or
-                 (docopt-argv--parse-long-options program)
-                 (docopt-argv--parse-short-options program))
-                (parsec-try (parsec-and (docopt--parse-whitespaces)
-                                        (parsec-lookahead (parsec-str "-")))))
+  (thread-last (parsec-with-error-message
+                   (format "Can't parse options: %s" (cdr parsec-last-error-message))
+                 (parsec-sepby
+                  (parsec-or
+                   (docopt-argv--parse-long-options program)
+                   (docopt-argv--parse-short-options program))
+                  (parsec-try (parsec-and (docopt--parse-whitespaces)
+                                          (parsec-lookahead (parsec-str "-"))))))
     (apply #'append)
     (seq-remove #'null)))
 
@@ -190,8 +194,13 @@
 
 (cl-defmethod docopt-argv-parser (program (either docopt-either))
   "Return an argument vector parser for PROGRAM and  EITHER."
-  (eval `(parsec-or ,@(seq-map (lambda (member) `(parsec-try (docopt-argv-parser (quote ,program) (quote ,member))))
-                               (docopt-either-members either)))))
+  (let ((form `(parsec-with-error-message
+                   (format "Can't parse either: %s" (cdr parsec-last-error-message))
+                 (parsec-or ,@(seq-map (lambda (member) `(parsec-try (docopt-argv-parser (quote ,program) (quote ,member))))
+                                       (docopt-either-members either))))))
+    (if (docopt-optional-p either)
+        (eval `(parsec-optional ,form))
+      (eval form))))
 
 (cl-defmethod docopt-argv-parser (program (lst list))
   "Return an argument vector parser for PROGRAM and LST."
@@ -216,20 +225,13 @@
 
 (cl-defmethod docopt-argv-parser (program (shortcut docopt-options-shortcut))
   "Return an argument vector parser for PROGRAM and SHORTCUT."
-  (parsec-optional (docopt-argv--parse-options program)))
+  (parsec-optional (parsec-try (docopt-argv--parse-options program))))
 
 (cl-defmethod docopt-argv-parser (program (group docopt-optional-group))
-  "Return an argument vector parser for PROGRAM and GROUP."
-  (parsec-optional (docopt-argv-parser program (docopt-group-members group))))
-
-;; (cl-defmethod docopt-argv-parser ((group docopt-optional-group))
-;;   "Return an argument vector parser for the GROUP."
-;;   (docopt--flatten
-;;    (eval `(parsec-optional (parsec-sepby
-;;                             (parsec-or ,@(seq-map (lambda (member)
-;;                                                     `(docopt-argv-parser (quote ,member)))
-;;                                                   (docopt-group-members group)))
-;;                             (docopt--parse-spaces))))))
+  "Return an argument vector parser for the PROGRAM and GROUP."
+  (let ((shortcut (docopt-options-shortcut :options (docopt-program-options program)))
+        (non-options (seq-remove #'docopt-option-child-p (docopt-group-members group))))
+    (parsec-optional (docopt-argv-parser program (docopt-argv--interpose-around shortcut non-options)))))
 
 (cl-defmethod docopt-argv-parser (_ (program docopt-program))
   "Return an argument vector parser for the PROGRAM."
