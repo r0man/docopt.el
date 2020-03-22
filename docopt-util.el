@@ -31,6 +31,7 @@
 
 (require 'docopt-generic)
 (require 'cl-lib)
+(require 's)
 
 (defun docopt--flatten (list)
   "Flatten the LIST."
@@ -38,6 +39,11 @@
             (if (listp x)
                 x (list x)))
           list))
+
+(defun docopt-strip (s)
+  "Trim S, return nil if only the empty string is left."
+  (let ((s (s-trim s)))
+    (unless (s-blank-p s) s)))
 
 (defun docopt--parsec-error-p (result)
   "Return t if the car of RESULT is a 'parsec-error."

@@ -219,11 +219,11 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 (defun docopt--parse-option-line-description ()
   "Parse an option line description."
-  (s-trim (parsec-many-till-s
-           (parsec-any-ch)
-           (parsec-or (parsec-try (docopt--parse-option-line-separator))
-                      (parsec-lookahead (parsec-try (docopt--parse-section-header)))
-                      (parsec-eof)))))
+  (docopt-strip (parsec-many-till-s
+                 (parsec-any-ch)
+                 (parsec-or (parsec-try (docopt--parse-option-line-separator))
+                            (parsec-lookahead (parsec-try (docopt--parse-section-header)))
+                            (parsec-eof)))))
 
 (defun docopt--parse-option-line-option-separator ()
   "Parse the option separator of a Docopt option line."
