@@ -177,13 +177,10 @@
 
 (cl-defmethod docopt-argv-parser (program (either docopt-either))
   "Return an argument vector parser for PROGRAM and  EITHER."
-  (let ((form `(parsec-with-error-message
-                   (format "Can't parse either: %s" (cdr parsec-last-error-message))
-                 (parsec-or ,@(seq-map (lambda (member) `(parsec-try (docopt-argv-parser (quote ,program) (quote ,member))))
-                                       (docopt-either-members either))))))
-    (if (docopt-optional-p either)
-        (eval `(parsec-optional ,form))
-      (eval form))))
+  (parsec-with-error-message
+      (format "Can't parse either: %s" (cdr parsec-last-error-message))
+    (eval `(parsec-or ,@(seq-map (lambda (member) `(parsec-try (docopt-argv-parser (quote ,program) (quote ,member))))
+                                 (docopt-either-members either))))))
 
 (cl-defmethod docopt-argv-parser (program (lst list))
   "Return an argument vector parser for PROGRAM and LST."
