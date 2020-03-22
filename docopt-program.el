@@ -41,12 +41,6 @@
     :initarg :arguments
     :initform nil
     :type (or list null))
-   (header
-    :accessor docopt-program-header
-    :documentation "The header of the program."
-    :initarg :header
-    :initform nil
-    :type (or string null))
    (examples
     :accessor docopt-program-examples
     :documentation "The examples of the program."
@@ -59,12 +53,12 @@
     :initarg :footer
     :initform nil
     :type (or string null))
-   (usage
-    :accessor docopt-program-usage
-    :documentation "The usage information of the program."
-    :initarg :usage
+   (header
+    :accessor docopt-program-header
+    :documentation "The header of the program."
+    :initarg :header
     :initform nil
-    :type (or list null))
+    :type (or string null))
    (options
     :accessor docopt-program-options
     :documentation "The options of the program."
@@ -76,7 +70,13 @@
     :documentation "The source of the program."
     :initarg :source
     :initform nil
-    :type (or string null)))
+    :type (or string null))
+   (usage
+    :accessor docopt-program-usage
+    :documentation "The usage information of the program."
+    :initarg :usage
+    :initform nil
+    :type (or list null)))
   "A class representing a Docopt program.")
 
 (cl-defmethod docopt-collect-arguments ((program docopt-program))
@@ -93,6 +93,19 @@
    'list
    (seq-mapcat #'docopt-collect-options (docopt-program-usage program))
    (docopt-program-options program)))
+
+(cl-defmethod docopt-copy ((program docopt-program))
+  "Return a copy of the usage PROGRAM."
+  (let ((copy (copy-sequence program)))
+    (with-slots (arguments examples footer header options source usage) copy
+      (setq arguments (docopt-copy (docopt-program-arguments program)))
+      (setq examples (docopt-copy (docopt-program-examples program)))
+      (setq footer (docopt-copy (docopt-program-footer program)))
+      (setq header (docopt-copy (docopt-program-header program)))
+      (setq options (docopt-copy (docopt-program-options program)))
+      (setq source (docopt-copy (docopt-program-source program)))
+      (setq usage (docopt-copy (docopt-program-usage program)))
+      copy)))
 
 (cl-defmethod docopt-equal ((program docopt-program) other)
   "Return t if PROGRAM and OTHER are equal-ish."

@@ -47,6 +47,14 @@
     :type (or list null)))
   "A class representing a Docopt usage pattern.")
 
+(cl-defmethod docopt-copy ((pattern docopt-usage-pattern))
+  "Return a copy of the usage PATTERN."
+  (let ((copy (copy-sequence pattern)))
+    (with-slots (command expressions) copy
+      (setq command (docopt-copy (docopt-usage-pattern-command argument)))
+      (setq expressions (docopt-copy (docopt-usage-pattern-expressions argument)))
+      copy)))
+
 (cl-defmethod docopt-walk ((pattern docopt-usage-pattern) f)
   "Walk the usage PATTERN of an abstract syntax tree and apply F on it."
   (let ((pattern (copy-sequence pattern)))

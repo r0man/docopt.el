@@ -29,6 +29,7 @@
 
 ;;; Code:
 
+(require 'docopt)
 (require 'parsec)
 (require 's)
 

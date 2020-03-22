@@ -65,6 +65,15 @@
        (docopt-equal (docopt-option-argument option)
                      (docopt-option-argument object))))
 
+(cl-defmethod docopt-copy ((option docopt-option))
+  "Return a copy of the OPTION."
+  (let ((copy (copy-sequence option)))
+    (with-slots (argument description synonym) copy
+      (setq argument (docopt-copy (docopt-option-argument option)))
+      (setq description (docopt-copy (docopt-option-description option)))
+      (setq synonym (docopt-copy (docopt-option-synonym option)))
+      copy)))
+
 (cl-defmethod docopt-walk ((option docopt-option) f)
   "Walk the OPTION of an abstract syntax tree and apply F on it."
   (let ((option (copy-sequence option)))
@@ -84,6 +93,13 @@
     :initform nil
     :type (or list null)))
   "A class representing a Docopt long option.")
+
+(cl-defmethod docopt-copy ((option docopt-long-option))
+  "Return a copy of the long OPTION."
+  (let ((copy (cl-call-next-method option)))
+    (with-slots (prefixes) copy
+      (setq prefixes (docopt-copy (docopt-long-option-prefixes option)))
+      copy)))
 
 (cl-defmethod docopt-walk ((option docopt-long-option) f)
   "Walk the OPTION of an abstract syntax tree and apply F on it."

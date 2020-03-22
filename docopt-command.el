@@ -50,6 +50,14 @@
 (cl-defmethod docopt-collect-options ((_ docopt-command))
   "Collect the options from the Docopt COMMAND." nil)
 
+(cl-defmethod docopt-copy ((command docopt-command))
+  "Return a copy of the COMMAND."
+  (let ((copy (copy-sequence command)))
+    (with-slots (object-name optional) copy
+      (setq object-name (docopt-copy (object-name-string command)))
+      (setq optional (docopt-copy (docopt-command-optional command)))
+      copy)))
+
 (cl-defmethod docopt-walk ((command docopt-command) f)
   "Walk the COMMAND of an abstract syntax tree and apply F on it."
   (let ((command (copy-sequence command)))

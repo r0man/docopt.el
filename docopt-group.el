@@ -83,6 +83,12 @@
   "Collect the options from the Docopt GROUP."
   (docopt-collect-options (docopt-group-members group)))
 
+(cl-defmethod docopt-copy ((group docopt-group))
+  "Return a copy of the GROUP."
+  (let ((copy (copy-sequence group)))
+    (oset copy :members (docopt-copy (docopt-group-members group)))
+    copy))
+
 (provide 'docopt-group)
 
 ;;; docopt-group.el ends here

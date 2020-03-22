@@ -52,4 +52,9 @@
     (expect (docopt-program-option program "h")
             :to-equal docopt-naval-fate-option-h)))
 
+(describe "The copy of a program"
+  :var ((program (docopt-parse docopt-naval-fate-str)))
+  (it "should be equal to the original"
+    (expect (docopt-copy program) :to-equal program)))
+
 ;;; docopt-program-test.el ends here

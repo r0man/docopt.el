@@ -41,6 +41,13 @@
 (cl-defgeneric docopt-collect-options (object)
   "Collect the options from the Docopt OBJECT.")
 
+(cl-defgeneric docopt-copy (object)
+  "Return a copy of OBJECT.")
+
+(cl-defmethod docopt-copy ((object t))
+  "Return a copy of OBJECT."
+  (if (sequencep object) (copy-sequence object) object))
+
 (cl-defgeneric docopt-equal (object-1 object-2)
   "Return t if OBJECT-1 and OBJECT-2 are equal-ish.")
 
