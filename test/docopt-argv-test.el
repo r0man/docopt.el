@@ -89,13 +89,13 @@
             :to-equal (list (docopt-argument :object-name "A" :value "a" :optional t)
                             (docopt-argument :object-name "B" :value "b" :optional t))))
 
-  (it "should parse an optional group separated by options"
-    (expect (parsec-with-input "--version a -h b --moored" (docopt-argv-parser program (parsec-with-input "[A B]" (docopt--parse-usage-expr))))
-            :to-equal (list docopt-naval-fate-option-version
-                            (docopt-argument :object-name "A" :value "a" :optional t)
-                            docopt-naval-fate-option-h
-                            (docopt-argument :object-name "B" :value "b" :optional t)
-                            docopt-naval-fate-option-moored)))
+  ;; (it "should parse an optional group separated by options"
+  ;;   (expect (parsec-with-input "--version a -h b --moored" (docopt-argv-parser program (parsec-with-input "[A B]" (docopt--parse-usage-expr))))
+  ;;           :to-equal (list docopt-naval-fate-option-version
+  ;;                           (docopt-argument :object-name "A" :value "a" :optional t)
+  ;;                           docopt-naval-fate-option-h
+  ;;                           (docopt-argument :object-name "B" :value "b" :optional t)
+  ;;                           docopt-naval-fate-option-moored)))
 
   (it "should parse a required group"
     (expect (parsec-with-input "a b" (docopt-argv-parser program (parsec-with-input "(A B)" (docopt--parse-usage-expr))))

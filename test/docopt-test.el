@@ -52,50 +52,37 @@
 
 (setq my-program
       (docopt-parse "
+Parsing the Docopt program:
+
 Usage:
-  prog (-a -b)
+  prog [-a -r -m=<msg>]
+
+Options:
+  -a                   Add
+  -m=<msg>             Message
+  -r                   Remote
+"))
+
+(docopt-eval-ast my-program "prog -armyourass")
+(docopt-eval-ast my-program "prog -a -r -myourass")
+
+(setq my-program
+      (docopt-parse "
+Usage:
+  prog [-a] -b
 
 Options:
   -a
   -b
 "))
 
-;; (parsec-with-input "prog -armyourass"
-;;   (docopt-argv--parse-options my-program))
-
-(docopt-eval-ast my-program "prog -b -a")
 (docopt-eval-ast my-program "prog -a -b")
-
 (docopt-eval-ast my-program "prog -b -a")
-;; (docopt-eval my-program "prog -a -r -myourass")
-;; (docopt-eval my-program "prog -ar")
-;; (docopt-eval my-program "prog -a -b")
-
-;; (docopt-eval my-program "prog -b -a")
-;; (docopt-eval-ast my-program "prog -a -r")
-;; (docopt-eval-ast my-program "prog -a -r -m yourass")
-;; (docopt-eval-ast my-program "prog -a -r -myourass")
-;; (docopt-eval-ast my-program "prog -armyourass")
-
-;; (docopt-string my-program)
-;; (docopt-eval my-program "prog -armyourass")
-;; (docopt-eval my-program "prog --input a.txt --input=b.txt")
-
-;; (docopt-eval-ast my-program "prog -v arg")
-;; (docopt-eval-ast my-program "prog -b -a")
-
-;; (docopt-eval my-program "prog -p root")
-;; (docopt-eval-ast my-program "prog -a cmd")
-;; (docopt-eval my-program "prog")
-;; (docopt-eval my-program "prog -a -r -m Hello")
-;; (docopt-eval my-program "prog -a -r -m Hello -m -s -g")
-
-;; (docopt-eval my-program "prog -armyourass")
 
 ;; (seq-doseq (testcase (docopt-parse-testcases (f-read-text "test/testcases.docopt")))
 ;;   (docopt-test-define-describe testcase))
 
-(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 16))
+(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 17))
   (docopt-test-define-describe testcase))
 
 ;; (setq my-testcase (nth 5 (docopt-parse-testcases (f-read-text "test/testcases.docopt"))))
