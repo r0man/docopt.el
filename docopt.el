@@ -68,6 +68,16 @@
       (seq-mapcat #'cdr)
       (seq-map #'s-trim))))
 
+(defun docopt--parse-defaults (source)
+  "Parse the default Docopt options from SOURCE."
+  (thread-last (docopt--parse-section "options:" source)
+    (seq-mapcat (lambda (section)
+                  (let* ((s (s-replace "options:" "" section))
+                         (split (s-slice-at "\n[ \t]*\\(-[a-z-]+\\)" (concat "\n" s))))
+                    (seq-remove #'s-blank-p (seq-map #'s-trim split)))))))
+
+;; (docopt--parse-defaults docopt-naval-fate-str)
+
 (defun docopt--parse-usage (source)
   "Parse the Docopt usage section from SOURCE."
   (let ((sections (docopt--parse-section "usage:" source)))
