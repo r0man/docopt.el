@@ -30,28 +30,36 @@
 
 ;;; Code:
 
-(require 'docopt-argv)
-(require 'docopt-parser)
-(require 'docopt-util)
-(require 'parsec)
+(require 'eieio)
 (require 's)
+(require 'seq)
 
-;;;###autoload
-(defun docopt-parse (s)
-  "Parse the Docopt program from S."
-  (let ((program (parsec-with-input s (docopt--parse-program))))
-    (oset program :source (docopt-strip s))
-    program))
-
-;;;###autoload
-(defun docopt-eval-ast (program s)
-  "Parse the argument vector from S using the Docopt PROGRAM."
-  (docopt--parse-argv program s))
-
-;;;###autoload
-(defun docopt-eval (program s)
-  "Parse the argument vector from S using the Docopt PROGRAM."
-  (docopt--argv-to-alist program (docopt--parse-argv program s)))
+(defclass docopt-program ()
+  ((options
+    :accessor docopt-program-options
+    :documentation "The options of the program."
+    :initarg :options
+    :initform nil
+    :type (or list null))
+   (patterns
+    :accessor docopt-program-patterns
+    :documentation "The patterns of the program."
+    :initarg :patterns
+    :initform nil
+    :type (or list null))
+   (source
+    :accessor docopt-program-source
+    :documentation "The source of the program."
+    :initarg :source
+    :initform nil
+    :type (or string null))
+   (usage
+    :accessor docopt-program-usage
+    :documentation "The usage information of the program."
+    :initarg :usage
+    :initform nil
+    :type (or list null)))
+  "A class representing a Docopt program.")
 
 (provide 'docopt)
 
