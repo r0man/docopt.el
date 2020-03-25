@@ -61,6 +61,19 @@
     :type (or list null)))
   "A class representing a Docopt program.")
 
+(defun docopt-parse-section (name source)
+  "Parse all Docopt sections with NAME from SOURCE."
+  (let ((pattern (concat "^\\([^\n]*" name "[^\n]*\n?\\(?:[ \t].*?\\(?:\n\\|$\\)\\)*\\)")))
+    (thread-last (s-match-strings-all pattern source)
+      (seq-mapcat #'cdr)
+      (seq-map #'s-trim))))
+
+(defun docopt-parse-program (source)
+  "Parse the Docopt program from SOURCE."
+  (let ((program (docopt-program :source source)))
+    (docopt-parse-section "usage:" program)
+    program))
+
 (provide 'docopt)
 
 ;;; docopt.el ends here

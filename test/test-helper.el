@@ -29,8 +29,6 @@
 
 ;;; Code:
 
-(require 'docopt-naval-fate)
-
 (provide 'test-helper)
 
 ;;; test-helper.el ends here
