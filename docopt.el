@@ -34,6 +34,39 @@
 (require 's)
 (require 'seq)
 
+(defclass docopt-option ()
+  ((arg-count
+    :accessor docopt-option-arg-count
+    :documentation "The number of argument of the option."
+    :initarg :arg-count
+    :initform nil
+    :type (or number null))
+   (description
+    :accessor docopt-option-description
+    :documentation "The description name of the option."
+    :initarg :description
+    :initform nil
+    :type (or string null))
+   (long
+    :accessor docopt-option-long
+    :documentation "The long name of the option."
+    :initarg :long
+    :initform nil
+    :type (or string null))
+   (short
+    :accessor docopt-option-short
+    :documentation "The short name of the option."
+    :initarg :short
+    :initform nil
+    :type (or string null))
+   (value
+    :accessor docopt-option-value
+    :documentation "The value of the option."
+    :initarg :value
+    :initform nil
+    :type (or string null)))
+  "A class representing a Docopt option.")
+
 (defclass docopt-program ()
   ((options
     :accessor docopt-program-options
@@ -76,7 +109,29 @@
                          (split (s-slice-at "\n[ \t]*\\(-[a-z-]+\\)" (concat "\n" s))))
                     (seq-remove #'s-blank-p (seq-map #'s-trim split)))))))
 
-;; (docopt--parse-defaults docopt-naval-fate-str)
+(defun docopt--parse-option (source)
+  "Parse a Docopt option from SOURCE."
+  (let ((short nil)
+        (long nil)
+        (arg-count 0)
+        (value nil))
+    (seq-let [options description] (s-split "\s\\{2,\\}" source)
+      (let ((options (s-replace "=" " " (s-replace "," " " options))))
+        (seq-doseq (s (s-split "\s+" options))
+          (cond
+           ((s-starts-with-p "--" s)
+            (setq long s))
+           ((s-starts-with-p "-" s)
+            (setq short s))
+           (t (setq arg-count 1))))
+        (when (> arg-count 0)
+          (setq value (cadr (s-match "\\[default: \\(.*\\)\\]" description))))
+        (docopt-option
+         :arg-count arg-count
+         :description description
+         :long long
+         :short short
+         :value value)))))
 
 (defun docopt--parse-usage (source)
   "Parse the Docopt usage section from SOURCE."
