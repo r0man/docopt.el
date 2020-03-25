@@ -67,12 +67,12 @@ Usage: eggs spam
 BAZZ
 usage: pit stop")
 
-(ert-deftest docopt-parse-section-test ()
-  (should (equal (docopt-parse-section "usage:" "usage: prog")
+(ert-deftest docopt--parse-section-test ()
+  (should (equal (docopt--parse-section "usage:" "usage: prog")
                  (list "usage: prog")))
-  (should (equal (docopt-parse-section "usage:" "usage: -x\n -y")
+  (should (equal (docopt--parse-section "usage:" "usage: -x\n -y")
                  (list "usage: -x\n -y")))
-  (should (equal (docopt-parse-section "usage:" docopt-test-usages)
+  (should (equal (docopt--parse-section "usage:" docopt-test-usages)
                  '("usage: this"
                    "usage:hai"
                    "usage: this that"
