@@ -48,6 +48,13 @@ Options:
   --moored      Moored (anchored) mine.
   --drifting    Drifting mine.")
 
+(ert-deftest docopt--parse-defaults-test ()
+  (should (equal (list (docopt-option :arg-count 0 :description "Show this screen." :long "--help" :short "-h" )
+                       (docopt-option :arg-count 0 :description "Show version." :long "--version")
+                       (docopt-option :arg-count 1 :description "Speed in knots [default: 10]." :long "--speed" :value "10")
+                       (docopt-option :arg-count 0 :description "Moored (anchored) mine." :long "--moored")
+                       (docopt-option :arg-count 0 :description "Drifting mine." :long "--drifting"))
+                 (docopt--parse-defaults docopt-naval-fate-str))))
 
 (defvar docopt-test-usages "usage: this
 
