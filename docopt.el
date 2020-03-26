@@ -35,7 +35,34 @@
 (require 's)
 (require 'seq)
 
-(defclass docopt-option ()
+(defclass docopt-pattern () ()
+  "A class representing a Docopt pattern.")
+
+(defclass docopt-branch-pattern (docopt-pattern)
+  ((children
+    :accessor docopt-branch-pattern-children
+    :documentation "The children of the pattern."
+    :initarg :children
+    :initform nil
+    :type (or list null)))
+  "A class representing a Docopt branch pattern.")
+
+(defclass docopt-leaf-pattern (docopt-pattern) ()
+  "A class representing a Docopt leaf pattern.")
+
+(defclass docopt-argument (docopt-leaf-pattern) ()
+  "A class representing a Docopt argument.")
+
+(defclass docopt-command (docopt-argument) ()
+  "A class representing a Docopt command.")
+
+(defclass docopt-either (docopt-branch-pattern) ()
+  "A class representing a Docopt either.")
+
+(defclass docopt-one-or-more (docopt-branch-pattern) ()
+  "A class representing one or more Docopt elements.")
+
+(defclass docopt-option (docopt-leaf-pattern)
   ((arg-count
     :accessor docopt-option-arg-count
     :documentation "The number of argument of the option."
@@ -68,6 +95,15 @@
     :type (or string null)))
   "A class representing a Docopt option.")
 
+(defclass docopt-optional (docopt-branch-pattern) ()
+  "A class representing a Docopt optional element.")
+
+(defclass docopt-options-shortcut (docopt-optional) ()
+  "A class representing a Docopt options shortcut.")
+
+(defclass docopt-required (docopt-branch-pattern) ()
+  "A class representing a Docopt required element.")
+
 (defclass docopt-program ()
   ((options
     :accessor docopt-program-options
@@ -80,7 +116,8 @@
     :documentation "The patterns of the program."
     :initarg :patterns
     :initform nil
-    :type (or list null))
+    ;; :type (or list null)
+    )
    (source
     :accessor docopt-program-source
     :documentation "The source of the program."
@@ -107,6 +144,10 @@
 (defun docopt-tokens-current (tokens)
   "Return the current token from TOKENS."
   (car (docopt-tokens-list tokens)))
+
+(defun docopt-tokens-current-p (tokens token)
+  "Return t if the current token in TOKENS is equal to TOKEN."
+  (string-equal token (docopt-tokens-current tokens)))
 
 (defun docopt-tokens-from-pattern (source)
   "Parse SOURCE and return Docopt tokens."
@@ -151,9 +192,49 @@
     (seq-map #'docopt--parse-option)
     (seq-remove #'null)))
 
+(defun docopt--parse-atom (tokens options)
+  "Parse a Docopt atom from TOKENS using OPTIONS."
+  (let ((token (docopt-tokens-current tokens)))
+    (cond
+     ((member token '("(" "["))
+      (docopt-tokens-move tokens))
+     ((string= token "options")
+      (docopt-tokens-move tokens))
+     ((and (s-starts-with-p "--" token)
+           (not (string= "--" token)))
+      (docopt-tokens-move tokens))
+     ((and (s-starts-with-p "-" token)
+           (not (member token '("-" "--"))))
+      (docopt-tokens-move tokens))
+     ((or (and (s-starts-with-p "<" token)
+               (s-ends-with-p ">" token))
+          (s-uppercase-p token))
+      (docopt-tokens-move tokens))
+     (t (docopt-tokens-move tokens)))))
+
+;; (docopt-parse-program docopt-naval-fate-str)
+
+(defun docopt--parse-exprs (tokens options)
+  "Parse the Docopt expressions from TOKENS using OPTIONS."
+  (docopt--parse-seq tokens options))
+
+(defun docopt--parse-seq (tokens options)
+  "Parse a sequence of Docopt expressions from TOKENS using OPTIONS."
+  (let ((results nil))
+    (while (docopt-tokens-current tokens)
+      (unless (member (docopt-tokens-current tokens) '("]" ")" "|"))
+        (let ((atoms (docopt--parse-atom tokens options)))
+          (when (docopt-tokens-current-p tokens "...")
+            (setq atoms (docopt-one-or-more :children atoms))
+            (docopt-tokens-move tokens))
+          (setq results (cons atoms results)))))
+    (reverse results)))
+
 (defun docopt--parse-patterns (source options)
   "Parse the usage patterns from Docopt SOURCE using OPTIONS."
-  )
+  (let* ((tokens (docopt-tokens-from-pattern source))
+         (result (docopt--parse-exprs tokens options)))
+    result))
 
 (defun docopt--parse-option (source)
   "Parse a Docopt option from SOURCE."
@@ -193,7 +274,11 @@
   "Parse the Docopt program from SOURCE."
   (let ((program (docopt-program :source source))
         (usage (docopt--parse-usage source)))
-    program))
+    (with-slots (options patterns) program
+      (setq options (docopt--parse-defaults source))
+      (setq patterns (docopt--parse-patterns (docopt--formal-usage usage) options))
+      program
+      patterns)))
 
 (provide 'docopt)
 
