@@ -161,7 +161,7 @@
 
 (defun docopt-tokens-argument-p (tokens)
   "Return t if the current token in TOKENS is an argument."
-  (let ((token (docopt-tokens-current tokens)))
+  (when-let ((token (docopt-tokens-current tokens)))
     (or (and (s-starts-with-p "<" token)
              (s-ends-with-p ">" token))
         (s-uppercase-p token))))
@@ -172,7 +172,7 @@
 
 (defun docopt-tokens-current-p (tokens token)
   "Return t if the current token in TOKENS is equal to TOKEN."
-  (string-equal token (docopt-tokens-current tokens)))
+  (equal token (docopt-tokens-current tokens)))
 
 (defun docopt-tokens-from-pattern (source)
   "Parse SOURCE and return Docopt tokens."
@@ -192,7 +192,7 @@
 
 (defun docopt-tokens-long-option-p (tokens)
   "Return t if the current token in TOKENS is a long option."
-  (let ((token (docopt-tokens-current tokens)))
+  (when-let ((token (docopt-tokens-current tokens)))
     (and (s-starts-with-p "--" token)
          (not (string= "--" token)))))
 
@@ -202,7 +202,7 @@
 
 (defun docopt-tokens-short-option-p (tokens)
   "Return t if the current token in TOKENS is a short option."
-  (let ((token (docopt-tokens-current tokens)))
+  (when-let ((token (docopt-tokens-current tokens)))
     (and (s-starts-with-p "-" token)
          (not (member token '("-" "--"))))))
 
@@ -211,8 +211,8 @@
   (equal "options" (docopt-tokens-current tokens)))
 
 (defun docopt--split (s)
-  "Split the string S by whitespace."
-  (s-split "[\s\n\t]+" (s-trim s)))
+  "Trim and split the string S by whitespace."
+  (when s (s-split "[\s\t\r\n\v\f]+" (s-trim s))))
 
 (defun docopt--formal-usage (section)
   "Parse the Docopt formal usage from SECTION."
