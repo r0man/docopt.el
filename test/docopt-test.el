@@ -48,6 +48,12 @@ Options:
   --moored      Moored (anchored) mine.
   --drifting    Drifting mine.")
 
+(ert-deftest docopt--formal-usage-test ()
+  (let* ((doc "Usage: prog [-hv] ARG\n       prog N M\n\nprog is a program.")
+         (usage (car (docopt--parse-section "usage:" doc))))
+    (should (equal "Usage: prog [-hv] ARG\n       prog N M"  usage))
+    (should (equal "( [-hv] ARG ) | ( N M )" (docopt--formal-usage usage)))))
+
 (ert-deftest docopt--parse-defaults-test ()
   (should (equal (list (docopt-option :arg-count 0 :description "Show this screen." :long "--help" :short "-h" )
                        (docopt-option :arg-count 0 :description "Show version." :long "--version")

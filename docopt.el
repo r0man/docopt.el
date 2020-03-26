@@ -30,6 +30,7 @@
 
 ;;; Code:
 
+(require 'dash)
 (require 'eieio)
 (require 's)
 (require 'seq)
@@ -93,6 +94,18 @@
     :initform nil
     :type (or list null)))
   "A class representing a Docopt program.")
+
+(defun docopt--split (s)
+  "Split the string S by whitespace."
+  (s-split "[\s\n\t]+" (s-trim s)))
+
+(defun docopt--formal-usage (section)
+  "Parse the Docopt formal usage from SECTION."
+  (when-let ((s (cadr (s-split ":" section))))
+    (let ((split (docopt--split s)))
+      (thread-last (-split-when (lambda (s) (string= (car split) s)) split)
+        (seq-map (lambda (s) (concat "( " (s-join " " s) " )")))
+        (s-join " | ")))))
 
 (defun docopt--parse-section (name source)
   "Parse all Docopt sections with NAME from SOURCE."
