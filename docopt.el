@@ -40,7 +40,7 @@
 
 (defclass docopt-branch-pattern (docopt-pattern)
   ((children
-    :accessor docopt-branch-pattern-children
+    :accessor docopt-children
     :documentation "The children of the pattern."
     :initarg :children
     :initform nil
@@ -50,10 +50,22 @@
 (defclass docopt-leaf-pattern (docopt-pattern) ()
   "A class representing a Docopt leaf pattern.")
 
-(defclass docopt-argument (docopt-leaf-pattern) ()
+(defclass docopt-argument (docopt-leaf-pattern)
+  ((name
+    :accessor docopt-argument-name
+    :documentation "The name of the argument."
+    :initarg :name
+    :initform nil
+    :type (or string null)))
   "A class representing a Docopt argument.")
 
-(defclass docopt-command (docopt-argument) ()
+(defclass docopt-command (docopt-argument)
+  ((name
+    :accessor docopt-comand-name
+    :documentation "The name of the command."
+    :initarg :name
+    :initform nil
+    :type (or string null)))
   "A class representing a Docopt command.")
 
 (defclass docopt-either (docopt-branch-pattern) ()
@@ -192,25 +204,39 @@
     (seq-map #'docopt--parse-option)
     (seq-remove #'null)))
 
+(defun docopt--parse-long (tokens options)
+  "Parse a Docopt long option from TOKENS with OPTIONS."
+  nil)
+
+(defun docopt--parse-short (tokens options)
+  "Parse a Docopt short option from TOKENS with OPTIONS."
+  nil)
+
 (defun docopt--parse-atom (tokens options)
   "Parse a Docopt atom from TOKENS using OPTIONS."
   (let ((token (docopt-tokens-current tokens)))
     (cond
      ((member token '("(" "["))
       (docopt-tokens-move tokens))
+     ;; Options shortcut
      ((string= token "options")
-      (docopt-tokens-move tokens))
+      (docopt-tokens-move tokens)
+      (list (docopt-options-shortcut)))
+     ;; Long option
      ((and (s-starts-with-p "--" token)
            (not (string= "--" token)))
-      (docopt-tokens-move tokens))
+      (docopt--parse-long tokens options))
+     ;; Short option
      ((and (s-starts-with-p "-" token)
            (not (member token '("-" "--"))))
-      (docopt-tokens-move tokens))
+      (docopt--parse-short tokens options))
+     ;; Argument
      ((or (and (s-starts-with-p "<" token)
                (s-ends-with-p ">" token))
           (s-uppercase-p token))
-      (docopt-tokens-move tokens))
-     (t (docopt-tokens-move tokens)))))
+      (list (docopt-argument :name (docopt-tokens-move tokens))))
+     ;; Command
+     (t (list (docopt-command :name (docopt-tokens-move tokens)))))))
 
 ;; (docopt-parse-program docopt-naval-fate-str)
 
