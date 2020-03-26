@@ -145,9 +145,15 @@
   "A class representing a Docopt program.")
 
 (defclass docopt-tokens ()
-  ((list
+  ((error
+    :accessor docopt-tokens-error
+    :documentation "The current error of the tokens."
+    :initarg :error
+    :initform 'docopt-exit
+    :type symbol)
+   (list
     :accessor docopt-tokens-list
-    :documentation "The token list."
+    :documentation "The tokens as a list of strings."
     :initarg :list
     :initform nil
     :type (or list null)))
@@ -237,8 +243,37 @@
 
 (defun docopt--parse-long (tokens options)
   "Parse a Docopt long option from TOKENS with OPTIONS."
-  (docopt-tokens-move tokens)
-  nil)
+  (let ((token (docopt-tokens-move tokens)))
+    (seq-let [long value] (s-split "=" token)
+      (let ((similars (seq-filter (lambda (option) (equal long (docopt-option-long option))) options)))
+        (unless similars
+          (setq similars (seq-filter (lambda (option)
+                                       (and (docopt-option-long option)
+                                            (s-starts-with-p (docopt-option-long option) long)))
+                                     options) ))
+        (cond
+         ((> (length similars) 1)
+          (signal (docopt-tokens-error tokens)
+                  (format "%s is not a unique prefix: %s" long
+                          (s-join ", " (seq-map #'docopt-option-long similars)))))
+         ((< (length similars) 1)
+          (let* ((arg-count (if (s-match "=" token) 1 0))
+                 (option (docopt-option :long long :arg-count arg-count)))
+            (setq options (cons option options))
+            (if (equal 'docopt-exit (docopt-tokens-error tokens))
+                (docopt-option :arg-count arg-count :long long :value value)
+              (list option))))
+         (t (with-slots (arg-count long short value) (car similar)
+              (let ((option (docopt-option :arg-count arg-count :long long :short short :value value)))
+                (if (and (zerop arg-count) value)
+                    (signal (docopt-tokens-error tokens) (format "%s must not have an argument" long))
+                  (unless value
+                    (when (member (docopt-tokens-current tokens) (list nil "--"))
+                      (signal (docopt-tokens-error tokens) (format "%s requires argument" long)))
+                    (setq value (docopt-tokens-move tokens))))
+                (when (equal 'docopt-exit (docopt-tokens-error tokens))
+                  (setq value (or value t)))
+                (list option)))))))))
 
 (defun docopt--parse-short (tokens options)
   "Parse a Docopt short option from TOKENS with OPTIONS."
@@ -289,13 +324,6 @@
          (docopt--parse-argument tokens))
 
         (t (docopt--parse-command tokens))))
-
-;; (require 'cl-print)
-;; (setq cl-print-readably t)
-
-;; (docopt-parse-program "Usage: program a")
-
-;; (docopt-parse-program docopt-naval-fate-str)
 
 (defun docopt--parse-exprs (tokens options)
   "Parse the Docopt expressions from TOKENS using OPTIONS."
@@ -366,3 +394,16 @@
 (provide 'docopt)
 
 ;;; docopt.el ends here
+
+
+
+
+;; (require 'cl-print)
+;; (setq cl-print-readably t)
+
+;; (docopt-parse-program "Usage: program --help")
+
+;; (docopt-parse-program docopt-naval-fate-str)
+
+;; (docopt--parse-long (docopt-tokens-from-pattern "--help") nil)
+;; (docopt--parse-long (docopt-tokens-from-pattern "--help=yo") nil)
