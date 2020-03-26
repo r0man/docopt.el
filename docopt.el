@@ -210,6 +210,10 @@
   "Return t if the current token in TOKENS is the options shortcut."
   (equal "options" (docopt-tokens-current tokens)))
 
+(defun docopt--error (error-sym fmt &rest args)
+  "Raise a Docopt error with ERROR-SYM and format FMT using ARGS."
+  (signal error-sym (apply #'format fmt args)))
+
 (defun docopt--split (s)
   "Trim and split the string S by whitespace."
   (when s (s-split "[\s\t\r\n\v\f]+" (s-trim s))))
@@ -253,9 +257,8 @@
                                      options) ))
         (cond
          ((> (length similars) 1)
-          (signal (docopt-tokens-error tokens)
-                  (format "%s is not a unique prefix: %s" long
-                          (s-join ", " (seq-map #'docopt-option-long similars)))))
+          (docopt--error (docopt-tokens-error tokens) "%s is not a unique prefix: %s" long
+                         (s-join ", " (seq-map #'docopt-option-long similars))))
          ((< (length similars) 1)
           (let* ((arg-count (if (s-match "=" token) 1 0))
                  (option (docopt-option :long long :arg-count arg-count)))
@@ -263,13 +266,13 @@
             (if (equal 'docopt-exit (docopt-tokens-error tokens))
                 (docopt-option :arg-count arg-count :long long :value value)
               (list option))))
-         (t (with-slots (arg-count long short value) (car similar)
+         (t (with-slots (arg-count long short value) (car similars)
               (let ((option (docopt-option :arg-count arg-count :long long :short short :value value)))
                 (if (and (zerop arg-count) value)
-                    (signal (docopt-tokens-error tokens) (format "%s must not have an argument" long))
+                    (docopt--error (docopt-tokens-error tokens) "%s must not have an argument" long)
                   (unless value
                     (when (member (docopt-tokens-current tokens) (list nil "--"))
-                      (signal (docopt-tokens-error tokens) (format "%s requires argument" long)))
+                      (docopt--error (docopt-tokens-error tokens) "%s requires argument" long))
                     (setq value (docopt-tokens-move tokens))))
                 (when (equal 'docopt-exit (docopt-tokens-error tokens))
                   (setq value (or value t)))
@@ -305,25 +308,26 @@
 
 (defun docopt--parse-atom (tokens options)
   "Parse a Docopt atom from TOKENS using OPTIONS."
-  (cond ((docopt-tokens-optional-group-p tokens)
-         (docopt--parse-optional-group tokens)
+  (cond
+   ((docopt-tokens-optional-group-p tokens)
+    (docopt--parse-optional-group tokens)
 
-         (docopt-tokens-required-group-p tokens)
-         (docopt--parse-required-group tokens))
+    (docopt-tokens-required-group-p tokens)
+    (docopt--parse-required-group tokens))
 
-        ((docopt-tokens-options-shortcut-p tokens)
-         (docopt--parse-options-shortcut tokens))
+   ((docopt-tokens-options-shortcut-p tokens)
+    (docopt--parse-options-shortcut tokens))
 
-        ((docopt-tokens-long-option-p tokens)
-         (docopt--parse-long tokens options))
+   ((docopt-tokens-long-option-p tokens)
+    (docopt--parse-long tokens options))
 
-        ((docopt-tokens-short-option-p tokens)
-         (docopt--parse-short tokens options))
+   ((docopt-tokens-short-option-p tokens)
+    (docopt--parse-short tokens options))
 
-        ((docopt-tokens-argument-p tokens)
-         (docopt--parse-argument tokens))
+   ((docopt-tokens-argument-p tokens)
+    (docopt--parse-argument tokens))
 
-        (t (docopt--parse-command tokens))))
+   (t (docopt--parse-command tokens))))
 
 (defun docopt--parse-exprs (tokens options)
   "Parse the Docopt expressions from TOKENS using OPTIONS."
