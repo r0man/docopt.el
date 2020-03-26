@@ -153,6 +153,13 @@
     :type (or list null)))
   "A class representing Docopt tokens.")
 
+(defun docopt-tokens-argument-p (tokens)
+  "Return t if the current token in TOKENS is an argument."
+  (let ((token (docopt-tokens-current tokens)))
+    (or (and (s-starts-with-p "<" token)
+             (s-ends-with-p ">" token))
+        (s-uppercase-p token))))
+
 (defun docopt-tokens-current (tokens)
   "Return the current token from TOKENS."
   (car (docopt-tokens-list tokens)))
@@ -169,9 +176,33 @@
     (seq-remove #'s-blank-str-p)
     (docopt-tokens :list)))
 
+(defun docopt-tokens-optional-group-p (tokens)
+  "Return t if the current token in TOKENS is a group."
+  (equal "[" (docopt-tokens-current tokens)))
+
+(defun docopt-tokens-required-group-p (tokens)
+  "Return t if the current token in TOKENS is a group."
+  (equal "(" (docopt-tokens-current tokens)))
+
+(defun docopt-tokens-long-option-p (tokens)
+  "Return t if the current token in TOKENS is a long option."
+  (let ((token (docopt-tokens-current tokens)))
+    (and (s-starts-with-p "--" token)
+         (not (string= "--" token)))))
+
 (defun docopt-tokens-move (tokens)
   "Remove a token from TOKENS."
   (pop (docopt-tokens-list tokens)))
+
+(defun docopt-tokens-short-option-p (tokens)
+  "Return t if the current token in TOKENS is a short option."
+  (let ((token (docopt-tokens-current tokens)))
+    (and (s-starts-with-p "-" token)
+         (not (member token '("-" "--"))))))
+
+(defun docopt-tokens-options-shortcut-p (tokens)
+  "Return t if the current token in TOKENS is the options shortcut."
+  (equal "options" (docopt-tokens-current tokens)))
 
 (defun docopt--split (s)
   "Split the string S by whitespace."
@@ -206,37 +237,63 @@
 
 (defun docopt--parse-long (tokens options)
   "Parse a Docopt long option from TOKENS with OPTIONS."
+  (docopt-tokens-move tokens)
   nil)
 
 (defun docopt--parse-short (tokens options)
   "Parse a Docopt short option from TOKENS with OPTIONS."
+  (docopt-tokens-move tokens)
   nil)
+
+(defun docopt--parse-argument (tokens)
+  "Parse a Docopt argument from TOKENS."
+  (list (docopt-argument :name (docopt-tokens-move tokens))))
+
+(defun docopt--parse-command (tokens)
+  "Parse a Docopt command from TOKENS."
+  (list (docopt-command :name (docopt-tokens-move tokens))))
+
+(defun docopt--parse-options-shortcut (tokens)
+  "Parse a Docopt command from TOKENS."
+  (docopt-tokens-move tokens)
+  (list (docopt-options-shortcut)))
+
+(defun docopt--parse-optional-group (tokens)
+  "Parse a Docopt required group from TOKENS."
+  (docopt-tokens-move tokens)
+  (error "TODO: Parse group"))
+
+(defun docopt--parse-required-group (tokens)
+  "Parse a Docopt optional group from TOKENS."
+  (docopt-tokens-move tokens)
+  (error "TODO: Parse group"))
 
 (defun docopt--parse-atom (tokens options)
   "Parse a Docopt atom from TOKENS using OPTIONS."
-  (let ((token (docopt-tokens-current tokens)))
-    (cond
-     ((member token '("(" "["))
-      (docopt-tokens-move tokens))
-     ;; Options shortcut
-     ((string= token "options")
-      (docopt-tokens-move tokens)
-      (list (docopt-options-shortcut)))
-     ;; Long option
-     ((and (s-starts-with-p "--" token)
-           (not (string= "--" token)))
-      (docopt--parse-long tokens options))
-     ;; Short option
-     ((and (s-starts-with-p "-" token)
-           (not (member token '("-" "--"))))
-      (docopt--parse-short tokens options))
-     ;; Argument
-     ((or (and (s-starts-with-p "<" token)
-               (s-ends-with-p ">" token))
-          (s-uppercase-p token))
-      (list (docopt-argument :name (docopt-tokens-move tokens))))
-     ;; Command
-     (t (list (docopt-command :name (docopt-tokens-move tokens)))))))
+  (cond ((docopt-tokens-optional-group-p tokens)
+         (docopt--parse-optional-group tokens)
+
+         (docopt-tokens-required-group-p tokens)
+         (docopt--parse-required-group tokens))
+
+        ((docopt-tokens-options-shortcut-p tokens)
+         (docopt--parse-options-shortcut tokens))
+
+        ((docopt-tokens-long-option-p tokens)
+         (docopt--parse-long tokens options))
+
+        ((docopt-tokens-short-option-p tokens)
+         (docopt--parse-short tokens options))
+
+        ((docopt-tokens-argument-p tokens)
+         (docopt--parse-argument tokens))
+
+        (t (docopt--parse-command tokens))))
+
+;; (require 'cl-print)
+;; (setq cl-print-readably t)
+
+;; (docopt-parse-program "Usage: program a")
 
 ;; (docopt-parse-program docopt-naval-fate-str)
 
