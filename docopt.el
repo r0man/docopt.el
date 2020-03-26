@@ -95,6 +95,31 @@
     :type (or list null)))
   "A class representing a Docopt program.")
 
+(defclass docopt-tokens ()
+  ((list
+    :accessor docopt-tokens-list
+    :documentation "The token list."
+    :initarg :list
+    :initform nil
+    :type (or list null)))
+  "A class representing Docopt tokens.")
+
+(defun docopt-tokens-current (tokens)
+  "Return the current token from TOKENS."
+  (car (docopt-tokens-list tokens)))
+
+(defun docopt-tokens-from-pattern (source)
+  "Parse SOURCE and return Docopt tokens."
+  (thread-last source
+    (s-replace-regexp "\\(\\[\\|\\]\\|(\\|)\\|\|\\|\\.\\.\\.\\)" " \\1 ")
+    (s-split "\s+\\|([^ \t\r\n\v\f]*<.*?>)")
+    (seq-remove #'s-blank-str-p)
+    (docopt-tokens :list)))
+
+(defun docopt-tokens-move (tokens)
+  "Remove a token from TOKENS."
+  (pop (docopt-tokens-list tokens)))
+
 (defun docopt--split (s)
   "Split the string S by whitespace."
   (s-split "[\s\n\t]+" (s-trim s)))
@@ -125,6 +150,10 @@
                     (seq-remove #'s-blank-p))))
     (seq-map #'docopt--parse-option)
     (seq-remove #'null)))
+
+(defun docopt--parse-patterns (source options)
+  "Parse the usage patterns from Docopt SOURCE using OPTIONS."
+  )
 
 (defun docopt--parse-option (source)
   "Parse a Docopt option from SOURCE."
