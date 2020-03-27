@@ -104,7 +104,7 @@
     :documentation "The value of the option."
     :initarg :value
     :initform nil
-    :type (or string null)))
+    :type (or string t null)))
   "A class representing a Docopt option.")
 
 (defclass docopt-optional (docopt-branch-pattern) ()
@@ -262,9 +262,9 @@
          ((< (length similars) 1)
           (let* ((arg-count (if (s-match "=" token) 1 0))
                  (option (docopt-option :long long :arg-count arg-count)))
-            (setq options (cons option options))
+            (nconc options (list option))
             (if (equal 'docopt-exit (docopt-tokens-error tokens))
-                (docopt-option :arg-count arg-count :long long :value value)
+                (list (docopt-option :arg-count arg-count :long long :value value))
               (list option))))
          (t (with-slots (arg-count long short value) (car similars)
               (let ((option (docopt-option :arg-count arg-count :long long :short short :value value)))
@@ -280,8 +280,41 @@
 
 (defun docopt--parse-short (tokens options)
   "Parse a Docopt short option from TOKENS with OPTIONS."
-  (docopt-tokens-move tokens)
-  nil)
+  (let* ((token (docopt-tokens-move tokens))
+         (left (s-replace-regexp "^-+" "" token))
+         (parsed nil))
+    (while (not (s-blank-p left))
+      (let* ((short (substring left 0 1))
+             (option nil)
+             (similars (seq-find (lambda (option) (equal short (docopt-option-short option))) options)))
+        (setq left (substring left 1))
+        (cond
+         ((> (length similars) 1)
+          (docopt--error (docopt-tokens-error tokens) "%s is specified ambiguously %d times" short (length similars)))
+         ((< (length similars) 1)
+          (setq option (docopt-option :arg-count 0 :short short))
+          (nconc options (list option))
+          (when (equal 'docopt-exit (docopt-tokens-error tokens))
+            (setq option (docopt-option :arg-count 0 :short short :value t))))
+         (t (let* ((similar (car similars))
+                   (value nil))
+              (setq option (docopt-option
+                            :arg-count (docopt-option-arg-count similar)
+                            :long (docopt-option-long similar)
+                            :short short
+                            :value (docopt-option-value similar)))
+              (unless (zerop (docopt-option-arg-count option))
+                (if (s-blank-p left)
+                    (progn
+                      (when (member (docopt-tokens-move tokens) '(nil "--"))
+                        (docopt--error (docopt-tokens-error tokens) "%s requires argument" short))
+                      (setq value (docopt-tokens-move tokens)))
+                  (setq value left
+                        left "")))
+              (when (equal 'docopt-exit (docopt-tokens-error tokens))
+                (oset option :value (when value t))))))
+        (setq parsed (cons option parsed))))
+    (reverse parsed)))
 
 (defun docopt--parse-argument (tokens)
   "Parse a Docopt argument from TOKENS."
@@ -399,15 +432,24 @@
 
 ;;; docopt.el ends here
 
-
-
-
 ;; (require 'cl-print)
 ;; (setq cl-print-readably t)
 
 ;; (docopt-parse-program "Usage: program --help")
+;; (docopt-parse-program "Usage: program a")
 
 ;; (docopt-parse-program docopt-naval-fate-str)
 
 ;; (docopt--parse-long (docopt-tokens-from-pattern "--help") nil)
+;; (docopt--parse-long (docopt-tokens-from-pattern "--help=yo") nil)
+
+;; (setq my-options (list (docopt-option :short "x")))
+
+;; (nconc (list 1) my-list)
+
+;; (docopt--parse-short (docopt-tokens-from-pattern "-ab") my-options)
+
+;; (require 'cl-print)
+;; (setq cl-print-readably t)
+
 ;; (docopt--parse-long (docopt-tokens-from-pattern "--help=yo") nil)
