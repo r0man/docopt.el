@@ -1,4 +1,4 @@
-;;; docopt.el --- A Docopt implementation in Elisp -*- lexical-binding: t -*-
+;; docopt.el --- A Docopt implementation in Elisp -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019-2020 r0man
 
@@ -329,24 +329,32 @@
   (docopt-tokens-move tokens)
   (list (docopt-options-shortcut)))
 
-(defun docopt--parse-optional-group (tokens)
+(defun docopt--parse-optional-group (tokens options)
   "Parse a Docopt required group from TOKENS."
-  (docopt-tokens-move tokens)
-  (error "TODO: Parse group"))
+  (let ((token (docopt-tokens-current tokens)))
+    (docopt-tokens-move tokens)
+    (let ((exprs (docopt--parse-exprs tokens options)))
+      (unless (equal "]" (docopt-tokens-move tokens))
+        (docopt--error (docopt-tokens-error tokens) "unmatched '%s'" token))
+      (list (docopt-optional :children exprs)))))
 
-(defun docopt--parse-required-group (tokens)
+(defun docopt--parse-required-group (tokens options)
   "Parse a Docopt optional group from TOKENS."
-  (docopt-tokens-move tokens)
-  (error "TODO: Parse group"))
+  (let ((token (docopt-tokens-current tokens)))
+    (docopt-tokens-move tokens)
+    (let ((exprs (docopt--parse-exprs tokens options)))
+      (unless (equal ")" (docopt-tokens-move tokens))
+        (docopt--error (docopt-tokens-error tokens) "unmatched '%s'" token))
+      (list (docopt-required :children exprs)))))
 
 (defun docopt--parse-atom (tokens options)
   "Parse a Docopt atom from TOKENS using OPTIONS."
   (cond
    ((docopt-tokens-optional-group-p tokens)
-    (docopt--parse-optional-group tokens)
+    (docopt--parse-optional-group tokens options))
 
-    (docopt-tokens-required-group-p tokens)
-    (docopt--parse-required-group tokens))
+   ((docopt-tokens-required-group-p tokens)
+    (docopt--parse-required-group tokens options))
 
    ((docopt-tokens-options-shortcut-p tokens)
     (docopt--parse-options-shortcut tokens))
@@ -364,19 +372,32 @@
 
 (defun docopt--parse-exprs (tokens options)
   "Parse the Docopt expressions from TOKENS using OPTIONS."
-  (docopt--parse-seq tokens options))
+  (let ((seq (docopt--parse-seq tokens options)))
+    (if (not (equal "|" (docopt-tokens-current tokens)))
+        seq
+      (let ((result (if (> (length seq) 1)
+                        (list (docopt-required :children seq))
+                      seq)))
+        (while (equal "|" (docopt-tokens-current tokens))
+          (docopt-tokens-move tokens)
+          (setq seq (docopt--parse-seq tokens options))
+          (setq result (append result (if (> (length seq) 1)
+                                          (list (docopt-required :children seq))
+                                        seq))))
+        (if (> (length result) 1)
+            (docopt-either :children result)
+          result)))))
 
 (defun docopt--parse-seq (tokens options)
   "Parse a sequence of Docopt expressions from TOKENS using OPTIONS."
   (let ((results nil))
-    (while (docopt-tokens-current tokens)
-      (unless (member (docopt-tokens-current tokens) '("]" ")" "|"))
-        (let ((atoms (docopt--parse-atom tokens options)))
-          (when (docopt-tokens-current-p tokens "...")
-            (setq atoms (docopt-one-or-more :children atoms))
-            (docopt-tokens-move tokens))
-          (setq results (cons atoms results)))))
-    (reverse results)))
+    (while (not (member (docopt-tokens-current tokens) '(nil "]" ")" "|")))
+      (let ((atoms (docopt--parse-atom tokens options)))
+        (when (docopt-tokens-current-p tokens "...")
+          (setq atoms (list (docopt-one-or-more :children atoms)))
+          (docopt-tokens-move tokens))
+        (setq results (cons atoms results))))
+    (apply #'append (reverse results))))
 
 (defun docopt--parse-patterns (source options)
   "Parse the usage patterns from Docopt SOURCE using OPTIONS."
@@ -436,7 +457,7 @@
 ;; (setq cl-print-readably t)
 
 ;; (docopt-parse-program "Usage: program --help")
-;; (docopt-parse-program "Usage: program a")
+;; (docopt-parse-program "Usage: program add")
 
 ;; (docopt-parse-program docopt-naval-fate-str)
 
