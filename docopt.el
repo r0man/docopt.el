@@ -268,8 +268,9 @@
               (list option))))
          (t (with-slots (arg-count long short value) (car similars)
               (let ((option (docopt-option :arg-count arg-count :long long :short short :value value)))
-                (if (and (zerop arg-count) value)
-                    (docopt--error (docopt-tokens-error tokens) "%s must not have an argument" long)
+                (if (zerop arg-count)
+                    (when value
+                      (docopt--error (docopt-tokens-error tokens) "%s must not have an argument" long))
                   (unless value
                     (when (member (docopt-tokens-current tokens) (list nil "--"))
                       (docopt--error (docopt-tokens-error tokens) "%s requires argument" long))
@@ -330,7 +331,7 @@
   (list (docopt-options-shortcut)))
 
 (defun docopt--parse-optional-group (tokens options)
-  "Parse a Docopt required group from TOKENS."
+  "Parse a Docopt required group from TOKENS using OPTIONS."
   (let ((token (docopt-tokens-current tokens)))
     (docopt-tokens-move tokens)
     (let ((exprs (docopt--parse-exprs tokens options)))
@@ -338,8 +339,10 @@
         (docopt--error (docopt-tokens-error tokens) "unmatched '%s'" token))
       (list (docopt-optional :children exprs)))))
 
+;; (docopt-parse-program docopt-naval-fate-str)
+
 (defun docopt--parse-required-group (tokens options)
-  "Parse a Docopt optional group from TOKENS."
+  "Parse a Docopt optional group from TOKENS using OPTIONS."
   (let ((token (docopt-tokens-current tokens)))
     (docopt-tokens-move tokens)
     (let ((exprs (docopt--parse-exprs tokens options)))
@@ -385,7 +388,7 @@
                                           (list (docopt-required :children seq))
                                         seq))))
         (if (> (length result) 1)
-            (docopt-either :children result)
+            (list (docopt-either :children result))
           result)))))
 
 (defun docopt--parse-seq (tokens options)
@@ -401,6 +404,8 @@
 
 (defun docopt--parse-patterns (source options)
   "Parse the usage patterns from Docopt SOURCE using OPTIONS."
+  (message "TOKENS:")
+  (pp (docopt-tokens-list (docopt-tokens-from-pattern source)))
   (let* ((tokens (docopt-tokens-from-pattern source))
          (result (docopt--parse-exprs tokens options)))
     result))
@@ -446,8 +451,7 @@
     (with-slots (options patterns) program
       (setq options (docopt--parse-defaults source))
       (setq patterns (docopt--parse-patterns (docopt--formal-usage usage) options))
-      program
-      patterns)))
+      program)))
 
 (provide 'docopt)
 
@@ -459,7 +463,27 @@
 ;; (docopt-parse-program "Usage: program --help")
 ;; (docopt-parse-program "Usage: program add")
 
-;; (docopt-parse-program docopt-naval-fate-str)
+;; (docopt-parse-program "Naval Fate.
+;; Usage:
+;;   naval_fate.py ship new <name>...
+;;   naval_fate.py ship <name> move <x> <y> [--speed=<kn>]
+;;   naval_fate.py ship shoot <x> <y>
+;;   naval_fate.py mine (set|remove) <x> <y> [--moored|--drifting]
+;;   naval_fate.py -h | --help
+;;   naval_fate.py --version
+;; Options:
+;;   -h --help     Show this screen.
+;;   --version     Show version.
+;;   --speed=<kn>  Speed in knots [default: 10].
+;;   --moored      Moored (anchored) mine.
+;;   --drifting    Drifting mine.")
+
+;; (docopt-parse-program "Usage: naval_fate.py ship new <name>...")
+;; (docopt-parse-program "Usage: naval_fate.py ship <name> move <x> <y> [--speed=<kn>]")
+;; (docopt-parse-program "Usage: naval_fate.py ship shoot <x> <y>")
+;; (docopt-parse-program "Usage: naval_fate.py mine (set|remove) <x> <y> [--moored|--drifting]")
+;; (docopt-parse-program "Usage: naval_fate.py -h | --help")
+;; (docopt-parse-program "Usage: naval_fate.py --version")
 
 ;; (docopt--parse-long (docopt-tokens-from-pattern "--help") nil)
 ;; (docopt--parse-long (docopt-tokens-from-pattern "--help=yo") nil)
