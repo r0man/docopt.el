@@ -404,11 +404,12 @@
 
 (defun docopt--parse-patterns (source options)
   "Parse the usage patterns from Docopt SOURCE using OPTIONS."
-  (message "TOKENS:")
-  (pp (docopt-tokens-list (docopt-tokens-from-pattern source)))
   (let* ((tokens (docopt-tokens-from-pattern source))
          (result (docopt--parse-exprs tokens options)))
-    result))
+    (when (docopt-tokens-current tokens)
+      (docopt--error (docopt-tokens-error tokens) "unexpected ending: %s"
+                     (s-join " " (docopt-tokens-list tokens))))
+    (docopt-required :children result)))
 
 (defun docopt--parse-option (source)
   "Parse a Docopt option from SOURCE."
@@ -462,6 +463,8 @@
 
 ;; (docopt-parse-program "Usage: program --help")
 ;; (docopt-parse-program "Usage: program add")
+
+;; (docopt-parse-program docopt-naval-fate-str)
 
 ;; (docopt-parse-program "Naval Fate.
 ;; Usage:
