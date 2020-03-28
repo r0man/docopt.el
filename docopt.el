@@ -30,6 +30,7 @@
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'dash)
 (require 'eieio)
 (require 's)
@@ -69,18 +70,17 @@
     (docopt-either :children (seq-map (lambda (result) (docopt-required :children result)) result))))
 
 (defun docopt-pattern--fix-identities (pattern &optional uniq)
-  "Rewrite elements in PATTERN to point at the UNIQ elements."
+  "Rewrite elements in PATTERN to point at UNIQ elements."
   (if (docopt-branch-pattern-child-p pattern)
-      (let ((uniq (cl-remove-duplicates (or uniq (docopt--flat pattern)) :test #'equal))
-            (children (docopt-children pattern)))
-        (seq-map-indexed
-         (lambda (child index)
-           (if (docopt-branch-pattern-child-p child)
-               (docopt-pattern--fix-identities child uniq)
-             (setq children (-replace-at index (seq-find (lambda (element) (equal child element)) uniq) children ))))
-         children)
-        (oset pattern :children children)
-        pattern)
+      (let ((uniq (cl-remove-duplicates (or uniq (docopt--flat pattern)) :test #'equal)))
+        (with-slots (children) pattern
+          (seq-map-indexed
+           (lambda (child index)
+             (if (docopt-branch-pattern-child-p child)
+                 (docopt-pattern--fix-identities child uniq)
+               (setq children (-replace-at index (seq-find (lambda (element) (equal child element)) uniq) children ))))
+           children)
+          pattern))
     pattern))
 
 (defun docopt-pattern--fix-repeating-arguments (pattern)
