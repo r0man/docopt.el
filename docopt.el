@@ -511,23 +511,22 @@
   (docopt-tokens-move tokens)
   (list (docopt-options-shortcut)))
 
-(defun docopt--parse-optional-group (tokens options)
-  "Parse a Docopt required group from TOKENS using OPTIONS."
+(defun docopt--parse-group (group closing tokens options)
+  "Parse a Docopt GROUP with CLOSING from TOKENS using OPTIONS."
   (let ((token (docopt-tokens-current tokens)))
     (docopt-tokens-move tokens)
     (let ((exprs (docopt--parse-exprs tokens options)))
-      (unless (equal "]" (docopt-tokens-move tokens))
+      (unless (equal closing (docopt-tokens-move tokens))
         (docopt--error (docopt-tokens-error tokens) "unmatched '%s'" token))
-      (list (docopt-optional :children exprs)))))
+      (list (make-instance group :children exprs)))))
+
+(defun docopt--parse-optional-group (tokens options)
+  "Parse a Docopt required group from TOKENS using OPTIONS."
+  (docopt--parse-group 'docopt-optional "]" tokens options ))
 
 (defun docopt--parse-required-group (tokens options)
   "Parse a Docopt optional group from TOKENS using OPTIONS."
-  (let ((token (docopt-tokens-current tokens)))
-    (docopt-tokens-move tokens)
-    (let ((exprs (docopt--parse-exprs tokens options)))
-      (unless (equal ")" (docopt-tokens-move tokens))
-        (docopt--error (docopt-tokens-error tokens) "unmatched '%s'" token))
-      (list (docopt-required :children exprs)))))
+  (docopt--parse-group 'docopt-required ")" tokens options))
 
 (defun docopt--parse-atom (tokens options)
   "Parse a Docopt atom from TOKENS using OPTIONS."
