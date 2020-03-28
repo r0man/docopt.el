@@ -214,11 +214,19 @@ usage: pit stop")
 
 (ert-deftest docopt-test-match-argument ()
   (should (equal (list t nil (list (docopt-argument :name "N" :value 9)))
-                 (docopt--match (docopt-argument :name "N") (list (docopt-argument :name "N" :value 9))))))
+                 (docopt--match (docopt-argument :name "N")
+                                (list (docopt-argument :name "N" :value 9)))))
+  (should (equal (list nil (list (docopt-option :short "-x")) nil)
+                 (docopt--match (docopt-argument :name "N")
+                                (list (docopt-option :short "-x"))))))
 
 (ert-deftest docopt-test-match-command ()
   (should (equal (list t nil (list (docopt-command :name "c" :value t)))
-                 (docopt--match (docopt-command :name "c") (list (docopt-argument :name "c"))))))
+                 (docopt--match (docopt-command :name "c")
+                                (list (docopt-argument :name "c")))))
+  (should (equal (list nil (list (docopt-option :short "x")) nil)
+                 (docopt--match (docopt-command :name "c")
+                                (list (docopt-option :short "x"))))))
 
 (provide 'docopt-test)
 
