@@ -164,8 +164,7 @@
   (with-slots (name value) pattern
     (seq-let [pos match] (docopt--single-match pattern left)
       (if match
-          (let (;; (left (append (seq-take left (+ 1 pos)) (seq-drop left (+ 2 pos))))
-                (left (seq-drop left (+ 1 pos)))
+          (let ((left (append (seq-take left pos) (seq-drop left (+ 1 pos))))
                 (same-names (seq-filter (lambda (element) (equal name (docopt-name element))) collected)))
             (if (or (integerp value)
                     (listp value))
