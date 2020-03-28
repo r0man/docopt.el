@@ -105,6 +105,10 @@ usage: pit stop")
                    (docopt-program-options program)))
     (should (equal docopt-naval-fate-str (docopt-program-source program)))))
 
+(ert-deftest docopt-pattern--transform-test ()
+  (should (equal (docopt-make-either (docopt-make-required (docopt-option :short "-h")))
+                 (docopt-pattern--transform (docopt-option :short "-h")))))
+
 (provide 'docopt-test)
 
 ;;; docopt-test.el ends here

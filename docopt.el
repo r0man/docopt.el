@@ -35,8 +35,29 @@
 (require 's)
 (require 'seq)
 
+;; Pattern
+
 (defclass docopt-pattern () ()
   "A class representing a Docopt pattern.")
+
+(defun docopt-pattern--transform (pattern)
+  "Transform the Docopt PATTERN into an (almost) equivalent one using a single either."
+  (let ((result nil)
+        (groups (list (list pattern)))
+        (child-p (lambda (child)
+                   (or (docopt-either-p child)
+                       (docopt-one-or-more-p child)
+                       (docopt-optional-p child)
+                       (docopt-options-shortcut-p child)
+                       (docopt-required-p child)))))
+    (while groups
+      (let ((children (pop groups)))
+        (if (cl-some child-p children)
+            1
+          (setq result (append result children)))))
+    (docopt-make-either (docopt-required :children result))))
+
+(docopt-pattern--transform (docopt-option :short "-h"))
 
 (defclass docopt-branch-pattern (docopt-pattern)
   ((children
@@ -68,8 +89,16 @@
     :type (or string null)))
   "A class representing a Docopt command.")
 
+;; Either
+
 (defclass docopt-either (docopt-branch-pattern) ()
   "A class representing a Docopt either.")
+
+(defun docopt-make-either (&rest children)
+  "Make a new Docopt either element using CHILDREN."
+  (docopt-either :children children))
+
+;; One or More
 
 (defclass docopt-one-or-more (docopt-branch-pattern) ()
   "A class representing one or more Docopt elements.")
@@ -113,8 +142,14 @@
 (defclass docopt-options-shortcut (docopt-optional) ()
   "A class representing a Docopt options shortcut.")
 
+;; Required
+
 (defclass docopt-required (docopt-branch-pattern) ()
   "A class representing a Docopt required element.")
+
+(defun docopt-make-required (&rest children)
+  "Make a new Docopt required instance using CHILDREN."
+  (docopt-required :children children))
 
 (defclass docopt-program ()
   ((options
