@@ -212,6 +212,14 @@ usage: pit stop")
                           :short "-h"))
                    (docopt--parse-argv program "naval_fate.py --help")))))
 
+(ert-deftest docopt-test-match-argument ()
+  (should (equal (list t nil (list (docopt-argument :name "N" :value 9)))
+                 (docopt--match (docopt-argument :name "N") (list (docopt-argument :name "N" :value 9))))))
+
+(ert-deftest docopt-test-match-command ()
+  (should (equal (list t nil (list (docopt-command :name "c" :value t)))
+                 (docopt--match (docopt-command :name "c") (list (docopt-argument :name "c"))))))
+
 (provide 'docopt-test)
 
 ;;; docopt-test.el ends here

@@ -159,11 +159,64 @@
   (when (or (not types) (member (eieio--object-class-tag pattern) types))
     (list pattern)))
 
+(cl-defmethod docopt--match ((pattern docopt-leaf-pattern) left &optional collected)
+  "Match PATTERN against the argument vector LEFT and COLLECTED."
+  (with-slots (name value) pattern
+    (seq-let [pos match] (docopt--single-match pattern left)
+      (if match
+          (let (;; (left (append (seq-take left (+ 1 pos)) (seq-drop left (+ 2 pos))))
+                (left (seq-drop left (+ 1 pos)))
+                (same-names (seq-filter (lambda (element) (equal name (docopt-name element))) collected)))
+            (if (or (integerp value)
+                    (listp value))
+                (let ((increment (if (integerp value)
+                                     1
+                                   (if (stringp (docopt-value match))
+                                       (list  (docopt-value match) )
+                                     (docopt-value match)))))
+                  (if (not same-names)
+                      (with-slots (value) match
+                        (setq value increment)
+                        (list t left (append collected (list match))))
+                    (with-slots (value) (car similar-names)
+                      (setq value (+ value increment))
+                      (list t left collected))))
+              (list t left (append collected (list match)))))
+        (list nil left collected)))))
+
+;; Argument
+
 (defclass docopt-argument (docopt-leaf-pattern) ()
   "A class representing a Docopt argument.")
 
+(cl-defmethod docopt--single-match ((argument docopt-argument) left)
+  "Match ARGUMENT against the argument vector LEFT."
+  (thread-last left
+    (seq-map-indexed
+     (lambda (element index)
+       (when (docopt-argument-p element)
+         (list index (docopt-argument
+                      :name (docopt-name argument)
+                      :value (docopt-value element))))))
+    (seq-remove #'null)
+    (car)))
+
+;; Command
+
 (defclass docopt-command (docopt-argument) ()
   "A class representing a Docopt command.")
+
+(cl-defmethod docopt--single-match ((command docopt-command) left)
+  "Match COMMAND against the argument vector LEFT."
+  (thread-last left
+    (seq-map-indexed
+     (lambda (element index)
+       (when (docopt-argument-p element)
+         (list index (docopt-command
+                      :name (docopt-name command)
+                      :value t)))))
+    (seq-remove #'null)
+    (car)))
 
 ;; Either
 
