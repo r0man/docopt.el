@@ -266,18 +266,22 @@
             (if (equal 'docopt-exit (docopt-tokens-error tokens))
                 (list (docopt-option :arg-count arg-count :long long :value value))
               (list option))))
-         (t (with-slots (arg-count long short value) (car similars)
-              (let ((option (docopt-option :arg-count arg-count :long long :short short :value value)))
-                (if (zerop arg-count)
-                    (when value
-                      (docopt--error (docopt-tokens-error tokens) "%s must not have an argument" long))
-                  (unless value
-                    (when (member (docopt-tokens-current tokens) (list nil "--"))
-                      (docopt--error (docopt-tokens-error tokens) "%s requires argument" long))
-                    (setq value (docopt-tokens-move tokens))))
-                (when (equal 'docopt-exit (docopt-tokens-error tokens))
-                  (setq value (or value t)))
-                (list option)))))))))
+         (t (let* ((similar (car similars))
+                   (option (docopt-option
+                            :arg-count (docopt-option-arg-count similar)
+                            :long (docopt-option-long similar)
+                            :short (docopt-option-short similar)
+                            :value (docopt-option-value similar))))
+              (if (zerop (docopt-option-arg-count option))
+                  (when value
+                    (docopt--error (docopt-tokens-error tokens) "%s must not have an argument" long))
+                (unless value
+                  (when (member (docopt-tokens-current tokens) (list nil "--"))
+                    (docopt--error (docopt-tokens-error tokens) "%s requires argument" long))
+                  (setq value (docopt-tokens-move tokens))))
+              (when (equal 'docopt-exit (docopt-tokens-error tokens))
+                (setq value (or value t)))
+              (list option))))))))
 
 (defun docopt--parse-short (tokens options)
   "Parse a Docopt short option from TOKENS with OPTIONS."
@@ -338,8 +342,6 @@
       (unless (equal "]" (docopt-tokens-move tokens))
         (docopt--error (docopt-tokens-error tokens) "unmatched '%s'" token))
       (list (docopt-optional :children exprs)))))
-
-;; (docopt-parse-program docopt-naval-fate-str)
 
 (defun docopt--parse-required-group (tokens options)
   "Parse a Docopt optional group from TOKENS using OPTIONS."
@@ -453,6 +455,8 @@
       (setq options (docopt--parse-defaults source))
       (setq patterns (docopt--parse-patterns (docopt--formal-usage usage) options))
       program)))
+
+;; (docopt-parse-program docopt-naval-fate-str)
 
 (provide 'docopt)
 
