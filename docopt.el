@@ -591,6 +591,10 @@
                      (s-join " " (docopt-tokens-list tokens))))
     (docopt-required :children result)))
 
+(defun docopt--parse-default (description)
+  "Parse the default value from DESCRIPTION."
+  (cadr (s-match "\\[default: \\(.*\\)\\]" description)))
+
 (defun docopt--parse-option (source)
   "Parse a Docopt option from SOURCE."
   (let ((short nil)
@@ -608,7 +612,7 @@
               (setq short s))
              (t (setq arg-count 1))))
           (when (> arg-count 0)
-            (setq value (cadr (s-match "\\[default: \\(.*\\)\\]" description))))
+            (setq value (docopt--parse-default description)))
           (docopt-option
            :arg-count arg-count
            :description description
