@@ -69,6 +69,7 @@
     (docopt-either :children (seq-map (lambda (result) (docopt-required :children result)) result))))
 
 (defun docopt-pattern--fix-identities (pattern &optional uniq)
+  "Rewrite elements in PATTERN to point at the UNIQ elements."
   (if (docopt-branch-pattern-child-p pattern)
       (let ((uniq (cl-remove-duplicates (or uniq (docopt--flat pattern)) :test #'equal))
             (children (docopt-children pattern)))
@@ -83,6 +84,7 @@
     pattern))
 
 (defun docopt-pattern--fix-repeating-arguments (pattern)
+  "Rewrite the :value slot of elements in PATTERN that should accumulate or increment values."
   (docopt-pattern--fix-identities pattern)
   (let ((either (seq-map #'docopt-children (docopt-children (docopt-pattern--transform pattern)))))
     (seq-map  (lambda (element)
