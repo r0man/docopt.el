@@ -36,6 +36,17 @@
 (require 's)
 (require 'seq)
 
+;; Generics
+
+(cl-defgeneric docopt--flat (pattern &optional types)
+  "Flatten the PATTERN and filter by TYPES.")
+
+(cl-defgeneric docopt--match (pattern left &optional collected)
+  "Match PATTERN against the argument vector LEFT and COLLECTED.")
+
+(cl-defgeneric docopt--single-match (pattern left)
+  "Match PATTERN against the argument vector LEFT.")
+
 ;; Pattern
 
 (defclass docopt-pattern () ()
@@ -106,9 +117,6 @@
                                      element)))
               either)
     pattern))
-
-(cl-defgeneric docopt--flat (pattern &optional types)
-  "Flatten the PATTERN and filter by TYPES.")
 
 ;; Branch pattern
 
@@ -471,26 +479,19 @@
 
 (defun docopt--parse-atom (tokens options)
   "Parse a Docopt atom from TOKENS using OPTIONS."
-  (cond
-   ((docopt-tokens-optional-group-p tokens)
-    (docopt--parse-optional-group tokens options))
-
-   ((docopt-tokens-required-group-p tokens)
-    (docopt--parse-required-group tokens options))
-
-   ((docopt-tokens-options-shortcut-p tokens)
-    (docopt--parse-options-shortcut tokens))
-
-   ((docopt-tokens-long-option-p tokens)
-    (docopt--parse-long tokens options))
-
-   ((docopt-tokens-short-option-p tokens)
-    (docopt--parse-short tokens options))
-
-   ((docopt-tokens-argument-p tokens)
-    (docopt--parse-argument tokens))
-
-   (t (docopt--parse-command tokens))))
+  (cond ((docopt-tokens-optional-group-p tokens)
+         (docopt--parse-optional-group tokens options))
+        ((docopt-tokens-required-group-p tokens)
+         (docopt--parse-required-group tokens options))
+        ((docopt-tokens-options-shortcut-p tokens)
+         (docopt--parse-options-shortcut tokens))
+        ((docopt-tokens-long-option-p tokens)
+         (docopt--parse-long tokens options))
+        ((docopt-tokens-short-option-p tokens)
+         (docopt--parse-short tokens options))
+        ((docopt-tokens-argument-p tokens)
+         (docopt--parse-argument tokens))
+        (t (docopt--parse-command tokens))))
 
 (defun docopt--parse-exprs (tokens options)
   "Parse the Docopt expressions from TOKENS using OPTIONS."
@@ -604,8 +605,13 @@
 
 (defun docopt-parse-argv (program source &optional options-first)
   "Parse the argument vector of the Docopt PROGRAM from SOURCE according to OPTIONS-FIRST."
-  (let ((argv (docopt--parse-argv program source options-first)))
-    argv))
+  (let ((argv (docopt--parse-argv program source options-first))
+        (patterns (docopt-program-patterns program)))
+    (docopt--match patterns argv)))
+
+(defun docopt--enumerate (lst)
+  "Return the elements of LST with an index."
+  (seq-map-indexed (lambda (element index) (list index element)) lst))
 
 ;; (docopt-parse-argv my-program "naval_fate.py ")
 
