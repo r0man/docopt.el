@@ -202,6 +202,12 @@ usage: pit stop")
                    (docopt-argument :name "N")
                    (docopt-make-one-or-more (docopt-argument :name "N")))))))
 
+(ert-deftest docopt--parse-argv-test ()
+  (let ((program (docopt-parse-program docopt-naval-fate-str)))
+    (should (equal (list (docopt-argument :value "naval_fate.py")
+                         (docopt-option :arg-count 0 :long "--help" :short "-h"))
+                   (docopt--parse-argv program "naval_fate.py --help")))))
+
 (provide 'docopt-test)
 
 ;;; docopt-test.el ends here

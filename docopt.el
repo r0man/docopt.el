@@ -571,7 +571,30 @@
       (setq patterns (docopt--parse-patterns (docopt--formal-usage usage) options))
       program)))
 
-;; (docopt-parse-program docopt-naval-fate-str)
+(cl-defun docopt--parse-argv (program source &optional options-first)
+  "Parse the argument vector of the Docopt PROGRAM from SOURCE according to OPTIONS-FIRST."
+  (let ((tokens (docopt-tokens-from-pattern source))
+        (options (docopt-program-options program))
+        (parsed nil))
+    (while (docopt-tokens-current tokens)
+      (let ((token (docopt-tokens-current tokens)))
+        (cond ((string= "--" token)
+               (return-from docopt--parse-argv
+                 (append (reverse parsed)
+                         (seq-map (lambda (value) (docopt-argument :value value))
+                                  (docopt-tokens-list tokens))) ))
+              ((s-starts-with-p "--" token)
+               (setq parsed (append (docopt--parse-long tokens options) parsed)))
+              ((and (s-starts-with-p "-" token)
+                    (not (equal "-" token)))
+               (setq parsed (append (docopt--parse-short tokens options) parsed)))
+              (options-first
+               (return-from docopt--parse-argv
+                 (append (reverse parsed)
+                         (seq-map (lambda (value) (docopt-argument :value value))
+                                  (docopt-tokens-list tokens)))))
+              (t (setq parsed (cons (docopt-argument :value (docopt-tokens-move tokens)) parsed))))))
+    (reverse parsed)))
 
 (provide 'docopt)
 
@@ -580,7 +603,8 @@
 ;; (require 'cl-print)
 ;; (setq cl-print-readably t)
 
-;; (docopt-parse-program "Usage: program --help")
+;; (setq my-program (docopt-parse-program docopt-naval-fate-str))
+
 ;; (docopt-parse-program "Usage: program add")
 
 ;; (docopt-parse-program docopt-naval-fate-str)
