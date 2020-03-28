@@ -285,9 +285,9 @@
          (left (s-replace-regexp "^-+" "" token))
          (parsed nil))
     (while (not (s-blank-p left))
-      (let* ((short (substring left 0 1))
+      (let* ((short (concat "-" (substring left 0 1)))
              (option nil)
-             (similars (seq-find (lambda (option) (equal short (docopt-option-short option))) options)))
+             (similars (seq-filter (lambda (option) (equal short (docopt-option-short option))) options)))
         (setq left (substring left 1))
         (cond
          ((> (length similars) 1)
@@ -440,9 +440,9 @@
   "Parse the Docopt usage section from SOURCE."
   (let ((sections (docopt--parse-section "usage:" source)))
     (when (zerop (length sections))
-      (error "No Docopt usage section found"))
+      (docopt--error 'docopt-language-error "\"usage:\" (case-insensitive) not found"))
     (when (> (length sections) 1)
-      (error "More than one Docopt usage section found"))
+      (docopt--error 'docopt-language-error "More than one \"usage:\" (case-insensitive)"))
     (car sections)))
 
 (defun docopt-parse-program (source)

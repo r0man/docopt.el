@@ -95,6 +95,15 @@ usage: pit stop")
                    "Usage: eggs spam"
                    "usage: pit stop"))))
 
+(ert-deftest docopt--parse-program-test ()
+  (let ((program (docopt-parse-program docopt-naval-fate-str)))
+    (should (equal (docopt-program-options program)
+                   (list (docopt-option :arg-count 0 :description "Show this screen." :long "--help" :short "-h" :value t)
+                         (docopt-option :arg-count 0 :description "Show version." :long "--version" :value t)
+                         (docopt-option :arg-count 1 :description "Speed in knots [default: 10]." :long "--speed" :value "10")
+                         (docopt-option :arg-count 0 :description "Moored (anchored) mine." :long "--moored" :value t)
+                         (docopt-option :arg-count 0 :description "Drifting mine." :long "--drifting" :value t))))))
+
 (provide 'docopt-test)
 
 ;;; docopt-test.el ends here
