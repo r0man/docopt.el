@@ -68,6 +68,43 @@
           (setq result (append result (list children))))))
     (docopt-either :children (seq-map (lambda (result) (docopt-required :children result)) result))))
 
+(defun docopt-pattern--fix-identities (pattern &optional uniq)
+  (if (docopt-branch-pattern-child-p pattern)
+      (let ((uniq (cl-remove-duplicates (or uniq (docopt--flat pattern)) :test #'equal))
+            (children (docopt-children pattern)))
+        (seq-map-indexed
+         (lambda (child index)
+           (if (docopt-branch-pattern-child-p child)
+               (docopt-pattern--fix-identities child uniq)
+             (setq children (-replace-at index (seq-find (lambda (element) (equal child element)) uniq) children ))))
+         children)
+        (oset pattern :children children)
+        pattern)
+    pattern))
+
+(defun docopt-pattern--fix-repeating-arguments (pattern)
+  (docopt-pattern--fix-identities pattern)
+  (let ((either (seq-map #'docopt-children (docopt-children (docopt-pattern--transform pattern)))))
+    (seq-map  (lambda (element)
+                (seq-map (lambda (child)
+                           (when (or (docopt-argument-p child)
+                                     (and (docopt-option-p child)
+                                          (> (docopt-option-arg-count child) 0)))
+                             (with-slots (value) child
+                               (cond ((not value)
+                                      (setq value []))
+                                     ((stringp value)
+                                      (setq value (docopt--split value))))))
+                           (when (or (docopt-command-p child)
+                                     (and (docopt-option-p child)
+                                          (zerop (docopt-option-arg-count child))))
+                             (oset child :value 0)))
+                         (seq-filter (lambda (child)
+                                       (> (-count (lambda (x) (equal child x)) element) 1))
+                                     element)))
+              either)
+    pattern))
+
 (cl-defgeneric docopt--flat (pattern &optional types)
   "Flatten the PATTERN and filter by TYPES.")
 
@@ -92,7 +129,19 @@
 
 ;; Leaf pattern
 
-(defclass docopt-leaf-pattern (docopt-pattern) ()
+(defclass docopt-leaf-pattern (docopt-pattern)
+  ((name
+    :accessor docopt-name
+    :documentation "The name of the pattern."
+    :initarg :name
+    :initform nil
+    :type (or string null))
+   (value
+    :accessor docopt-value
+    :documentation "The value of the pattern."
+    :initarg :value
+    :initform nil
+    :type (or string t null)))
   "A class representing a Docopt leaf pattern.")
 
 (cl-defmethod docopt--flat ((pattern docopt-leaf-pattern) &optional types)
@@ -100,22 +149,10 @@
   (when (or (not types) (member (eieio--object-class-tag pattern) types))
     (list pattern)))
 
-(defclass docopt-argument (docopt-leaf-pattern)
-  ((name
-    :accessor docopt-argument-name
-    :documentation "The name of the argument."
-    :initarg :name
-    :initform nil
-    :type (or string null)))
+(defclass docopt-argument (docopt-leaf-pattern) ()
   "A class representing a Docopt argument.")
 
-(defclass docopt-command (docopt-argument)
-  ((name
-    :accessor docopt-comand-name
-    :documentation "The name of the command."
-    :initarg :name
-    :initform nil
-    :type (or string null)))
+(defclass docopt-command (docopt-argument) ()
   "A class representing a Docopt command.")
 
 ;; Either

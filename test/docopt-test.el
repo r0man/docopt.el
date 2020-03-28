@@ -176,6 +176,32 @@ usage: pit stop")
                    (docopt-make-optional (docopt-option :short "-a")))
                   '(docopt-options-shortcut)))))
 
+(ert-deftest docopt-pattern--fix-identities-test ()
+  (let ((pattern (docopt-make-required
+                  (docopt-argument :name "N")
+                  (docopt-argument :name "N"))))
+    (should (not (eq (nth 0 (docopt-children pattern))
+                     (nth 1 (docopt-children pattern)))))
+    (docopt-pattern--fix-identities pattern)
+    (should (eq (nth 0 (docopt-children pattern))
+                (nth 1 (docopt-children pattern))))))
+
+(ert-deftest docopt-pattern--fix-repeating-arguments-test ()
+  (should (equal (docopt-make-required
+                  (docopt-argument :name "N" :value [])
+                  (docopt-argument :name "N" :value []))
+                 (docopt-pattern--fix-repeating-arguments
+                  (docopt-make-required
+                   (docopt-argument :name "N")
+                   (docopt-argument :name "N")))))
+  (should (equal (docopt-make-either
+                  (docopt-argument :name "N" :value [])
+                  (docopt-make-one-or-more (docopt-argument :name "N" :value [])))
+                 (docopt-pattern--fix-repeating-arguments
+                  (docopt-make-either
+                   (docopt-argument :name "N")
+                   (docopt-make-one-or-more (docopt-argument :name "N")))))))
+
 (provide 'docopt-test)
 
 ;;; docopt-test.el ends here
