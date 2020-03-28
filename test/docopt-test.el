@@ -160,6 +160,22 @@ usage: pit stop")
                    (docopt-argument :name "N")
                    (docopt-argument :name "M"))))))
 
+(ert-deftest docopt-pattern--flat-test ()
+  (should (equal (list (docopt-argument :name "N")
+                       (docopt-option :short "-a")
+                       (docopt-argument :name "M"))
+                 (docopt--flat
+                  (docopt-make-required
+                   (docopt-make-one-or-more (docopt-argument :name "N"))
+                   (docopt-option :short "-a")
+                   (docopt-argument :name "M")))))
+  (should (equal (list (docopt-options-shortcut))
+                 (docopt--flat
+                  (docopt-make-required
+                   (docopt-make-optional (docopt-options-shortcut))
+                   (docopt-make-optional (docopt-option :short "-a")))
+                  '(docopt-options-shortcut)))))
+
 (provide 'docopt-test)
 
 ;;; docopt-test.el ends here

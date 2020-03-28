@@ -68,6 +68,22 @@
           (setq result (append result (list children))))))
     (docopt-either :children (seq-map (lambda (result) (docopt-required :children result)) result))))
 
+(cl-defgeneric docopt--flat (pattern &optional types)
+  "Flatten the PATTERN and filter by TYPES.")
+
+(cl-defmethod docopt--flat ((pattern docopt-leaf-pattern) &optional types)
+  "Flatten the leaf PATTERN and filter by TYPES."
+  (when (or (not types) (member (eieio--object-class-tag pattern) types))
+    (list pattern)))
+
+(cl-defmethod docopt--flat ((pattern docopt-branch-pattern) &optional types)
+  "Flatten the branch PATTERN and filter by TYPES."
+  (if (member (eieio--object-class-tag pattern) types)
+      (list pattern)
+    (seq-mapcat (lambda (child)
+                  (docopt--flat child types))
+                (docopt-children pattern))))
+
 (defclass docopt-branch-pattern (docopt-pattern)
   ((children
     :accessor docopt-children
