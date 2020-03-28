@@ -107,7 +107,58 @@ usage: pit stop")
 
 (ert-deftest docopt-pattern--transform-test ()
   (should (equal (docopt-make-either (docopt-make-required (docopt-option :short "-h")))
-                 (docopt-pattern--transform (docopt-option :short "-h")))))
+                 (docopt-pattern--transform (docopt-option :short "-h"))))
+  (should (equal (docopt-make-either (docopt-make-required (docopt-argument :name "A")))
+                 (docopt-pattern--transform (docopt-argument :name "A"))))
+  (should (equal (docopt-make-either
+                  (docopt-make-required
+                   (docopt-option :short "-a")
+                   (docopt-option :short "-c"))
+                  (docopt-make-required
+                   (docopt-option :short "-b")
+                   (docopt-option :short "-c")))
+                 (docopt-pattern--transform
+                  (docopt-make-required
+                   (docopt-make-either
+                    (docopt-option :short "-a")
+                    (docopt-option :short "-b"))
+                   (docopt-option :short "-c")))))
+  (should (equal (docopt-make-either
+                  (docopt-make-required
+                   (docopt-option :short "-b")
+                   (docopt-option :short "-a"))
+                  (docopt-make-required
+                   (docopt-option :short "-c")
+                   (docopt-option :short "-a")))
+                 (docopt-pattern--transform
+                  (docopt-make-optional
+                   (docopt-option :short "-a")
+                   (docopt-make-either
+                    (docopt-option :short "-b")
+                    (docopt-option :short "-c"))))))
+  (should (equal (docopt-make-either
+                  (docopt-make-required
+                   (docopt-option :short "-x"))
+                  (docopt-make-required
+                   (docopt-option :short "-y"))
+                  (docopt-make-required
+                   (docopt-option :short "-z")))
+                 (docopt-pattern--transform
+                  (docopt-make-either
+                   (docopt-option :short "-x")
+                   (docopt-make-either
+                    (docopt-option :short "-y")
+                    (docopt-option :short "-z"))))))
+  (should (equal (docopt-make-either
+                  (docopt-make-required
+                   (docopt-argument :name "N")
+                   (docopt-argument :name "M")
+                   (docopt-argument :name "N")
+                   (docopt-argument :name "M")))
+                 (docopt-pattern--transform
+                  (docopt-make-one-or-more
+                   (docopt-argument :name "N")
+                   (docopt-argument :name "M"))))))
 
 (provide 'docopt-test)
 

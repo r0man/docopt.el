@@ -53,11 +53,20 @@
     (while groups
       (let ((children (pop groups)))
         (if (cl-some child-p children)
-            1
-          (setq result (append result children)))))
-    (docopt-make-either (docopt-required :children result))))
-
-(docopt-pattern--transform (docopt-option :short "-h"))
+            (let ((child (seq-find child-p children)))
+              (setq children (delete child children))
+              (cond
+               ((docopt-either-p child)
+                (seq-doseq (child (docopt-children child))
+                  (setq groups (append groups (list (cons child children))))))
+               ((docopt-one-or-more-p child)
+                (setq groups (append groups
+                                     (list (append (docopt-children child)
+                                                   (docopt-children child)
+                                                   children)))))
+               (t (setq groups (append groups (list (append (docopt-children child) children)))))))
+          (setq result (append result (list children))))))
+    (docopt-either :children (seq-map (lambda (result) (docopt-required :children result)) result))))
 
 (defclass docopt-branch-pattern (docopt-pattern)
   ((children
@@ -103,6 +112,10 @@
 (defclass docopt-one-or-more (docopt-branch-pattern) ()
   "A class representing one or more Docopt elements.")
 
+(defun docopt-make-one-or-more (&rest children)
+  "Make a new Docopt one-or-more element using CHILDREN."
+  (docopt-one-or-more :children children))
+
 (defclass docopt-option (docopt-leaf-pattern)
   ((arg-count
     :accessor docopt-option-arg-count
@@ -136,8 +149,16 @@
     :type (or string t null)))
   "A class representing a Docopt option.")
 
+;; Optional
+
 (defclass docopt-optional (docopt-branch-pattern) ()
   "A class representing a Docopt optional element.")
+
+(defun docopt-make-optional (&rest children)
+  "Make a new Docopt optional instance using CHILDREN."
+  (docopt-optional :children children))
+
+;; Options Shortcut
 
 (defclass docopt-options-shortcut (docopt-optional) ()
   "A class representing a Docopt options shortcut.")
