@@ -384,6 +384,7 @@
          (t (let* ((similar (car similars))
                    (option (docopt-option
                             :arg-count (docopt-option-arg-count similar)
+                            :description (docopt-option-description similar)
                             :long (docopt-option-long similar)
                             :short (docopt-option-short similar)
                             :value (docopt-option-value similar))))
@@ -420,6 +421,7 @@
                    (value nil))
               (setq option (docopt-option
                             :arg-count (docopt-option-arg-count similar)
+                            :description (docopt-option-description similar)
                             :long (docopt-option-long similar)
                             :short short
                             :value (docopt-option-value similar)))
@@ -569,6 +571,10 @@
     (with-slots (options patterns) program
       (setq options (docopt--parse-defaults source))
       (setq patterns (docopt--parse-patterns (docopt--formal-usage usage) options))
+      (seq-doseq (shortcut (docopt--flat patterns '(docopt-options-shortcut)))
+        (oset shortcut :children (cl-remove-duplicates
+                                  (append options (docopt--flat patterns '(docopt-option)))
+                                  :test #'equal)))
       program)))
 
 (cl-defun docopt--parse-argv (program source &optional options-first)
@@ -596,14 +602,22 @@
               (t (setq parsed (cons (docopt-argument :value (docopt-tokens-move tokens)) parsed))))))
     (reverse parsed)))
 
+(defun docopt-parse-argv (program source &optional options-first)
+  "Parse the argument vector of the Docopt PROGRAM from SOURCE according to OPTIONS-FIRST."
+  (let ((argv (docopt--parse-argv program source options-first)))
+    argv))
+
+;; (docopt-parse-argv my-program "naval_fate.py ")
+
 (provide 'docopt)
 
 ;;; docopt.el ends here
 
 ;; (require 'cl-print)
 ;; (setq cl-print-readably t)
-
+                                        ;
 ;; (setq my-program (docopt-parse-program docopt-naval-fate-str))
+;; (setq my-program (docopt-parse-program "Usage: program [options] add\nOptions:\n  --help  Help"))
 
 ;; (docopt-parse-program "Usage: program add")
 
@@ -644,3 +658,5 @@
 ;; (setq cl-print-readably t)
 
 ;; (docopt--parse-long (docopt-tokens-from-pattern "--help=yo") nil)
+
+;; (docopt-program-patterns my-program)

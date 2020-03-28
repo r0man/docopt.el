@@ -205,7 +205,11 @@ usage: pit stop")
 (ert-deftest docopt--parse-argv-test ()
   (let ((program (docopt-parse-program docopt-naval-fate-str)))
     (should (equal (list (docopt-argument :value "naval_fate.py")
-                         (docopt-option :arg-count 0 :long "--help" :short "-h"))
+                         (docopt-option
+                          :arg-count 0
+                          :description "Show this screen."
+                          :long "--help"
+                          :short "-h"))
                    (docopt--parse-argv program "naval_fate.py --help")))))
 
 (provide 'docopt-test)
