@@ -48,20 +48,6 @@ Options:
   --moored      Moored (anchored) mine.
   --drifting    Drifting mine.")
 
-(ert-deftest docopt--formal-usage-test ()
-  (let* ((doc "Usage: prog [-hv] ARG\n       prog N M\n\nprog is a program.")
-         (usage (car (docopt--parse-section "usage:" doc))))
-    (should (equal "Usage: prog [-hv] ARG\n       prog N M"  usage))
-    (should (equal "( [-hv] ARG ) | ( N M )" (docopt--formal-usage usage)))))
-
-(ert-deftest docopt--parse-defaults-test ()
-  (should (equal (list (docopt-option :arg-count 0 :description "Show this screen." :long "--help" :short "-h" )
-                       (docopt-option :arg-count 0 :description "Show version." :long "--version")
-                       (docopt-option :arg-count 1 :description "Speed in knots [default: 10]." :long "--speed" :value "10")
-                       (docopt-option :arg-count 0 :description "Moored (anchored) mine." :long "--moored")
-                       (docopt-option :arg-count 0 :description "Drifting mine." :long "--drifting"))
-                 (docopt--parse-defaults docopt-naval-fate-str))))
-
 (defvar docopt-test-usages "usage: this
 
 usage:hai
@@ -80,7 +66,21 @@ Usage: eggs spam
 BAZZ
 usage: pit stop")
 
-(ert-deftest docopt--parse-section-test ()
+(ert-deftest docopt-test-formal-usage ()
+  (let* ((doc "Usage: prog [-hv] ARG\n       prog N M\n\nprog is a program.")
+         (usage (car (docopt--parse-section "usage:" doc))))
+    (should (equal "Usage: prog [-hv] ARG\n       prog N M"  usage))
+    (should (equal "( [-hv] ARG ) | ( N M )" (docopt--formal-usage usage)))))
+
+(ert-deftest docopt-test-parse-defaults ()
+  (should (equal (list (docopt-option :arg-count 0 :description "Show this screen." :long "--help" :short "-h" )
+                       (docopt-option :arg-count 0 :description "Show version." :long "--version")
+                       (docopt-option :arg-count 1 :description "Speed in knots [default: 10]." :long "--speed" :value "10")
+                       (docopt-option :arg-count 0 :description "Moored (anchored) mine." :long "--moored")
+                       (docopt-option :arg-count 0 :description "Drifting mine." :long "--drifting"))
+                 (docopt--parse-defaults docopt-naval-fate-str))))
+
+(ert-deftest docopt-test-parse-section ()
   (should (equal (docopt--parse-section "usage:" "usage: prog")
                  (list "usage: prog")))
   (should (equal (docopt--parse-section "usage:" "usage: -x\n -y")
@@ -95,7 +95,7 @@ usage: pit stop")
                    "Usage: eggs spam"
                    "usage: pit stop"))))
 
-(ert-deftest docopt--parse-program-test ()
+(ert-deftest docopt-test-parse-program ()
   (let ((program (docopt-parse-program docopt-naval-fate-str)))
     (should (equal (list (docopt-option :arg-count 0 :description "Show this screen." :long "--help" :short "-h")
                          (docopt-option :arg-count 0 :description "Show version." :long "--version")
@@ -105,7 +105,7 @@ usage: pit stop")
                    (docopt-program-options program)))
     (should (equal docopt-naval-fate-str (docopt-program-source program)))))
 
-(ert-deftest docopt-pattern--transform-test ()
+(ert-deftest docopt-test-transform ()
   (should (equal (docopt-make-either (docopt-make-required (docopt-option :short "-h")))
                  (docopt-pattern--transform (docopt-option :short "-h"))))
   (should (equal (docopt-make-either (docopt-make-required (docopt-argument :name "A")))
@@ -160,7 +160,7 @@ usage: pit stop")
                    (docopt-argument :name "N")
                    (docopt-argument :name "M"))))))
 
-(ert-deftest docopt-pattern--flat-test ()
+(ert-deftest docopt-test-flat ()
   (should (equal (list (docopt-argument :name "N")
                        (docopt-option :short "-a")
                        (docopt-argument :name "M"))
@@ -176,7 +176,7 @@ usage: pit stop")
                    (docopt-make-optional (docopt-option :short "-a")))
                   '(docopt-options-shortcut)))))
 
-(ert-deftest docopt-pattern--fix-identities-test ()
+(ert-deftest docopt-test-fix-identities ()
   (let ((pattern (docopt-make-required
                   (docopt-argument :name "N")
                   (docopt-argument :name "N"))))
@@ -186,7 +186,7 @@ usage: pit stop")
     (should (eq (nth 0 (docopt-children pattern))
                 (nth 1 (docopt-children pattern))))))
 
-(ert-deftest docopt-pattern--fix-repeating-arguments-test ()
+(ert-deftest docopt-test-fix-repeating-arguments ()
   (should (equal (docopt-make-required
                   (docopt-argument :name "N" :value [])
                   (docopt-argument :name "N" :value []))
@@ -202,7 +202,7 @@ usage: pit stop")
                    (docopt-argument :name "N")
                    (docopt-make-one-or-more (docopt-argument :name "N")))))))
 
-(ert-deftest docopt--parse-argv-test ()
+(ert-deftest docopt-test-parse-argv ()
   (let ((program (docopt-parse-program docopt-naval-fate-str)))
     (should (equal (list (docopt-argument :value "naval_fate.py")
                          (docopt-option
