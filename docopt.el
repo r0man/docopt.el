@@ -167,7 +167,7 @@
           (let ((left (append (seq-take left pos) (seq-drop left (+ 1 pos))))
                 (same-names (seq-filter (lambda (element) (equal name (docopt-name element))) collected)))
             (if (or (integerp value)
-                    (listp value))
+                    (and (listp value) (not (null value))))
                 (let ((increment (if (integerp value)
                                      1
                                    (if (stringp (docopt-value match))
@@ -177,7 +177,7 @@
                       (with-slots (value) match
                         (setq value increment)
                         (list t left (append collected (list match))))
-                    (with-slots (value) (car similar-names)
+                    (with-slots (value) (car same-names)
                       (setq value (+ value increment))
                       (list t left collected))))
               (list t left (append collected (list match)))))
@@ -245,6 +245,28 @@
 (defun docopt-make-one-or-more (&rest children)
   "Make a new Docopt one-or-more element using CHILDREN."
   (docopt-one-or-more :children children))
+
+(cl-defmethod docopt--match ((one-or-more docopt-one-or-more) left &optional collected)
+  "Match ONE-OR-MORE against the argument vector LEFT and COLLECTED."
+  (let ((l left)
+        (c collected)
+        (l- nil)
+        (matched t)
+        (times 0)
+        (child (car (docopt-children one-or-more))))
+    (cl-block nil
+      (while matched
+        (seq-let [match left collected] (docopt--match child l c)
+          (setq matched match
+                l left
+                c collected
+                times (if match (+ 1 times) times))
+          (if (equal l- l)
+              (cl-return)
+            (setq l- l)))))
+    (if (>= times 1)
+        (list t l c)
+      (list nil left collected))))
 
 ;; Option
 

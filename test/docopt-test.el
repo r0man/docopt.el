@@ -287,6 +287,76 @@ usage: pit stop")
                                 (list (docopt-argument :value 1)
                                       (docopt-argument :value 2))))))
 
+(ert-deftest docopt-test-match-one-or-more ()
+  (should (equal (list t nil (list (docopt-argument :name "N" :value 9)))
+                 (docopt--match
+                  (docopt-make-one-or-more
+                   (docopt-argument :name "N"))
+                  (list (docopt-argument :value 9)))))
+  (should (equal (list nil nil nil)
+                 (docopt--match
+                  (docopt-make-one-or-more
+                   (docopt-argument :name "N"))
+                  nil)))
+  (should (equal (list nil (list (docopt-option :short "-x")) nil)
+                 (docopt--match
+                  (docopt-make-one-or-more
+                   (docopt-argument :name "N"))
+                  (list (docopt-option :short "-x")))))
+  (should (equal (list t nil (list (docopt-argument :name "N" :value 9)
+                                   (docopt-argument :name "N" :value 8)))
+                 (docopt--match
+                  (docopt-make-one-or-more
+                   (docopt-argument :name "N"))
+                  (list (docopt-argument :value 9)
+                        (docopt-argument :value 8)))))
+  (should (equal (list t (list (docopt-option :short "-x"))
+                       (list (docopt-argument :name "N" :value 9)
+                             (docopt-argument :name "N" :value 8)))
+                 (docopt--match
+                  (docopt-make-one-or-more
+                   (docopt-argument :name "N"))
+                  (list (docopt-argument :value 9)
+                        (docopt-option :short "-x")
+                        (docopt-argument :value 8)))))
+  (should (equal (list t (list (docopt-argument :value 8))
+                       (list (docopt-option :short "-a")
+                             (docopt-option :short "-a")))
+                 (docopt--match
+                  (docopt-make-one-or-more
+                   (docopt-option :short "-a"))
+                  (list (docopt-option :short "-a")
+                        (docopt-argument :value 8)
+                        (docopt-option :short "-a")))))
+  (should (equal (list nil (list (docopt-argument :value 8)
+                                 (docopt-option :short "-x")) nil)
+                 (docopt--match
+                  (docopt-make-one-or-more
+                   (docopt-option :short "-a"))
+                  (list (docopt-argument :value 8)
+                        (docopt-option :short "-x")))))
+  (should (equal (list t (list (docopt-option :short "-x"))
+                       (list (docopt-option :short "-a")
+                             (docopt-argument :name "N" :value 1)
+                             (docopt-option :short "-a")
+                             (docopt-argument :name "N" :value 2)))
+                 (docopt--match
+                  (docopt-make-one-or-more
+                   (docopt-make-required
+                    (docopt-option :short "-a")
+                    (docopt-argument :name "N")))
+                  (list (docopt-option :short "-a")
+                        (docopt-argument :value 1)
+                        (docopt-option :short "-x")
+                        (docopt-option :short "-a")
+                        (docopt-argument :value 2)))))
+  (should (equal (list t nil (list (docopt-argument :name "N" :value 9)))
+                 (docopt--match
+                  (docopt-make-one-or-more
+                   (docopt-make-optional
+                    (docopt-argument :name "N")))
+                  (list (docopt-argument :value 9))))))
+
 (ert-deftest docopt-test-match-option ()
   (should (equal (list t nil (list (docopt-option :short "-a" :value t)))
                  (docopt--match
