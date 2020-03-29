@@ -321,6 +321,25 @@ usage: pit stop")
                         (docopt-option :short "-x")
                         (docopt-option :short "-a"))))))
 
+(ert-deftest docopt-test-match-required ()
+  (should (equal (list t nil (list (docopt-option :short "-a")))
+                 (docopt--match
+                  (docopt-make-required (docopt-option :short "-a"))
+                  (list (docopt-option :short "-a")))))
+  (should (equal (list nil nil nil)
+                 (docopt--match
+                  (docopt-make-required (docopt-option :short "-a"))
+                  (list))))
+  (should (equal (list nil (list (docopt-option :short "-x")) nil)
+                 (docopt--match
+                  (docopt-make-required (docopt-option :short "-a"))
+                  (list (docopt-option :short "-x")))))
+  (should (equal (list nil nil (list (docopt-option :short "-a")))
+                 (docopt--match
+                  (docopt-make-required (docopt-option :short "-a")
+                                        (docopt-option :short "-b"))
+                  (list (docopt-option :short "-a"))))))
+
 (provide 'docopt-test)
 
 ;;; docopt-test.el ends here

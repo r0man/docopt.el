@@ -328,6 +328,19 @@
   "Make a new Docopt required instance using CHILDREN."
   (docopt-required :children children))
 
+(cl-defmethod docopt--match ((required docopt-required) left &optional collected)
+  "Match REQUIRED against the argument vector LEFT and COLLECTED."
+  (cl-block 'docopt--match
+    (let ((l left) (c collected))
+      (seq-doseq (child (docopt-children required))
+        (seq-let [matched left collected] (docopt--match child l c)
+          (setq l left c collected)
+          (unless matched
+            (cl-return-from 'docopt--match (list nil left collected)))))
+      (list t l c))))
+
+;; Program
+
 (defclass docopt-program ()
   ((options
     :accessor docopt-program-options
