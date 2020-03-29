@@ -251,6 +251,42 @@ usage: pit stop")
                                  (docopt-command :name "rm"))
                                 (list (docopt-argument :value "rm"))))))
 
+(ert-deftest docopt-test-match-either ()
+  (should (equal (list t nil (list (docopt-option :short "-a")))
+                 (docopt--match (docopt-make-either
+                                 (docopt-option :short "-a")
+                                 (docopt-option :short "-b"))
+                                (list (docopt-option :short "-a")))))
+  (should (equal (list t (list (docopt-option :short "-b"))
+                       (list (docopt-option :short "-a")))
+                 (docopt--match (docopt-make-either
+                                 (docopt-option :short "-a")
+                                 (docopt-option :short "-b"))
+                                (list (docopt-option :short "-a")
+                                      (docopt-option :short "-b")))))
+  (should (equal (list nil (list (docopt-option :short "-x")) nil)
+                 (docopt--match (docopt-make-either
+                                 (docopt-option :short "-a")
+                                 (docopt-option :short "-b"))
+                                (list (docopt-option :short "-x")))))
+  (should (equal (list t (list (docopt-option :short "-x"))
+                       (list (docopt-option :short "-b")))
+                 (docopt--match (docopt-make-either
+                                 (docopt-option :short "-a")
+                                 (docopt-option :short "-b")
+                                 (docopt-option :short "-c"))
+                                (list (docopt-option :short "-x")
+                                      (docopt-option :short "-b")))))
+  (should (equal (list t nil (list (docopt-argument :name "N" :value 1)
+                                   (docopt-argument :name "M" :value 2)))
+                 (docopt--match (docopt-make-either
+                                 (docopt-argument :name "M")
+                                 (docopt-make-required
+                                  (docopt-argument :name "N")
+                                  (docopt-argument :name "M")))
+                                (list (docopt-argument :value 1)
+                                      (docopt-argument :value 2))))))
+
 (ert-deftest docopt-test-match-option ()
   (should (equal (list t nil (list (docopt-option :short "-a" :value t)))
                  (docopt--match
