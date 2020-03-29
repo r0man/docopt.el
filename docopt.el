@@ -304,6 +304,16 @@
   "Make a new Docopt optional instance using CHILDREN."
   (docopt-optional :children children))
 
+(cl-defmethod docopt--match ((optional docopt-optional) left &optional collected)
+  "Match OPTIONAL against the argument vector LEFT and COLLECTED."
+  (thread-last (docopt-children optional)
+    (seq-map (lambda (child)
+               (seq-let [m l c] (docopt--match child left collected)
+                 (setq left l collected c)
+                 (list t l c))))
+    (last)
+    (car)))
+
 ;; Options Shortcut
 
 (defclass docopt-options-shortcut (docopt-optional) ()

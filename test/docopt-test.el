@@ -279,6 +279,48 @@ usage: pit stop")
                   (list (docopt-option :short "-a" :value t)
                         (docopt-option :short "-a"))))))
 
+(ert-deftest docopt-test-match-optional ()
+  (should (equal (list t nil (list (docopt-option :short "-a")))
+                 (docopt--match
+                  (docopt-make-optional (docopt-option :short "-a"))
+                  (list (docopt-option :short "-a")))))
+  (should (equal (list t nil nil)
+                 (docopt--match
+                  (docopt-make-optional (docopt-option :short "-a"))
+                  (list))))
+  (should (equal (list t (list (docopt-option :short "-x")) nil)
+                 (docopt--match
+                  (docopt-make-optional (docopt-option :short "-a"))
+                  (list (docopt-option :short "-x")))))
+  (should (equal (list t nil (list (docopt-option :short "-a")))
+                 (docopt--match
+                  (docopt-make-optional (docopt-option :short "-a")
+                                        (docopt-option :short "-b"))
+                  (list (docopt-option :short "-a")))))
+  (should (equal (list t nil (list (docopt-option :short "-b")))
+                 (docopt--match
+                  (docopt-make-optional (docopt-option :short "-a")
+                                        (docopt-option :short "-b"))
+                  (list (docopt-option :short "-b")))))
+  (should (equal (list t (list (docopt-option :short "-x")) nil)
+                 (docopt--match
+                  (docopt-make-optional (docopt-option :short "-a")
+                                        (docopt-option :short "-b"))
+                  (list (docopt-option :short "-x")))))
+  (should (equal (list t nil (list (docopt-argument :name "-N" :value 9)))
+                 (docopt--match
+                  (docopt-make-optional (docopt-argument :name "-N"))
+                  (list (docopt-argument :value 9)))))
+  (should (equal (list t (list (docopt-option :short "-x"))
+                       (list (docopt-option :short "-a")
+                             (docopt-option :short "-b")))
+                 (docopt--match
+                  (docopt-make-optional (docopt-option :short "-a")
+                                        (docopt-option :short "-b"))
+                  (list (docopt-option :short "-b")
+                        (docopt-option :short "-x")
+                        (docopt-option :short "-a"))))))
+
 (provide 'docopt-test)
 
 ;;; docopt-test.el ends here
