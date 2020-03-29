@@ -251,6 +251,34 @@ usage: pit stop")
                                  (docopt-command :name "rm"))
                                 (list (docopt-argument :value "rm"))))))
 
+(ert-deftest docopt-test-match-option ()
+  (should (equal (list t nil (list (docopt-option :short "-a" :value t)))
+                 (docopt--match
+                  (docopt-option :short "-a")
+                  (list (docopt-option :short "-a" :value t)))))
+  (should (equal (list nil (list (docopt-option :short "-x")) nil)
+                 (docopt--match
+                  (docopt-option :short "-a")
+                  (list (docopt-option :short "-x")))))
+  (should (equal (list nil (list (docopt-argument :name "N")) nil)
+                 (docopt--match
+                  (docopt-option :short "-a")
+                  (list (docopt-argument :name "N")))))
+  (should (equal (list t (list (docopt-option :short "-x")
+                               (docopt-argument :name "N"))
+                       (list (docopt-option :short "-a")))
+                 (docopt--match
+                  (docopt-option :short "-a")
+                  (list (docopt-option :short "-x")
+                        (docopt-option :short "-a")
+                        (docopt-argument :name "N")))))
+  (should (equal (list t (list (docopt-option :short "-a"))
+                       (list (docopt-option :short "-a" :value t)))
+                 (docopt--match
+                  (docopt-option :short "-a")
+                  (list (docopt-option :short "-a" :value t)
+                        (docopt-option :short "-a"))))))
+
 (provide 'docopt-test)
 
 ;;; docopt-test.el ends here

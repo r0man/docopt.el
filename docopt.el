@@ -246,6 +246,8 @@
   "Make a new Docopt one-or-more element using CHILDREN."
   (docopt-one-or-more :children children))
 
+;; Option
+
 (defclass docopt-option (docopt-leaf-pattern)
   ((arg-count
     :accessor docopt-option-arg-count
@@ -278,6 +280,20 @@
     :initform nil
     :type (or string t null)))
   "A class representing a Docopt option.")
+
+(cl-defmethod docopt-name ((option docopt-option))
+  "Return the long or short name of OPTION."
+  (or (docopt-option-long option) (docopt-option-short option)))
+
+(cl-defmethod docopt--single-match ((option docopt-option) left)
+  "Match OPTION against the argument vector LEFT."
+  (thread-last left
+    (seq-map-indexed
+     (lambda (element index)
+       (when (equal (docopt-name option) (docopt-name element))
+         (list index element))))
+    (seq-remove #'null)
+    (car)))
 
 ;; Optional
 
