@@ -244,7 +244,12 @@ usage: pit stop")
                  (docopt--match (docopt-command :name "c")
                                 (list (docopt-option :short "-x")
                                       (docopt-option :short "-a")
-                                      (docopt-argument :value "c"))))))
+                                      (docopt-argument :value "c")))))
+  (should (equal (list t nil (list (docopt-command :name "rm" :value t)))
+                 (docopt--match (docopt-make-either
+                                 (docopt-command :name "add")
+                                 (docopt-command :name "rm"))
+                                (list (docopt-argument :value "rm"))))))
 
 (provide 'docopt-test)
 

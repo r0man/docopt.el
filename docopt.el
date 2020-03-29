@@ -226,6 +226,28 @@
   "Make a new Docopt either element using CHILDREN."
   (docopt-either :children children))
 
+(cl-defmethod docopt--match ((either docopt-either) left &optional collected)
+  "Match EITHER against the argument vector LEFT and COLLECTED."
+  (let ((matches nil))
+    (seq-doseq (child (docopt-children either))
+      (let ((match (docopt--match child left collected)))
+        (when (car match)
+          (setq matches (cons match matches)))))
+    (if matches
+        (car (seq-sort-by (lambda (match) (length (nth 1 match))) #'< matches))
+        (list nil left collected))))
+
+(cl-defmethod docopt--match ((either docopt-either) left &optional collected)
+  "Match EITHER against the argument vector LEFT and COLLECTED."
+  (let ((matches nil))
+    (seq-doseq (child (docopt-children either))
+      (let ((match (docopt--match child left collected)))
+        (when (car match)
+          (setq matches (cons match matches)))))
+    (if matches
+        (car (seq-sort-by (lambda (match) (length (nth 1 match))) #'< matches))
+        (list nil left collected))))
+
 ;; One or More
 
 (defclass docopt-one-or-more (docopt-branch-pattern) ()
