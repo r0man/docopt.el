@@ -196,7 +196,9 @@
        (when (docopt-argument-p element)
          (list index (docopt-argument
                       :name (docopt-name argument)
-                      :value (docopt-value element))))))
+                      :value (if (vectorp (docopt-value argument))
+                                 (vector (docopt-value element))
+                               (docopt-value element)))))))
     (seq-remove #'null)
     (car)))
 
