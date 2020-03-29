@@ -745,16 +745,53 @@
               (t (setq parsed (cons (docopt-argument :value (docopt-tokens-move tokens)) parsed))))))
     (reverse parsed)))
 
+(defun docopt--ast-to-alist (ast)
+  "Convert the argument vector AST to an alist."
+  (thread-last (cl-remove-duplicates ast :key #'docopt-name)
+    (seq-map (lambda (element)
+               (cons (intern (docopt-name element))
+                     (docopt-value element))))
+    (seq-group-by #'car)
+    (seq-map (lambda (group)
+               (seq-let [name &rest members] group
+                 (if (= 1 (length members))
+                     (car members)
+                   (let ((values (seq-mapcat #'cdr members)))
+                     (cons name (apply #'vector values)))))))))
+
+(defun docopt--reduce-matches (matches)
+  "Convert the argument vector AST to an alist."
+  (thread-last matches
+    (seq-group-by #'docopt-name)
+    (seq-map (lambda (group)
+               (seq-let [name &rest members] group
+                 (let ((values (seq-map #'docopt-value members)))
+                   (cons (intern name)
+                         (cond
+                          ((= 1 (length values))
+                           (car values))
+                          ((cl-every #'vectorp values)
+                           (apply #'vconcat values))))))))))
+
 (defun docopt-parse-argv (program source &optional options-first)
   "Parse the argument vector of the Docopt PROGRAM from SOURCE according to OPTIONS-FIRST."
   (let ((argv (cdr (docopt--parse-argv program source options-first)))
         (patterns (docopt-program-patterns program)))
     (seq-let [matched left collected] (docopt--match patterns argv)
       (if (and matched (not left))
-          collected
+          (cl-sort
+           (cl-remove-duplicates
+            (append (docopt--ast-to-alist (docopt--flat patterns))
+                    (docopt--reduce-matches collected))
+            :key #'car)
+           #'string< :key #'car)
         (docopt--error 'docopt-exit (docopt-program-usage program))))))
 
 (provide 'docopt)
+
+;; (docopt-parse-argv my-program "naval_fate ship new TITANIC X")
+
+;; (docopt--ast-to-alist (append x x))
 
 ;; (docopt-parse-argv my-program "naval_fate ship new TITANIC X")
 
