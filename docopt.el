@@ -330,7 +330,7 @@
   "Match OPTIONAL against the argument vector LEFT and COLLECTED."
   (thread-last (docopt-children optional)
     (seq-map (lambda (child)
-               (seq-let [m l c] (docopt--match child left collected)
+               (seq-let [_ l c] (docopt--match child left collected)
                  (setq left l collected c)
                  (list t l c))))
     (last)
@@ -390,6 +390,8 @@
     :initform nil
     :type (or list null)))
   "A class representing a Docopt program.")
+
+;; Tokens
 
 (defclass docopt-tokens ()
   ((error
@@ -456,6 +458,8 @@
 (defun docopt-tokens-options-shortcut-p (tokens)
   "Return t if the current token in TOKENS is the options shortcut."
   (equal "options" (docopt-tokens-current tokens)))
+
+;; Parser
 
 (defun docopt--error (error-sym fmt &rest args)
   "Raise a Docopt error with ERROR-SYM and format FMT using ARGS."
@@ -602,27 +606,25 @@
 
 (defun docopt--parse-atom (tokens options)
   "Parse a Docopt atom from TOKENS using OPTIONS."
-  (cond
-   ;; Optional
-   ((docopt-tokens-optional-group-p tokens)
-    (docopt--parse-optional-group tokens options))
-   ;; Required
-   ((docopt-tokens-required-group-p tokens)
-    (docopt--parse-required-group tokens options))
-   ;; Options Shortcut
-   ((docopt-tokens-options-shortcut-p tokens)
-    (docopt--parse-options-shortcut tokens))
-   ;; Long option
-   ((docopt-tokens-long-option-p tokens)
-    (docopt--parse-long tokens options))
-   ;; Short option
-   ((docopt-tokens-short-option-p tokens)
-    (docopt--parse-short tokens options))
-   ;; Argument
-   ((docopt-tokens-argument-p tokens)
-    (docopt--parse-argument tokens))
-   ;; Command
-   (t (docopt--parse-command tokens))))
+  (cond ((docopt-tokens-optional-group-p tokens)
+         (docopt--parse-optional-group tokens options))
+
+        ((docopt-tokens-required-group-p tokens)
+         (docopt--parse-required-group tokens options))
+
+        ((docopt-tokens-options-shortcut-p tokens)
+         (docopt--parse-options-shortcut tokens))
+
+        ((docopt-tokens-long-option-p tokens)
+         (docopt--parse-long tokens options))
+
+        ((docopt-tokens-short-option-p tokens)
+         (docopt--parse-short tokens options))
+
+        ((docopt-tokens-argument-p tokens)
+         (docopt--parse-argument tokens))
+
+        (t (docopt--parse-command tokens))))
 
 (defun docopt--parse-exprs (tokens options)
   "Parse the Docopt expressions from TOKENS using OPTIONS."
@@ -660,7 +662,10 @@
     (when (docopt-tokens-current tokens)
       (docopt--error (docopt-tokens-error tokens) "unexpected ending: %s"
                      (s-join " " (docopt-tokens-list tokens))))
-    (docopt-required :children result)))
+    (let ((patterns (docopt-required :children result)))
+      (docopt-pattern--fix-identities patterns)
+      (docopt-pattern--fix-repeating-arguments patterns)
+      patterns)))
 
 (defun docopt--parse-default (description)
   "Parse the default value from DESCRIPTION."
@@ -740,23 +745,22 @@
 
 (defun docopt-parse-argv (program source &optional options-first)
   "Parse the argument vector of the Docopt PROGRAM from SOURCE according to OPTIONS-FIRST."
-  (let ((argv (docopt--parse-argv program source options-first))
+  (let ((argv (cdr (docopt--parse-argv program source options-first)))
         (patterns (docopt-program-patterns program)))
-    (docopt--match patterns argv)))
-
-(defun docopt--enumerate (lst)
-  "Return the elements of LST with an index."
-  (seq-map-indexed (lambda (element index) (list index element)) lst))
-
-;; (docopt-parse-argv my-program "naval_fate.py ")
+    (seq-let [matched left collected] (docopt--match patterns argv)
+      (if (and matched (not left))
+          collected
+        (docopt--error 'docopt-exit (docopt-program-usage program))))))
 
 (provide 'docopt)
+
+;; (docopt-parse-argv my-program "naval_fate ship new TITANIC X")
 
 ;;; docopt.el ends here
 
 ;; (require 'cl-print)
 ;; (setq cl-print-readably t)
-                                        ;
+
 ;; (setq my-program (docopt-parse-program docopt-naval-fate-str))
 ;; (setq my-program (docopt-parse-program "Usage: program [options] add\nOptions:\n  --help  Help"))
 
