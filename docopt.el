@@ -210,7 +210,9 @@
   (thread-last left
     (seq-map-indexed
      (lambda (element index)
-       (when (docopt-argument-p element)
+       (when (and (docopt-argument-p element)
+                  (equal (docopt-name command)
+                         (docopt-value element)))
          (list index (docopt-command
                       :name (docopt-name command)
                       :value t)))))
@@ -228,25 +230,12 @@
 
 (cl-defmethod docopt--match ((either docopt-either) left &optional collected)
   "Match EITHER against the argument vector LEFT and COLLECTED."
-  (let ((matches nil))
-    (seq-doseq (child (docopt-children either))
-      (let ((match (docopt--match child left collected)))
-        (when (car match)
-          (setq matches (cons match matches)))))
-    (if matches
-        (car (seq-sort-by (lambda (match) (length (nth 1 match))) #'< matches))
-        (list nil left collected))))
-
-(cl-defmethod docopt--match ((either docopt-either) left &optional collected)
-  "Match EITHER against the argument vector LEFT and COLLECTED."
-  (let ((matches nil))
-    (seq-doseq (child (docopt-children either))
-      (let ((match (docopt--match child left collected)))
-        (when (car match)
-          (setq matches (cons match matches)))))
-    (if matches
-        (car (seq-sort-by (lambda (match) (length (nth 1 match))) #'< matches))
-        (list nil left collected))))
+  (or (thread-last (docopt-children either)
+        (seq-map (lambda (child) (docopt--match child left collected)))
+        (seq-filter #'car)
+        (seq-sort-by (lambda (match) (length (nth 1 match))) #'<)
+        (car))
+      (list nil left collected)))
 
 ;; One or More
 
