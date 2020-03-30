@@ -28,6 +28,8 @@
 
 ;; A Docopt implementation in Elisp
 
+;; This is a direct port of the Docopt Python implementation, for better or worse :)
+
 ;;; Code:
 
 (require 'cl-lib)
