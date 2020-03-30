@@ -769,7 +769,7 @@
                    (cons (intern name)
                          (cond
                           ((= 1 (length values))
-                           (car values))
+                           (or (car values) t))
                           ((cl-every #'vectorp values)
                            (apply #'vconcat values))))))))))
 
@@ -779,21 +779,20 @@
         (patterns (docopt-program-patterns program)))
     (seq-let [matched left collected] (docopt--match patterns argv)
       (if (and matched (not left))
-          (cl-sort
-           (cl-remove-duplicates
-            (append (docopt--ast-to-alist (docopt--flat patterns))
-                    (docopt--reduce-matches collected))
-            :key #'car)
-           #'string< :key #'car)
+          collected
         (docopt--error 'docopt-exit (docopt-program-usage program))))))
 
+(defun docopt-eval (program source &optional options-first)
+  "Parse the argument vector of the Docopt PROGRAM from SOURCE according to OPTIONS-FIRST."
+  (let ((argv (docopt-parse-argv program source options-first))
+        (patterns (docopt-program-patterns program)))
+    (cl-sort (cl-remove-duplicates
+              (append (docopt--ast-to-alist (docopt--flat patterns))
+                      (docopt--reduce-matches argv))
+              :key #'car)
+             #'string< :key #'car)))
+
 (provide 'docopt)
-
-;; (docopt-parse-argv my-program "naval_fate ship new TITANIC X")
-
-;; (docopt--ast-to-alist (append x x))
-
-;; (docopt-parse-argv my-program "naval_fate ship new TITANIC X")
 
 ;;; docopt.el ends here
 
