@@ -797,7 +797,7 @@
     (seq-let [matched left collected] (docopt--match patterns argv)
       (if (and matched (not left))
           collected
-        (docopt--error 'docopt-exit (docopt-program-usage program))))))
+        (docopt--error 'docopt-exit (docopt-program-source program))))))
 
 (defun docopt-eval (program source &optional options-first)
   "Parse the argument vector of the Docopt PROGRAM from SOURCE according to OPTIONS-FIRST."

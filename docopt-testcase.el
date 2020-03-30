@@ -46,7 +46,7 @@
     :documentation "The actual result of the testcase example."
     :initarg :actual
     :initform nil
-    :type (or list symbol null))
+    :type (or list string null))
    (expected
     :accessor docopt-testcase-example-expected
     :documentation "The expected result of the testcase example."
@@ -76,11 +76,11 @@
 
 (defun docopt-testcase--parse-expected (s)
   "Parse the Docopt expected testcase result from S."
-  (let ((json-false nil)
-        (expected (json-read-from-string s)))
-    (if (listp expected)
-        (cl-sort expected #'string< :key #'car)
-      expected)))
+  (let ((json-false nil))
+    (let ((expected (json-read-from-string s)))
+      (if (listp expected)
+          (cl-sort expected #'string< :key #'car)
+        expected))))
 
 (defun docopt--testcase-parse-example (s)
   "Parse Docopt testcase example from the string S."
@@ -95,7 +95,7 @@
   (seq-map #'docopt--testcase-parse-example
            (seq-remove #'s-blank-p (s-split "\\$" (s-trim s)))))
 
-(defun docopt--testcase-parse (s)
+(defun docopt-testcase-parse (s)
   "Parse Docopt testcases from the string S."
   (let ((raw (docopt-testcase--strip-comments s)))
     (when (s-starts-with-p "\"\"\"" raw)
@@ -111,23 +111,63 @@
   "Test the Docopt EXAMPLE of the PROGRAM."
   (let ((argv (docopt-testcase-example-argv example)))
     (condition-case exception
-        (let* ((ast (docopt--parse-argv program argv))
-               (expected (docopt-testcase-example-expected example)))
-          (oset example :ast ast)
-          (if (docopt--parsec-error-p ast)
-              (oset example :actual 'user-error)
-            (oset example :actual (docopt--argv-to-alist program ast))))
-      (error (progn (message "Test \"%s\": ERROR:%s " argv exception)
-                    (oset example :actual exception))))
+        (oset example :actual (docopt-eval program argv))
+      (t (oset example :actual "user-error")))
     example))
+
+(defun docopt-testcase-example-failed-p (example)
+  "Return t if the Docopt testcase EXAMPLE failed."
+  (not (equal (docopt-testcase-example-actual example)
+              (docopt-testcase-example-expected example))))
+
+(defun docopt-testcase-failed-examples (testcase)
+  "Return the failed examples of the Docopt TESTCASE."
+  (seq-filter #'docopt-testcase-example-failed-p (docopt-testcase-examples testcase)))
 
 (defun docopt-testcase-test (testcase)
   "Test the Docopt examples of TESTCASE."
   (let ((program (docopt-testcase-program testcase)))
-    (message "Testing program:\n%s" (docopt-string program))
-    (seq-map (lambda (example)
-               (docopt--testcase-test-example program example))
-             (docopt-testcase-examples testcase))))
+    (message "Testing program:\n%s" (docopt-program-source program))
+    (seq-doseq (example (docopt-testcase-examples testcase))
+      (docopt--testcase-test-example program example))
+    (docopt-testcase-failed-examples testcase)))
+
+(defun docopt-testcase--symbol (testcase example)
+  "Return the test symbol for the EXAMPLE of the Docopt TESTCASE."
+  (with-slots (program) testcase
+    (thread-last (docopt-testcase-example-argv example)
+      (concat (docopt-program-source program))
+      (secure-hash 'md5)
+      (concat "docopt-testcase-")
+      (intern))))
+
+(defun docopt-testcase-define-example (testcase example)
+  "Define a test for the EXAMPLE of the Docopt TESTCASE."
+  (eval `(ert-deftest ,(docopt-testcase--symbol testcase example) ()
+           (let ((testcase ,testcase) (example ,example))
+             (with-slots (actual expexted) example
+               (docopt--testcase-test-example program example)
+               (when (docopt-testcase-example-failed-p example)
+                 (message "Testing Docopt program:\n\n%s\n"
+                          (docopt-program-source (docopt-testcase-program testcase)))
+                 (message "ARGV:\n%s" (docopt-testcase-example-argv example))
+                 (message "EXPECTED:\n%s" (pp-to-string (docopt-testcase-example-expected example)))
+                 (message "ACTUAL:\n%s" (pp-to-string (docopt-testcase-example-actual example)))
+                 (message "\n\n"))
+               ;; (should (equal (docopt-testcase-example-expected example)
+               ;;                (docopt-testcase-example-actual example)))
+               )))))
+
+
+(defun docopt-testcase-define-testcase (testcase)
+  "Define a test for each Docopt TESTCASE example."
+  (seq-doseq (example (docopt-testcase-examples testcase))
+    (docopt-testcase-define-example testcase example)))
+
+(defun docopt-testcase-define-testcases (testcases)
+  "Define tests for the Docopt TESTCASES."
+  (seq-doseq (testcase testcases)
+    (docopt-testcase-define-testcase testcase)))
 
 (provide 'docopt-testcase)
 

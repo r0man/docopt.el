@@ -36,16 +36,21 @@
 (defvar docopt-testcase-filename
   "test/testcases.docopt")
 
-(ert-deftest docopt-test-testcase-parse-num-tests ()
-  (should (equal 81 (length (docopt--testcase-parse (f-read-text docopt-testcase-filename))))))
+(defvar docopt-testcases
+  (docopt-testcase-parse (f-read-text docopt-testcase-filename)))
 
-(ert-deftest docopt-test-testcase-parse ()
-  (let ((testcase (nth 1 (docopt--testcase-parse (f-read-text docopt-testcase-filename)))))
+(ert-deftest docopt-test-number-of-testcases ()
+  (should (equal 81 (length docopt-testcases))))
+
+(ert-deftest docopt-test-testcase-1 ()
+  (let ((testcase (nth 1 (docopt-testcase-parse (f-read-text docopt-testcase-filename)))))
     (should (equal (docopt-parse-program "Usage: prog [options]\n\nOptions: -a  All.\n\n")
                    (docopt-testcase-program testcase)))
-    (should (equal (list (docopt-testcase-example :argv "prog"  :expected '((-a . :json-false)))
+    (should (equal (list (docopt-testcase-example :argv "prog"  :expected '((-a)))
                          (docopt-testcase-example :argv "prog -a" :expected '((-a . t)))
                          (docopt-testcase-example :argv "prog -x" :expected "user-error"))
                    (docopt-testcase-examples testcase)))))
+
+(docopt-testcase-define-testcases docopt-testcases)
 
 ;;; docopt-testcase-test.el ends here
