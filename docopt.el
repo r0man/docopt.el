@@ -279,6 +279,12 @@
     :initarg :arg-count
     :initform nil
     :type (or number null))
+   (default
+     :accessor docopt-option-default
+     :documentation "The default argument value of the option."
+     :initarg :default
+     :initform nil
+     :type (or string null))
    (description
     :accessor docopt-option-description
     :documentation "The description name of the option."
@@ -694,6 +700,7 @@
           (docopt-option
            :arg-count arg-count
            :description description
+           :default (docopt--parse-default description)
            :long long
            :short short
            :value value))))))
