@@ -581,7 +581,7 @@
               (unless (zerop (docopt-option-arg-count option))
                 (if (s-blank-p left)
                     (progn
-                      (when (member (docopt-tokens-move tokens) '(nil "--"))
+                      (when (member (docopt-tokens-current tokens) '(nil "--"))
                         (docopt--error (docopt-tokens-error tokens) "%s requires argument" short))
                       (setq value (docopt-tokens-move tokens)))
                   (setq value left
@@ -686,7 +686,7 @@
 
 (defun docopt--parse-default (description)
   "Parse the default value from DESCRIPTION."
-  (cadr (s-match "\\[default: \\(.*\\)\\]" description)))
+  (when description (cadr (s-match "\\[default: \\(.*\\)\\]" description))))
 
 (defun docopt--parse-option (source)
   "Parse a Docopt option from SOURCE."
