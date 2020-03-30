@@ -144,10 +144,9 @@
 (defun docopt-testcase--log-example (testcase example)
   "Log the Docopt TESTCASE for EXAMPLE."
   (message "Testing Docopt program:\n\n%s\n" (docopt-program-source (docopt-testcase-program testcase)))
-  (message "ARGV: %s" (docopt-testcase-example-argv example))
-  (message "EXPECTED:\n%s" (pp-to-string (docopt-testcase-example-expected example)))
-  (message "ACTUAL:\n%s" (pp-to-string (docopt-testcase-example-actual example)))
-  (message "\n\n"))
+  (message "Argument vector: %s" (docopt-testcase-example-argv example))
+  (message "Expected:\n%s" (pp-to-string (docopt-testcase-example-expected example)))
+  (message "Actual:\n%s\n\n" (pp-to-string (docopt-testcase-example-actual example))))
 
 (defun docopt-testcase-define-example (testcase example)
   "Define a test for the EXAMPLE of the Docopt TESTCASE."
@@ -157,7 +156,7 @@
                (docopt--testcase-test-example program example)
                (when (docopt-testcase-example-failed-p example)
                  (docopt-testcase--log-example testcase example))
-               ;; TODO:
+               ;; TODO: Why is this so slow on many failures?
                (should (equal (docopt-testcase-example-expected example)
                               (docopt-testcase-example-actual example))))))))
 
