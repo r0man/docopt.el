@@ -73,11 +73,30 @@ usage: pit stop")
     (should (equal "( [-hv] ARG ) | ( N M )" (docopt--formal-usage usage)))))
 
 (ert-deftest docopt-test-parse-defaults ()
-  (should (equal (list (docopt-option :arg-count 0 :description "Show this screen." :long "--help" :short "-h" )
-                       (docopt-option :arg-count 0 :description "Show version." :long "--version")
-                       (docopt-option :arg-count 1 :description "Speed in knots [default: 10]." :long "--speed" :default "10" :value "10")
-                       (docopt-option :arg-count 0 :description "Moored (anchored) mine." :long "--moored")
-                       (docopt-option :arg-count 0 :description "Drifting mine." :long "--drifting"))
+  (should (equal (list (docopt-option
+                        :arg-count 0
+                        :description "Show this screen."
+                        :long "--help"
+                        :short "-h" )
+                       (docopt-option
+                        :arg-count 0
+                        :description "Show version."
+                        :long "--version")
+                       (docopt-option
+                        :arg-count 1
+                        :argument "<kn>"
+                        :default "10"
+                        :description "Speed in knots [default: 10]."
+                        :long "--speed"
+                        :value "10")
+                       (docopt-option
+                        :arg-count 0
+                        :description "Moored (anchored) mine."
+                        :long "--moored")
+                       (docopt-option
+                        :arg-count 0
+                        :description "Drifting mine."
+                        :long "--drifting"))
                  (docopt--parse-defaults docopt-naval-fate-str))))
 
 (ert-deftest docopt-test-parse-section ()
@@ -97,11 +116,7 @@ usage: pit stop")
 
 (ert-deftest docopt-test-parse-program ()
   (let ((program (docopt-parse-program docopt-naval-fate-str)))
-    (should (equal (list (docopt-option :arg-count 0 :description "Show this screen." :long "--help" :short "-h")
-                         (docopt-option :arg-count 0 :description "Show version." :long "--version")
-                         (docopt-option :arg-count 1 :description "Speed in knots [default: 10]." :long "--speed" :default "10" :value "10")
-                         (docopt-option :arg-count 0 :description "Moored (anchored) mine." :long "--moored")
-                         (docopt-option :arg-count 0 :description "Drifting mine." :long "--drifting"))
+    (should (equal (docopt--parse-defaults docopt-naval-fate-str)
                    (docopt-program-options program)))
     (should (equal docopt-naval-fate-str (docopt-program-source program)))))
 

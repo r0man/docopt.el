@@ -273,7 +273,13 @@
 ;; Option
 
 (defclass docopt-option (docopt-leaf-pattern)
-  ((arg-count
+  ((argument
+    :accessor docopt-option-argument
+    :documentation "The name of the option argument."
+    :initarg :argument
+    :initform nil
+    :type (or string null))
+   (arg-count
     :accessor docopt-option-arg-count
     :documentation "The number of argument of the option."
     :initarg :arg-count
@@ -681,7 +687,8 @@
 
 (defun docopt--parse-option (source)
   "Parse a Docopt option from SOURCE."
-  (let ((short nil)
+  (let ((argument nil)
+        (short nil)
         (long nil)
         (arg-count 0)
         (value nil))
@@ -694,10 +701,11 @@
               (setq long s))
              ((s-starts-with-p "-" s)
               (setq short s))
-             (t (setq arg-count 1))))
+             (t (setq argument s arg-count 1))))
           (when (> arg-count 0)
             (setq value (docopt--parse-default description)))
           (docopt-option
+           :argument argument
            :arg-count arg-count
            :description description
            :default (docopt--parse-default description)
