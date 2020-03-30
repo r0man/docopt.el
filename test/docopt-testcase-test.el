@@ -30,53 +30,22 @@
 ;;; Code:
 
 (require 'ert)
+(require 'f)
 (require 'docopt-testcase)
 
-;; (describe "The `docopt--parse-testcase-example` parser"
+(defvar docopt-testcase-filename
+  "test/testcases.docopt")
 
-;;   (it "should parse a single line JSON result"
-;;     (expect (parsec-with-input "$ prog\n{\"-a\": false}\n"
-;;               (docopt--parse-testcase-example))
-;;             :to-equal (docopt-testcase-example
-;;                        :argv "prog"
-;;                        :expected '((-a)))))
+(ert-deftest docopt-test-testcase-parse-num-tests ()
+  (should (equal 81 (length (docopt--testcase-parse (f-read-text docopt-testcase-filename))))))
 
-;;   (it "should parse a multi line JSON result"
-;;     (expect (parsec-with-input "$ prog\n{\"-a\": false,\n \"-b\": true}\n"
-;;               (docopt--parse-testcase-example))
-;;             :to-equal (docopt-testcase-example
-;;                        :argv "prog"
-;;                        :expected '((-a) (-b . t)))))
-
-;;   (it "should parse a multi line nested JSON result"
-;;     (expect (parsec-with-input "$ prog\n{\"-a\": false,\n \"-b\": {\"c\": 1}}\n"
-;;               (docopt--parse-testcase-example))
-;;             :to-equal (docopt-testcase-example
-;;                        :argv "prog"
-;;                        :expected '((-a) (-b (c . 1))))))
-
-;;   (it "should parse a multi line nested JSON result with spaces"
-;;     (expect (parsec-with-input "$ prog\n {\"-a\": false,\n \"-b\": {\"c\": 1 } }\n"
-;;               (docopt--parse-testcase-example))
-;;             :to-equal (docopt-testcase-example
-;;                        :argv "prog"
-;;                        :expected '((-a) (-b (c . 1))))))
-
-;;   (it "should parse a user error"
-;;     (expect (parsec-with-input "$ prog --xxx\n\"user-error\""
-;;               (docopt--parse-testcase-example))
-;;             :to-equal (docopt-testcase-example :argv "prog --xxx" :expected 'user-error))))
-
-;; (describe "The `docopt-testcase-program` parser"
-
-;;   (it "should parse a single line string"
-;;     (expect (parsec-with-input "r\"\"\"Usage: prog [<arg>]\n\n\"\"\""
-;;               (docopt--parse-testcase-program))
-;;             :to-equal (docopt-parse "Usage: prog [<arg>]\n\n")))
-
-;;   (it "should parse a multi line string"
-;;     (expect (parsec-with-input "r\"\"\"Usage: prog [options]\n\nOptions: -a  All.\n\n\"\"\""
-;;               (docopt--parse-testcase-program))
-;;             :to-equal (docopt-parse "Usage: prog [options]\n\nOptions: -a  All.\n\n"))))
+(ert-deftest docopt-test-testcase-parse ()
+  (let ((testcase (nth 1 (docopt--testcase-parse (f-read-text docopt-testcase-filename)))))
+    (should (equal (docopt-parse-program "Usage: prog [options]\n\nOptions: -a  All.\n\n")
+                   (docopt-testcase-program testcase)))
+    (should (equal (list (docopt-testcase-example :argv "prog"  :expected '((-a . :json-false)))
+                         (docopt-testcase-example :argv "prog -a" :expected '((-a . t)))
+                         (docopt-testcase-example :argv "prog -x" :expected "user-error"))
+                   (docopt-testcase-examples testcase)))))
 
 ;;; docopt-testcase-test.el ends here

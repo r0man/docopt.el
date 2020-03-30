@@ -35,12 +35,7 @@
 (require 's)
 
 (defclass docopt-testcase-example ()
-  ((ast
-    :accessor docopt-testcase-example-ast
-    :documentation "The argument vector of the testcase example."
-    :initarg :ast
-    :initform nil)
-   (argv
+  ((argv
     :accessor docopt-testcase-example-argv
     :documentation "The argument vector of the testcase example."
     :initarg :argv
@@ -57,7 +52,7 @@
     :documentation "The expected result of the testcase example."
     :initarg :expected
     :initform nil
-    :type (or list symbol null)))
+    :type (or list string null)))
   "A class representing a Docopt testcase example.")
 
 (defclass docopt-testcase ()
@@ -75,40 +70,30 @@
     :type (or list null)))
   "A class representing a Docopt testcase.")
 
-;; (defun docopt--parse-testcase-expected-data ()
-;;   "Parse the Docopt testcase expected result data."
-;;   (let ((json-false nil))
-;;     (cl-sort (json-read-from-string
-;;               (concat "{" (parsec-and (docopt--parse-spaces)
-;;                                       (parsec-ch ?\{)
-;;                                       (parsec-until-s
-;;                                        (parsec-try (parsec-and
-;;                                                     (docopt--parse-spaces)
-;;                                                     (parsec-ch ?\})
-;;                                                     (docopt--parse-spaces)
-;;                                                     (parsec-eol-or-eof))))) "}"))
-;;              #'string< :key #'car)))
-
-;; (defun docopt--parse-testcase-example ()
-;;   "Parse a Docopt testcase example."
-;;   )
-
-;; (defun docopt--parse-testcase-examples ()
-;;   "Parse Docopt testcase examples."
-;;   )
-
-;; (defun docopt--parse-testcase ()
-;;   "Parse a Docopt testcase."
-;;   (seq-let [program examples]
-;;       (parsec-collect
-;;        (parsec-and (parsec-try (docopt--parse-testcase-blank-lines))
-;;                    (docopt--parse-testcase-program))
-;;        (docopt--parse-testcase-examples))
-;;     (docopt-testcase :program program :examples examples)))
-
 (defun docopt-testcase--strip-comments (s)
   "Strip the comments from S."
   (s-replace-regexp "#.*$" "" s))
+
+(defun docopt-testcase--parse-expected (s)
+  "Parse the Docopt expected testcase result from S."
+  (let ((json-false nil)
+        (expected (json-read-from-string s)))
+    (if (listp expected)
+        (cl-sort expected #'string< :key #'car)
+      expected)))
+
+(defun docopt--testcase-parse-example (s)
+  "Parse Docopt testcase example from the string S."
+  (seq-let [argv expected] (s-split-up-to "\n" s 1)
+    (when (and argv expected)
+      (docopt-testcase-example
+       :argv (s-trim argv)
+       :expected (docopt-testcase--parse-expected expected)))))
+
+(defun docopt--testcase-parse-examples (s)
+  "Parse Docopt testcase examples from the string S."
+  (seq-map #'docopt--testcase-parse-example
+           (seq-remove #'s-blank-p (s-split "\\$" (s-trim s)))))
 
 (defun docopt--testcase-parse (s)
   "Parse Docopt testcases from the string S."
@@ -116,15 +101,11 @@
     (when (s-starts-with-p "\"\"\"" raw)
       (setq raw (substring s 3)))
     (seq-map (lambda (fixture)
-               (seq-let [doc body] (s-split "\"\"\"" fixture)
-                 (print doc)
-                 (docopt-parse-program doc)))
+               (seq-let [source examples] (s-split "\"\"\"" fixture)
+                 (docopt-testcase
+                  :examples (docopt--testcase-parse-examples examples)
+                  :program (docopt-parse-program source))))
              (seq-remove #'s-blank-p (s-split "r\"\"\"" raw)))))
-
-(docopt--testcase-parse (f-read-text "test/testcases.docopt"))
-
-
-(s-split-up-to "a" "abcdabc" 1)
 
 (defun docopt--testcase-test-example (program example)
   "Test the Docopt EXAMPLE of the PROGRAM."
