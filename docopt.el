@@ -488,11 +488,10 @@
 
 (defun docopt--formal-usage (section)
   "Parse the Docopt formal usage from SECTION."
-  (when-let ((s (cadr (s-split ":" section))))
-    (let ((split (docopt--split s)))
-      (thread-last (-split-when (lambda (s) (string= (car split) s)) split)
-        (seq-map (lambda (s) (concat "( " (s-join " " s) " )")))
-        (s-join " | ")))))
+  (when-let ((split (seq-remove #'s-blank-p (docopt--split (s-replace-regexp ".*Usage:" "" section)))))
+    (thread-last (-split-when (lambda (s) (string= (car split) s)) split)
+      (seq-map (lambda (s) (concat "( " (s-join " " s) " )")))
+      (s-join " | "))))
 
 (defun docopt--parse-section (name source)
   "Parse all Docopt sections with NAME from SOURCE."
