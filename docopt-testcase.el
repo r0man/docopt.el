@@ -141,6 +141,14 @@
       (concat "docopt-testcase-")
       (intern))))
 
+(defun docopt-testcase--log-example (testcase example)
+  "Log the Docopt TESTCASE for EXAMPLE."
+  (message "Testing Docopt program:\n\n%s\n" (docopt-program-source (docopt-testcase-program testcase)))
+  (message "ARGV: %s" (docopt-testcase-example-argv example))
+  (message "EXPECTED:\n%s" (pp-to-string (docopt-testcase-example-expected example)))
+  (message "ACTUAL:\n%s" (pp-to-string (docopt-testcase-example-actual example)))
+  (message "\n\n"))
+
 (defun docopt-testcase-define-example (testcase example)
   "Define a test for the EXAMPLE of the Docopt TESTCASE."
   (eval `(ert-deftest ,(docopt-testcase--symbol testcase example) ()
@@ -148,15 +156,10 @@
              (with-slots (actual expexted) example
                (docopt--testcase-test-example program example)
                (when (docopt-testcase-example-failed-p example)
-                 (message "Testing Docopt program:\n\n%s\n"
-                          (docopt-program-source (docopt-testcase-program testcase)))
-                 (message "ARGV:\n%s" (docopt-testcase-example-argv example))
-                 (message "EXPECTED:\n%s" (pp-to-string (docopt-testcase-example-expected example)))
-                 (message "ACTUAL:\n%s" (pp-to-string (docopt-testcase-example-actual example)))
-                 (message "\n\n"))
-               ;; (should (equal (docopt-testcase-example-expected example)
-               ;;                (docopt-testcase-example-actual example)))
-               )))))
+                 (docopt-testcase--log-example testcase example))
+               ;; TODO:
+               (should (equal (docopt-testcase-example-expected example)
+                              (docopt-testcase-example-actual example))))))))
 
 
 (defun docopt-testcase-define-testcase (testcase)
