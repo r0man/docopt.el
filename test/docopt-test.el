@@ -461,8 +461,6 @@ usage: pit stop")
                                         (docopt-option :short "-b"))
                   (list (docopt-option :short "-a"))))))
 
-(setq program (docopt-parse-program docopt-naval-fate-str))
-
 (ert-deftest docopt-test-eval-naval-fate ()
   (let ((program (docopt-parse-program docopt-naval-fate-str)))
     (should (equal '((--drifting)

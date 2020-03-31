@@ -788,7 +788,9 @@
                           ((= 1 (length values))
                            (or (car values) t))
                           ((cl-every #'vectorp values)
-                           (apply #'vconcat values))))))))))
+                           (apply #'vconcat values))
+                          ((cl-every #'numberp values)
+                           (apply #'+ values))))))))))
 
 (defun docopt-parse-argv (program source &optional options-first)
   "Parse the argument vector of the Docopt PROGRAM from SOURCE according to OPTIONS-FIRST."
@@ -812,51 +814,3 @@
 (provide 'docopt)
 
 ;;; docopt.el ends here
-
-;; (require 'cl-print)
-;; (setq cl-print-readably t)
-
-;; (setq my-program (docopt-parse-program docopt-naval-fate-str))
-;; (setq my-program (docopt-parse-program "Usage: program [options] add\nOptions:\n  --help  Help"))
-
-;; (docopt-parse-program "Usage: program add")
-
-;; (docopt-parse-program docopt-naval-fate-str)
-
-;; (docopt-parse-program "Naval Fate.
-;; Usage:
-;;   naval_fate.py ship new <name>...
-;;   naval_fate.py ship <name> move <x> <y> [--speed=<kn>]
-;;   naval_fate.py ship shoot <x> <y>
-;;   naval_fate.py mine (set|remove) <x> <y> [--moored|--drifting]
-;;   naval_fate.py -h | --help
-;;   naval_fate.py --version
-;; Options:
-;;   -h --help     Show this screen.
-;;   --version     Show version.
-;;   --speed=<kn>  Speed in knots [default: 10].
-;;   --moored      Moored (anchored) mine.
-;;   --drifting    Drifting mine.")
-
-;; (docopt-parse-program "Usage: naval_fate.py ship new <name>...")
-;; (docopt-parse-program "Usage: naval_fate.py ship <name> move <x> <y> [--speed=<kn>]")
-;; (docopt-parse-program "Usage: naval_fate.py ship shoot <x> <y>")
-;; (docopt-parse-program "Usage: naval_fate.py mine (set|remove) <x> <y> [--moored|--drifting]")
-;; (docopt-parse-program "Usage: naval_fate.py -h | --help")
-;; (docopt-parse-program "Usage: naval_fate.py --version")
-
-;; (docopt--parse-long (docopt-tokens-from-pattern "--help") nil)
-;; (docopt--parse-long (docopt-tokens-from-pattern "--help=yo") nil)
-
-;; (setq my-options (list (docopt-option :short "x")))
-
-;; (nconc (list 1) my-list)
-
-;; (docopt--parse-short (docopt-tokens-from-pattern "-ab") my-options)
-
-;; (require 'cl-print)
-;; (setq cl-print-readably t)
-
-;; (docopt--parse-long (docopt-tokens-from-pattern "--help=yo") nil)
-
-;; (docopt-program-patterns my-program)

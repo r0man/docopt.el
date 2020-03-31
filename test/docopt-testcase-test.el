@@ -34,7 +34,8 @@
 (require 'docopt-testcase)
 
 (defvar docopt-testcase-filename
-  "test/testcases.docopt")
+  (if (f-exists-p "testcases.docopt")
+      "testcases.docopt" "test/testcases.docopt"))
 
 (defvar docopt-testcases
   (docopt-testcase-parse (f-read-text docopt-testcase-filename)))
@@ -51,6 +52,6 @@
                          (docopt-testcase-example :argv "prog -x" :expected "user-error"))
                    (docopt-testcase-examples testcase)))))
 
-(docopt-testcase-define-testcases docopt-testcases)
+(docopt-testcase-define-testcases docopt-testcase-filename)
 
 ;;; docopt-testcase-test.el ends here

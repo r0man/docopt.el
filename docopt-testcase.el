@@ -30,9 +30,14 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'cl-print)
+(require 'docopt)
 (require 'eieio)
+(require 'f)
 (require 'json)
 (require 's)
+
+(setq cl-print-readably t)
 
 (defclass docopt-testcase-example ()
   ((argv
@@ -132,44 +137,41 @@
       (docopt--testcase-test-example program example))
     (docopt-testcase-failed-examples testcase)))
 
-(defun docopt-testcase--symbol (testcase example)
-  "Return the test symbol for the EXAMPLE of the Docopt TESTCASE."
-  (with-slots (program) testcase
-    (thread-last (docopt-testcase-example-argv example)
-      (concat (docopt-program-source program))
-      (secure-hash 'md5)
-      (concat "docopt-testcase-")
-      (intern))))
-
 (defun docopt-testcase--log-example (testcase example)
   "Log the Docopt TESTCASE for EXAMPLE."
   (message "Testing Docopt program:\n\n%s\n" (docopt-program-source (docopt-testcase-program testcase)))
   (message "Argument vector: %s" (docopt-testcase-example-argv example))
   (message "Expected:\n%s" (pp-to-string (docopt-testcase-example-expected example)))
-  (message "Actual:\n%s\n\n" (pp-to-string (docopt-testcase-example-actual example))))
+  (message "Actual:\n%s\n" (pp-to-string (docopt-testcase-example-actual example))))
 
-(defun docopt-testcase-define-example (testcase example)
-  "Define a test for the EXAMPLE of the Docopt TESTCASE."
-  (eval `(ert-deftest ,(docopt-testcase--symbol testcase example) ()
-           (let ((testcase ,testcase) (example ,example))
-             (with-slots (actual expexted) example
-               (docopt--testcase-test-example program example)
-               (when (docopt-testcase-example-failed-p example)
+(defun docopt-testcase--symbol (testcase)
+  "Return the test symbol for the EXAMPLE of the Docopt TESTCASE."
+  (message "TESTCASE: %s" testcase)
+  (with-slots (program) testcase
+    (thread-last (docopt-program-source program)
+      (secure-hash 'md5)
+      (concat "docopt-testcase-")
+      (intern))))
+
+(defun docopt-testcase--test-form (testcase)
+  "Return the form to define a test for the Docopt TESTCASE."
+  `(ert-deftest ,(docopt-testcase--symbol testcase) ()
+     (let ((testcase ,testcase))
+       ,@(seq-map-indexed
+          (lambda (_ index)
+            `(let ((example (nth ,index (docopt-testcase-examples testcase))))
+               (docopt--testcase-test-example (docopt-testcase-program testcase) example)
+               (unless (equal (docopt-testcase-example-expected example)
+                              (docopt-testcase-example-actual example))
                  (docopt-testcase--log-example testcase example))
-               ;; TODO: Why is this so slow on many failures?
                (should (equal (docopt-testcase-example-expected example)
-                              (docopt-testcase-example-actual example))))))))
+                              (docopt-testcase-example-actual example)))))
+          (docopt-testcase-examples testcase)))))
 
-
-(defun docopt-testcase-define-testcase (testcase)
-  "Define a test for each Docopt TESTCASE example."
-  (seq-doseq (example (docopt-testcase-examples testcase))
-    (docopt-testcase-define-example testcase example)))
-
-(defun docopt-testcase-define-testcases (testcases)
-  "Define tests for the Docopt TESTCASES."
-  (seq-doseq (testcase testcases)
-    (docopt-testcase-define-testcase testcase)))
+(defun docopt-testcase-define-testcases (filename)
+  "Define unit-tests for the Docopt testcases in FILENAME."
+  (let ((testcases  (docopt-testcase-parse (f-read-text filename))))
+    (eval `(progn ,@(seq-map #'docopt-testcase--test-form testcases)))))
 
 (provide 'docopt-testcase)
 
