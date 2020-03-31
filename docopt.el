@@ -624,22 +624,16 @@
   "Parse a Docopt atom from TOKENS using OPTIONS."
   (cond ((docopt-tokens-optional-group-p tokens)
          (docopt--parse-optional-group tokens options))
-
         ((docopt-tokens-required-group-p tokens)
          (docopt--parse-required-group tokens options))
-
         ((docopt-tokens-options-shortcut-p tokens)
          (docopt--parse-options-shortcut tokens))
-
         ((docopt-tokens-long-option-p tokens)
          (docopt--parse-long tokens options))
-
         ((docopt-tokens-short-option-p tokens)
          (docopt--parse-short tokens options))
-
         ((docopt-tokens-argument-p tokens)
          (docopt--parse-argument tokens))
-
         (t (docopt--parse-command tokens))))
 
 (defun docopt--parse-exprs (tokens options)
