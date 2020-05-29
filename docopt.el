@@ -36,6 +36,9 @@
 (require 'parsec)
 (require 's)
 
+(define-error 'docopt-invalid-program
+  "Invalid Docopt program.")
+
 ;;;###autoload
 (defun docopt-parse (s)
   "Parse the Docopt program from S."

@@ -39,6 +39,9 @@
 (require 'subr-x)
 (require 'transient)
 
+(define-error 'docopt-usage-pattern-index
+  "Invalid Docopt usage pattern index.")
+
 (cl-defgeneric docopt-transient--suffix-symbol (program object)
   "Return the transient suffix symbol for PROGRAM and OBJECT.")
 
