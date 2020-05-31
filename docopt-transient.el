@@ -253,9 +253,10 @@
 
 (defun docopt-transient--program-execute-term (program args)
   "Execute the PROGRAM using ARGS in plain term-mode."
-  (let ((buffer-name (docopt-transient--program-buffer-name program)))
-    (pp (docopt-transient--program-list program args))
-    (apply #'start-process buffer-name buffer-name (docopt-transient--program-list program args))))
+  (let ((buffer-name (docopt-transient--program-buffer-name program))
+        (args (docopt-transient--program-list program args)))
+    (pp args)
+    (apply #'start-process buffer-name buffer-name (car args) (cdr args))))
 
 (defun docopt-transient--shell-command (program args)
   "Return the shell command for PROGRAM and ARGS."
