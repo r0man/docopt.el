@@ -34,6 +34,7 @@
 (require 'dash)
 (require 'docopt-parser)
 (require 'docopt-util)
+(require 'docopt-value)
 (require 'parsec)
 (require 's)
 (require 'seq)

@@ -278,6 +278,7 @@
     (when-let ((buffer (get-buffer buffer-name)))
       (kill-buffer buffer))
     (switch-to-buffer-other-window (get-buffer-create buffer-name))
+    (require 'vterm nil t)
     (cond
      ((boundp 'vterm-shell)
       (docopt-transient--program-execute-vterm program args))
