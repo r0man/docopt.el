@@ -1,1 +1,12 @@
 * docopt.el
+
+  [[https://github.com/r0man/docopt.el/actions?query=workflow%3ACI][https://github.com/r0man/docopt.el/workflows/CI/badge.svg]]
+
+** License
+
+   Copyright © 2020 [[https://github.com/r0man][r0man]]
+
+   This program is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public License as
+   published by the Free Software Foundation; either version 3, or (at
+   your option) any later version.
