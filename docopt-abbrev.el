@@ -34,10 +34,22 @@
 (require 'seq)
 (require 'subr-x)
 
+(defvar docopt-abbrev-lower-chars
+  (cl-loop for char from ?a to ?z collect char)
+  "The list of lower case abbreviations chars.")
+
+(defvar docopt-abbrev-upper-chars
+  (cl-loop for char from ?A to ?Z collect char)
+  "The list of upper case abbreviations chars.")
+
+(defvar docopt-abbrev-numeric-chars
+  (cl-loop for char from ?0 to ?9 collect char)
+  "The list of numeric abbreviations chars.")
+
 (defvar docopt-abbrev-chars
-  (append (cl-loop for char from ?a to ?z collect char)
-          (cl-loop for char from ?A to ?Z collect char)
-          (cl-loop for char from ?0 to ?9 collect char))
+  (append docopt-abbrev-lower-chars
+          docopt-abbrev-upper-chars
+          docopt-abbrev-numeric-chars)
   "The list of abbreviations chars.")
 
 (defun docopt-abbrev-candidates (s)
@@ -68,7 +80,7 @@
         (seq-map #'char-to-string)
         (s-join "")))))
 
-(defun docopt-abbrev-list (lst n)
+(defun docopt-abbrev-list (n lst)
   "Return the unique abbreviations of length N for each element in LST."
   (nreverse (seq-reduce
              (lambda (taken-abbrevs next-abbrev)

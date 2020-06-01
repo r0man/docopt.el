@@ -31,6 +31,7 @@
 
 (require 'dash)
 (require 'docopt-argument)
+(require 'docopt-key)
 (require 'docopt-generic)
 (require 'docopt-optional)
 (require 'docopt-repeated)
@@ -41,7 +42,7 @@
 (require 'subr-x)
 
 (defclass docopt-option
-  (docopt-optionable docopt-repeatable docopt-value-base)
+  (docopt-key-base docopt-optionable docopt-repeatable docopt-value-base)
   ((argument
     :accessor docopt-option-argument
     :documentation "The argument of the option."

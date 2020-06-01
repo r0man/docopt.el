@@ -41,7 +41,7 @@
 
 (cl-defmethod docopt-collect-commands ((input docopt-standard-input))
   "Collect the commands from the Docopt standard INPUT."
-  input)
+  (ignore input) nil)
 
 (cl-defmethod docopt-collect-options ((input docopt-standard-input))
   "Collect the options from the Docopt standard INPUT."

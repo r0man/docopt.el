@@ -31,15 +31,16 @@
 
 (require 'dash)
 (require 'docopt-generic)
+(require 'docopt-key)
 (require 'docopt-optional)
 (require 'docopt-repeated)
-(require 'docopt-value)
 (require 'docopt-util)
+(require 'docopt-value)
 (require 'eieio)
 (require 'eieio-base)
 
 (defclass docopt-argument
-  (docopt-optionable docopt-repeatable docopt-value-base)
+  (docopt-key-base docopt-optionable docopt-repeatable docopt-value-base)
   ((default
      :accessor docopt-argument-default
      :documentation "The default of the argument."

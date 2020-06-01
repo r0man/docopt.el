@@ -1,4 +1,4 @@
-;;; docopt-abbrev-test.el --- Docopt abbreviation tests -*- lexical-binding: t -*-
+;;; docopt-key.el --- The Docopt key -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019-2020 r0man
 
@@ -25,26 +25,29 @@
 
 ;;; Commentary:
 
-;; The Docopt abbreviation tests.
+;; The Docopt key base class
 
 ;;; Code:
 
-(require 'buttercup)
-(require 'docopt-abbrev)
+(require 'cl-lib)
+(require 'eieio)
+(require 'seq)
 
-(describe "The `docopt-abbrev-list` function"
-  :var ((words '("hello" "world" "data")))
+(defclass docopt-key-base ()
+  ((key
+    :initarg :key
+    :initform nil
+    :accessor docopt-key
+    :documentation "The key of the Docopt object."))
+  "A base class for Docopt objects that have a key slot.")
 
-  (it "should calculate 1 letter abbreviations"
-    (expect (docopt-abbrev-list 1 words)
-            :to-equal '("h" "w" "d")))
+(defun docopt-assign-keys (objects keys)
+  "Set the key slots of OBJECTS to the values in KEYS."
+  (cl-mapcar (lambda (object key)
+               (setf (oref object key) key)
+               object)
+             objects keys))
 
-  (it "should calculate 2 letter abbreviations"
-    (expect (docopt-abbrev-list 2 words)
-            :to-equal '("he" "wo" "da")))
+(provide 'docopt-key)
 
-  (it "should calculate 3 letter abbreviations"
-    (expect (docopt-abbrev-list 3 words)
-            :to-equal '("hel" "wor" "dat"))))
-
-;;; docopt-abbrev-test.el ends here
+;;; docopt-key.el ends here

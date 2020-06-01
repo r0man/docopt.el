@@ -29,8 +29,10 @@
 
 ;;; Code:
 
+(require 'docopt-abbrev)
 (require 'docopt-generic)
 (require 'docopt-option)
+(require 'docopt-key)
 (require 'eieio)
 (require 'seq)
 
@@ -130,6 +132,16 @@
 (defun docopt-program-short-options (program)
   "Return the short options of PROGRAM."
   (seq-filter #'docopt-short-option-p (docopt-program-options program)))
+
+(defun docopt-program-argument (program name)
+  "Return the long or short argument of PROGRAM by NAME."
+  (seq-find (lambda (argument) (equal name (docopt-argument-name argument)))
+            (docopt-program-arguments program)))
+
+(defun docopt-program-command (program name)
+  "Return the long or short command of PROGRAM by NAME."
+  (seq-find (lambda (command) (equal name (docopt-command-name command)))
+            (docopt-program-commands program)))
 
 (defun docopt-program-option (program name)
   "Return the long or short option of PROGRAM by NAME."
@@ -275,6 +287,50 @@
   "Assign the incompatible commands and options of PROGRAM."
   (docopt-program--assign-incompatible-commands program)
   (docopt-program--assign-incompatible-options program))
+
+(defun docopt-program--assign-argument-keys (program)
+  "Assign the transient argument keys for the PROGRAM."
+  (let ((docopt-abbrev-chars docopt-abbrev-upper-chars)
+        (arguments (docopt-program-arguments program)))
+    (thread-last (seq-map #'docopt-name arguments)
+      (seq-map #'upcase)
+      (docopt-abbrev-list 1)
+      (docopt-assign-keys arguments))))
+
+(defun docopt-program--assign-command-keys (program)
+  "Assign the transient command keys for the PROGRAM."
+  (let ((docopt-abbrev-chars docopt-abbrev-lower-chars)
+        (commands (docopt-program-commands program)))
+    (thread-last (seq-map #'docopt-name commands)
+      (docopt-abbrev-list 2)
+      (docopt-assign-keys commands))))
+
+(defun docopt-program--assign-option-keys (program)
+  "Assign the transient option keys for the PROGRAM."
+  (let ((docopt-abbrev-chars docopt-abbrev-lower-chars)
+        (options (seq-remove (lambda (option)
+                               (and (cl-typep option 'docopt-short-option)
+                                    (oref option synonym)))
+                             (docopt-program-options program))))
+    (thread-last (seq-map #'docopt-name options)
+      (docopt-abbrev-list 1)
+      (seq-map (lambda (key) (concat "-" key)))
+      (docopt-assign-keys options))))
+
+(defun docopt-program-assign-keys (program)
+  "Assign the transient keys for the PROGRAM."
+  (docopt-program--assign-argument-keys program)
+  (docopt-program--assign-command-keys program)
+  (docopt-program--assign-option-keys program)
+  program)
+
+(defun docopt-program-arguments (program)
+  "Assign the transient keys for the PROGRAM."
+  (docopt-remove-duplicates (docopt-collect-arguments program)))
+
+(defun docopt-program-commands (program)
+  "Assign the transient keys for the PROGRAM."
+  (docopt-remove-duplicates (docopt-collect-commands program)))
 
 (provide 'docopt-program)
 

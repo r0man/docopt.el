@@ -30,6 +30,7 @@
 ;;; Code:
 
 (require 'dash)
+(require 'docopt-key)
 (require 'docopt-generic)
 (require 'docopt-optional)
 (require 'docopt-repeated)
@@ -38,7 +39,7 @@
 (require 'eieio-base)
 
 (defclass docopt-command
-  (docopt-optionable docopt-repeatable docopt-value-base)
+  (docopt-key-base docopt-optionable docopt-repeatable docopt-value-base)
   ((name
     :accessor docopt-command-name
     :documentation "The name of the command."

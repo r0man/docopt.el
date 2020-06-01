@@ -203,7 +203,7 @@
      :class 'docopt-transient--argument
      :description ,(docopt-argument-name argument)
      :docopt ,argument
-     :key ,(docopt-transient--argument-key argument)))
+     :key ,(docopt-key argument)))
 
 (cl-defmethod docopt-transient--define-suffix-form (program (command docopt-command))
   "Return the transient suffix definition form for PROGRAM and COMMAND."
@@ -212,7 +212,7 @@
      :class 'docopt-transient--command
      :description ,(docopt-command-name command)
      :docopt ,command
-     :key ,(docopt-transient--command-key command)))
+     :key ,(docopt-key command)))
 
 (cl-defmethod docopt-transient--define-suffix-form (program (option docopt-option))
   "Return the transient suffix definition form for PROGRAM and OPTION."
@@ -221,7 +221,7 @@
      :class ,(docopt-transient--option-class option)
      :description ,(or (docopt-option-description option) (docopt-option-name option))
      :docopt ,option
-     :key ,(docopt-transient--option-key option)))
+     :key ,(docopt-key option)))
 
 (cl-defmethod docopt-transient--define-suffix-form (program (usage-pattern docopt-usage-pattern))
   "Return the transient suffix definition form for PROGRAM and USAGE-PATTERN."
@@ -458,6 +458,7 @@
 
 (defun docopt-transient-define-command (program)
   "Define the transient command for PROGRAM."
+  (docopt-program-assign-keys program)
   (eval (docopt-transient--program-form program)))
 
 (defun docopt-transient-invoke-command (program)
@@ -473,6 +474,7 @@
   (docopt-transient-invoke-command program))
 
 ;; (require 'docopt-naval-fate)
+;; (setq docopt-naval-fate (docopt-parse docopt-naval-fate-str))
 ;; (docopt-transient--program-form docopt-naval-fate)
 ;; (docopt-transient-define-command docopt-naval-fate)
 ;; (docopt-transient-invoke-command docopt-naval-fate)
