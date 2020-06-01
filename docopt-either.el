@@ -82,6 +82,16 @@
   "Return a new either made of the concatenation of the members of EITHERS."
   (apply #'docopt-make-either (seq-mapcat #'docopt-either-members eithers)))
 
+(defun docopt-either-all-type-p (either type)
+  "Return t if all members of EITHER have a length of 1 and are of TYPE."
+  (and (cl-typep either 'docopt-either)
+       (cl-every (lambda (members)
+                   (and (= 1 (length members))
+                        (cl-every (lambda (member)
+                                    (cl-typep member type))
+                                  members)))
+                 (docopt-either-members either))))
+
 (cl-defmethod docopt-collect-arguments ((either docopt-either))
   "Collect the arguments from the Docopt EITHER."
   (seq-mapcat #'docopt-collect-arguments (docopt-either-members either)))

@@ -243,17 +243,25 @@
                        element))))
     program))
 
-(defun docopt-program-set-incompatible (program)
+(defun docopt-program--assign-incompatible-commands (program)
+  "Set the incompatible commands for the PROGRAM."
+  (docopt-walk program
+               (lambda (element)
+                 (when  (docopt-either-all-type-p element 'docopt-command)
+                   (let ((commands (apply #'append (docopt-either-members element))))
+                     (seq-doseq (command commands)
+                       (setf (oref command incompatible)
+                             (seq-remove (lambda (current)
+                                           (docopt-equal current command))
+                                         commands)))))
+                 element))
+  program)
+
+(defun docopt-program--assign-incompatible-options (program)
   "Set the incompatible options for the PROGRAM."
   (docopt-walk program
                (lambda (element)
-                 (when (and (cl-typep element 'docopt-either)
-                            (cl-every (lambda (members)
-                                        (and (= 1 (length members))
-                                             (cl-every (lambda (member)
-                                                         (cl-typep member 'docopt-option))
-                                                       members)))
-                                      (docopt-either-members element)))
+                 (when (docopt-either-all-type-p element 'docopt-option)
                    (let ((options (apply #'append (docopt-either-members element))))
                      (seq-doseq (option options)
                        (setf (oref option incompatible)
@@ -262,6 +270,11 @@
                                          options)))))
                  element))
   program)
+
+(defun docopt-program-assign-incompatible (program)
+  "Assign the incompatible commands and options of PROGRAM."
+  (docopt-program--assign-incompatible-commands program)
+  (docopt-program--assign-incompatible-options program))
 
 (provide 'docopt-program)
 

@@ -55,6 +55,12 @@
                   (docopt-transient--program-suffix-name program)
                   (docopt-argument-name argument))))
 
+(cl-defmethod docopt-transient--suffix-symbol (program (command docopt-command))
+  "Return the transient suffix symbol for PROGRAM and COMMAND."
+  (intern (format "%s:command:%s"
+                  (docopt-transient--program-suffix-name program)
+                  (docopt-command-name command))))
+
 (cl-defmethod docopt-transient--suffix-symbol (program (option docopt-option))
   "Return the transient suffix symbol for PROGRAM and OPTION."
   (intern (format "%s:option:--%s"
@@ -84,8 +90,16 @@
   (format "%s=" (docopt-argument-name argument)))
 
 (defun docopt-transient--argument-key (argument)
-  "Return the transient shortarg for ARGUMENT."
+  "Return the transient key for ARGUMENT."
   (format "%s" (s-upcase (substring (docopt-argument-name argument) 0 1))))
+
+(defun docopt-transient--command-argument (command)
+  "Return the transient command for COMMAND."
+  (format "%s" (docopt-command-name command)))
+
+(defun docopt-transient--command-key (command)
+  "Return the transient key for COMMAND."
+  (format "%s" (substring (docopt-command-name command) 0 2)))
 
 (defun docopt-transient--option-argument (option)
   "Return the transient argument for OPTION."
@@ -116,6 +130,16 @@
   "Set the value of the Docopt transient ARGUMENT to VALUE."
   (docopt-transient--set-docopt-value argument value)
   (cl-call-next-method argument value))
+
+;; Command
+
+(defclass docopt-transient--command (transient-switch)
+  ((docopt :initarg :docopt :type docopt-command)))
+
+(cl-defmethod transient-infix-set ((command docopt-transient--command) value)
+  "Set the value of the Docopt transient COMMAND to VALUE."
+  (docopt-transient--set-docopt-value command value)
+  (cl-call-next-method command value))
 
 ;; Option
 
@@ -181,6 +205,15 @@
      :docopt ,argument
      :key ,(docopt-transient--argument-key argument)))
 
+(cl-defmethod docopt-transient--define-suffix-form (program (command docopt-command))
+  "Return the transient suffix definition form for PROGRAM and COMMAND."
+  `(define-infix-argument ,(docopt-transient--suffix-symbol program command) ()
+     :argument ,(docopt-transient--command-argument command)
+     :class 'docopt-transient--command
+     :description ,(docopt-command-name command)
+     :docopt ,command
+     :key ,(docopt-transient--command-key command)))
+
 (cl-defmethod docopt-transient--define-suffix-form (program (option docopt-option))
   "Return the transient suffix definition form for PROGRAM and OPTION."
   `(define-infix-argument ,(docopt-transient--suffix-symbol program option) ()
@@ -208,6 +241,10 @@
   "Return the transient infix argument s-exprs for the arguments PROGRAM."
   (docopt-remove-duplicates (docopt-collect-arguments program)))
 
+(defun docopt-transient--program-commands (program)
+  "Return the transient infix commands s-exprs for the arguments PROGRAM."
+  (seq-filter #'docopt-command-incompatible (docopt-collect-commands program)))
+
 (defun docopt-transient--program-options (program)
   "Return the transient infix argument s-exprs for the options PROGRAM."
   (thread-last (docopt-collect-options program)
@@ -220,6 +257,11 @@
   "Return the transient infix argument s-exprs for the arguments PROGRAM."
   (seq-map (lambda (argument) (docopt-transient--define-suffix-form program argument))
            (docopt-transient--program-arguments program)))
+
+(defun docopt-transient--define-suffix-command-forms (program)
+  "Return the transient infix command s-exprs for the commands PROGRAM."
+  (seq-map (lambda (command) (docopt-transient--define-suffix-form program command))
+           (docopt-transient--program-commands program)))
 
 (defun docopt-transient--define-suffix-option-forms (program)
   "Return the transient infix argument s-exprs for the options PROGRAM."
@@ -308,14 +350,21 @@
     (message "Inserted %s to current buffer." (docopt-bold command))))
 
 (defun docopt-transient--section-arguments (program)
-  "Return the transient arguments for the PROGRAM."
+  "Return the transient arguments section for the PROGRAM."
   (thread-last (docopt-transient--program-arguments program)
     (seq-map (lambda (argument) (list (docopt-transient--suffix-symbol program argument))))
     (append (list "Arguments"))
     (apply #'vector)))
 
+(defun docopt-transient--section-commands (program)
+  "Return the transient commands section for the PROGRAM."
+  (thread-last (docopt-transient--program-commands program)
+    (seq-map (lambda (argument) (list (docopt-transient--suffix-symbol program argument))))
+    (append (list "Commands"))
+    (apply #'vector)))
+
 (defun docopt-transient--section-options (program)
-  "Return the transient options for the PROGRAM."
+  "Return the transient options section for the PROGRAM."
   (thread-last (docopt-transient--program-options program)
     (seq-map (lambda (option) (list (docopt-transient--suffix-symbol program option))))
     (cons "Options")
@@ -360,7 +409,7 @@
   "Return the transient header section for PROGRAM."
   (vector "" (docopt-program-header program)))
 
-(defun docopt-transient--incompatible (program)
+(defun docopt-transient--incompatible-options (program)
   "Return the list of incompatible options for PROGRAM."
   (thread-last (docopt-collect-options program)
     (seq-filter #'docopt-option-incompatible)
@@ -370,6 +419,20 @@
                               (docopt-option-incompatible option)))))
     (seq-uniq)))
 
+(defun docopt-transient--incompatible-commands (program)
+  "Return the list of incompatible options for PROGRAM."
+  (thread-last (docopt-collect-commands program)
+    (seq-filter #'docopt-command-incompatible)
+    (seq-map (lambda (command)
+               (cons (docopt-transient--command-argument command)
+                     (seq-map #'docopt-command-name (docopt-command-incompatible command)))))
+    (seq-uniq)))
+
+(defun docopt-transient--incompatible (program)
+  "Return the list of incompatible options for PROGRAM."
+  (append (docopt-transient--incompatible-commands program)
+          (docopt-transient--incompatible-options program)))
+
 (defun docopt-transient--define-program-form (program)
   "Return the transient infix argument s-exprs for the options PROGRAM."
   (let ((program-symbol (docopt-transient--program-symbol program)))
@@ -378,6 +441,7 @@
        :incompatible (quote ,(docopt-transient--incompatible program))
        ,(docopt-transient--section-header program)
        ,(docopt-transient--section-usage-patterns program)
+       ,(docopt-transient--section-commands program)
        ,(docopt-transient--section-options program)
        ,(docopt-transient--section-arguments program)
        ,(docopt-transient--section-actions program)
@@ -386,11 +450,11 @@
 
 (defun docopt-transient--program-form (program)
   "Return the transient infix argument s-exprs for the options PROGRAM."
-  `(progn
-     ,@(docopt-transient--define-suffix-argument-forms program)
-     ,@(docopt-transient--define-suffix-option-forms program)
-     ,@(docopt-transient--define-suffix-usage-pattern-forms program)
-     ,(docopt-transient--define-program-form program)))
+  `(progn ,@(docopt-transient--define-suffix-argument-forms program)
+          ,@(docopt-transient--define-suffix-command-forms program)
+          ,@(docopt-transient--define-suffix-option-forms program)
+          ,@(docopt-transient--define-suffix-usage-pattern-forms program)
+          ,(docopt-transient--define-program-form program)))
 
 (defun docopt-transient-define-command (program)
   "Define the transient command for PROGRAM."
@@ -408,11 +472,11 @@
   (docopt-transient-define-command program)
   (docopt-transient-invoke-command program))
 
-(provide 'docopt-transient)
-
-;;; docopt-transient.el ends here
-
 ;; (require 'docopt-naval-fate)
 ;; (docopt-transient--program-form docopt-naval-fate)
 ;; (docopt-transient-define-command docopt-naval-fate)
 ;; (docopt-transient-invoke-command docopt-naval-fate)
+
+(provide 'docopt-transient)
+
+;;; docopt-transient.el ends here

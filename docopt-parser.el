@@ -505,7 +505,7 @@ When t, only allow \"=\" as the long option separator, otherwise
   (let ((program (docopt-program)))
     (docopt-program-set-sections program (docopt--parse-program-sections))
     (let ((program (docopt-program-remove-unknown-options (docopt-program-set-identity program))))
-      (docopt-program-set-incompatible program)
+      (docopt-program-assign-incompatible program)
       (with-slots (arguments name options usage) program
         (docopt-set-shortcut-options program options)
         (setq name (docopt-parser--program-name program))

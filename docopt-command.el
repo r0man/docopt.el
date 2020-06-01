@@ -44,7 +44,13 @@
     :documentation "The name of the command."
     :initarg :name
     :initform nil
-    :type (or string null)))
+    :type (or string null))
+   (incompatible
+    :accessor docopt-command-incompatible
+    :documentation "The list of incompatible commands."
+    :initarg :incompatible
+    :initform nil
+    :type (or list null)))
   "A class representing a Docopt command.")
 
 (cl-defmethod clone ((command docopt-command) &rest params)

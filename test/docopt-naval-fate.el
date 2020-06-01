@@ -117,17 +117,17 @@
    :name "version"
    :prefixes '("versio" "versi" "vers" "ver" "ve" "v")))
 
-(setf (oref docopt-naval-fate-option-h incompatible)
-      (list docopt-naval-fate-option-help )
+(with-slots (incompatible) docopt-naval-fate-option-h
+  (setf incompatible (list docopt-naval-fate-option-help)))
 
-      (oref docopt-naval-fate-option-help incompatible)
-      (list docopt-naval-fate-option-h)
+(with-slots (incompatible) docopt-naval-fate-option-help
+  (setf incompatible (list docopt-naval-fate-option-h)))
 
-      (oref docopt-naval-fate-option-moored incompatible)
-      (list docopt-naval-fate-option-drifting)
+(with-slots (incompatible) docopt-naval-fate-option-moored
+  (setf incompatible (list docopt-naval-fate-option-drifting)))
 
-      (oref docopt-naval-fate-option-drifting incompatible)
-      (list docopt-naval-fate-option-moored))
+(with-slots (incompatible) docopt-naval-fate-option-drifting
+  (setf incompatible (list docopt-naval-fate-option-moored)))
 
 ;; Usage patterns
 
@@ -156,14 +156,26 @@
    (docopt-argument :name "x")
    (docopt-argument :name "y")))
 
+(defvar docopt-naval-fate-set-command
+  (docopt-command :name "set"))
+
+(defvar docopt-naval-fate-remove-command
+  (docopt-command :name "remove"))
+
+(with-slots (incompatible) docopt-naval-fate-set-command
+  (setf incompatible (list docopt-naval-fate-remove-command)))
+
+(with-slots (incompatible) docopt-naval-fate-remove-command
+  (setf incompatible (list docopt-naval-fate-set-command)))
+
 (defvar docopt-naval-fate-pattern-mine
   (docopt-make-usage-pattern
    (docopt-command :name "naval_fate")
    (docopt-command :name "mine")
    (docopt-make-required-group
     (docopt-make-either
-     (list (docopt-command :name "set"))
-     (list (docopt-command :name "remove"))))
+     (list docopt-naval-fate-set-command)
+     (list docopt-naval-fate-remove-command)))
    (docopt-argument :name "x")
    (docopt-argument :name "y")
    (docopt-make-optional-group
