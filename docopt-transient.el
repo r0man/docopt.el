@@ -219,7 +219,7 @@
   `(define-infix-argument ,(docopt-transient--suffix-symbol program option) ()
      :argument ,(docopt-transient--option-argument option)
      :class ,(docopt-transient--option-class option)
-     :description ,(docopt-option-description option)
+     :description ,(or (docopt-option-description option) (docopt-option-name option))
      :docopt ,option
      :key ,(docopt-transient--option-key option)))
 
