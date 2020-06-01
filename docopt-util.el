@@ -42,6 +42,10 @@
   (let ((s (s-trim s)))
     (unless (s-blank-p s) s)))
 
+(defun docopt-substring (s from to)
+  "Return the substring in S from FROM to TO, or nil when out of bounds."
+  (substring s (min from (length s)) (min to (length s))))
+
 (defun docopt--parsec-error-p (result)
   "Return t if the car of RESULT is a 'parsec-error."
   (and (sequencep result) (equal 'parsec-error (car result))))
