@@ -306,6 +306,7 @@
 
 (defun docopt-transient--program-execute-vterm (program args)
   "Execute the PROGRAM using ARGS in vterm-mode with color support."
+  (require 'vterm nil)
   (let ((vterm-shell (docopt-transient--shell-command program args)))
     (vterm-mode)
     (use-local-map vterm-copy-mode-map)))
