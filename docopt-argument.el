@@ -66,7 +66,8 @@
 
 (cl-defmethod docopt-argument-list ((argument docopt-argument))
   "Return the shell argument list for the ARGUMENT."
-  (list (docopt-value argument)))
+  (with-slots (value) argument
+    (when value (list value))))
 
 (cl-defmethod docopt-equal ((argument docopt-argument) object)
   "Return t if ARGUMENT and OBJECT are equal-ish."

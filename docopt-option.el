@@ -129,7 +129,12 @@
   "Return the shell argument list for the long OPTION."
   (with-slots (argument name value) option
     ;; TODO: Use value from argument
-    (seq-remove #'null (list (concat "--" name) value))))
+    (seq-remove #'null (list (concat "--" name) value))
+    (if argument
+        (when-let ((value (docopt-argument-list argument)))
+          (cons (concat "--" name) value))
+      (when value
+        (list (concat "--" name))))))
 
 (defun docopt-format--option-argument (option)
   "Convert the Docopt OPTION argument to a formatted string."
