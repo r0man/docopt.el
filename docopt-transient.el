@@ -136,10 +136,16 @@
 (defclass docopt-transient--command (transient-switch)
   ((docopt :initarg :docopt :type docopt-command)))
 
+(cl-defmethod transient-init-value ((command docopt-transient--command))
+  "Set the initial value of the COMMAND."
+  (prog1 (cl-call-next-method command)
+    (docopt-transient--set-docopt-value command (oref command value))))
+
 (cl-defmethod transient-infix-set ((command docopt-transient--command) value)
   "Set the value of the Docopt transient COMMAND to VALUE."
-  (docopt-transient--set-docopt-value command value)
-  (cl-call-next-method command value))
+  (with-slots (docopt) command
+    (docopt-transient--set-docopt-value command value)
+    (cl-call-next-method command value)))
 
 ;; Option
 
@@ -279,7 +285,7 @@
 
 (defun docopt-transient--program-list (program args)
   "Return the PROGRAM with ARGS as a list."
-  (append (s-split " " (docopt-program-name program)) (cdr args)))
+  (append (s-split " " (docopt-program-name program)) args))
 
 (defun docopt-transient--program-string (program args)
   "Return the PROGRAM with ARGS as a string."

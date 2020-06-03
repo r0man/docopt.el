@@ -63,7 +63,8 @@
 
 (cl-defmethod docopt-argument-list ((command docopt-command))
   "Return the shell argument list for the COMMAND."
-  (list (docopt-command-name command)))
+  (with-slots (value) command
+    (when value (list (docopt-command-name command)))))
 
 (cl-defmethod docopt-collect-arguments ((_ docopt-command))
   "Collect the arguments from the Docopt COMMAND." nil)
