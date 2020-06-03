@@ -182,8 +182,11 @@
 (cl-defmethod docopt-argument-list ((option docopt-short-option))
   "Return the shell argument list for the short OPTION."
   (with-slots (argument name value) option
-    ;; TODO: Use value from argument
-    (seq-remove #'null (list (concat "-" name) value))))
+    (if argument
+        (when-let ((value (docopt-argument-list argument)))
+          (cons (concat "-" name) value))
+      (when value
+        (list (concat "-" name))))))
 
 (cl-defmethod docopt-collect-arguments ((_ docopt-option))
   "Collect the arguments from the Docopt OPTION." nil)
