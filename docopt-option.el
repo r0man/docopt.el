@@ -125,11 +125,11 @@
       (setq prefixes (clone (docopt-long-option-prefixes option)))
       copy)))
 
-(cl-defmethod docopt-argument-list ((option docopt-long-option))
+(cl-defmethod docopt-shell-arguments ((option docopt-long-option))
   "Return the shell argument list for the long OPTION."
   (with-slots (argument name value) option
     (if argument
-        (when-let ((value (docopt-argument-list argument)))
+        (when-let ((value (docopt-shell-arguments argument)))
           (cons (concat "--" name) value))
       (when value
         (list (concat "--" name))))))
@@ -179,11 +179,11 @@
   "Format the short option NAME."
   (concat "-" name))
 
-(cl-defmethod docopt-argument-list ((option docopt-short-option))
+(cl-defmethod docopt-shell-arguments ((option docopt-short-option))
   "Return the shell argument list for the short OPTION."
   (with-slots (argument name value) option
     (if argument
-        (when-let ((value (docopt-argument-list argument)))
+        (when-let ((value (docopt-shell-arguments argument)))
           (cons (concat "-" name) value))
       (when value
         (list (concat "-" name))))))

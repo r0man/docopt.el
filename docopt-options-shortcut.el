@@ -50,10 +50,10 @@
     :type (or list null)))
   "A class representing a Docopt options shortcut.")
 
-(cl-defmethod docopt-argument-list ((shortcut docopt-options-shortcut))
+(cl-defmethod docopt-shell-arguments ((shortcut docopt-options-shortcut))
   "Return the shell argument list for the options SHORTCUT."
   (with-slots (options) shortcut
-    (seq-remove #'null (seq-mapcat #'docopt-argument-list options))))
+    (seq-remove #'null (seq-mapcat #'docopt-shell-arguments options))))
 
 (cl-defmethod docopt-collect-arguments ((shortcut docopt-options-shortcut))
   "Collect the arguments from the Docopt SHORTCUT."

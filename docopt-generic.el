@@ -45,7 +45,7 @@
   "Return a copy of S."
   (copy-sequence s))
 
-(cl-defgeneric docopt-argument-list (object)
+(cl-defgeneric docopt-shell-arguments (object)
   "Return the shell argument list for the OBJECT.")
 
 (cl-defgeneric docopt-collect-arguments (object)

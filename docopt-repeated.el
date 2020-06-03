@@ -44,10 +44,10 @@
   "Make a new Docopt argument using OBJECT."
   (docopt-repeated :object (docopt-set-repeat object t)))
 
-(cl-defmethod docopt-argument-list ((repeated docopt-repeated))
+(cl-defmethod docopt-shell-arguments ((repeated docopt-repeated))
   "Return the shell argument list for the REPEATED object."
   (with-slots (object) repeated
-    (docopt-argument-list object)))
+    (docopt-shell-arguments object)))
 
 (cl-defmethod docopt-collect-arguments ((repeated docopt-repeated))
   "Collect the arguments from the Docopt REPEATED."

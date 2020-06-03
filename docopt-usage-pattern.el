@@ -56,11 +56,11 @@
       (setq expressions (clone (docopt-usage-pattern-expressions pattern)))
       copy)))
 
-(cl-defmethod docopt-argument-list ((pattern docopt-usage-pattern))
+(cl-defmethod docopt-shell-arguments ((pattern docopt-usage-pattern))
   "Return the shell argument list for the usage PATTERN."
   (with-slots (command expressions) pattern
-    (append (docopt-argument-list command)
-            (seq-mapcat #'docopt-argument-list expressions))))
+    (append (docopt-shell-arguments command)
+            (seq-mapcat #'docopt-shell-arguments expressions))))
 
 (cl-defmethod docopt-name ((usage-pattern docopt-usage-pattern))
   "Return the name of USAGE-PATTERN."

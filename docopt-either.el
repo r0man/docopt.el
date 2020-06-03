@@ -52,10 +52,10 @@
       (setq members (clone (docopt-either-members either)))
       copy)))
 
-(cl-defmethod docopt-argument-list ((either docopt-either))
+(cl-defmethod docopt-shell-arguments ((either docopt-either))
   "Return the shell argument list for the EITHER."
   (thread-last (oref either members)
-    (seq-map (lambda (members) (seq-mapcat #'docopt-argument-list members)))
+    (seq-map (lambda (members) (seq-mapcat #'docopt-shell-arguments members)))
     (seq-remove #'null)
     (car)))
 

@@ -50,10 +50,10 @@
     (setf (oref copy :members) (clone (docopt-group-members group)))
     copy))
 
-(cl-defmethod docopt-argument-list ((group docopt-group))
+(cl-defmethod docopt-shell-arguments ((group docopt-group))
   "Return the shell argument list for the GROUP."
   (with-slots (members) group
-    (seq-mapcat #'docopt-argument-list members)))
+    (seq-mapcat #'docopt-shell-arguments members)))
 
 (cl-defmethod docopt-set-repeat ((group docopt-group) value)
   "Set the :repeat slot of the GROUP members to VALUE."

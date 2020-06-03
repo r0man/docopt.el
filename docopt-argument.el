@@ -64,7 +64,7 @@
       (setq value (clone (docopt-value argument)))
       copy)))
 
-(cl-defmethod docopt-argument-list ((argument docopt-argument))
+(cl-defmethod docopt-shell-arguments ((argument docopt-argument))
   "Return the shell argument list for the ARGUMENT."
   (with-slots (value) argument
     (when value (list value))))
