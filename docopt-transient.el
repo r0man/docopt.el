@@ -149,12 +149,16 @@
 (cl-defmethod transient-init-value ((option docopt-transient--option))
   "Set the initial value of the OPTION."
   (prog1 (cl-call-next-method option)
-    (docopt-transient--set-docopt-value option (oref option value))))
+    (with-slots (docopt value) option
+      (with-slots (argument) docopt
+        (setf (oref argument value) value)))))
 
 (cl-defmethod transient-infix-set ((option docopt-transient--option) value)
   "Set the value of the Docopt transient OPTION to VALUE."
-  (docopt-transient--set-docopt-value option value)
-  (cl-call-next-method option value))
+  (with-slots (docopt) option
+    (with-slots (argument) docopt
+      (setf (oref argument value) value)
+      (cl-call-next-method option value))))
 
 ;; Switch
 
