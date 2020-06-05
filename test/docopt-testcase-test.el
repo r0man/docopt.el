@@ -32,51 +32,51 @@
 (require 'buttercup)
 (require 'docopt-testcase)
 
-(describe "The `docopt--parse-testcase-example` parser"
+(describe "The `docopt-testcase--parse-example` parser"
 
   (it "should parse a single line JSON result"
     (expect (parsec-with-input "$ prog\n{\"-a\": false}\n"
-              (docopt--parse-testcase-example))
+              (docopt-testcase--parse-example))
             :to-equal (docopt-testcase-example
                        :argv "prog"
                        :expected '((-a)))))
 
   (it "should parse a multi line JSON result"
     (expect (parsec-with-input "$ prog\n{\"-a\": false,\n \"-b\": true}\n"
-              (docopt--parse-testcase-example))
+              (docopt-testcase--parse-example))
             :to-equal (docopt-testcase-example
                        :argv "prog"
                        :expected '((-a) (-b . t)))))
 
   (it "should parse a multi line nested JSON result"
     (expect (parsec-with-input "$ prog\n{\"-a\": false,\n \"-b\": {\"c\": 1}}\n"
-              (docopt--parse-testcase-example))
+              (docopt-testcase--parse-example))
             :to-equal (docopt-testcase-example
                        :argv "prog"
                        :expected '((-a) (-b (c . 1))))))
 
   (it "should parse a multi line nested JSON result with spaces"
     (expect (parsec-with-input "$ prog\n {\"-a\": false,\n \"-b\": {\"c\": 1 } }\n"
-              (docopt--parse-testcase-example))
+              (docopt-testcase--parse-example))
             :to-equal (docopt-testcase-example
                        :argv "prog"
                        :expected '((-a) (-b (c . 1))))))
 
   (it "should parse a user error"
     (expect (parsec-with-input "$ prog --xxx\n\"user-error\""
-              (docopt--parse-testcase-example))
+              (docopt-testcase--parse-example))
             :to-equal (docopt-testcase-example :argv "prog --xxx" :expected 'user-error))))
 
 (describe "The `docopt-testcase-program` parser"
 
   (it "should parse a single line string"
     (expect (parsec-with-input "r\"\"\"Usage: prog [<arg>]\n\n\"\"\""
-              (docopt--parse-testcase-program))
+              (docopt-testcase--parse-program))
             :to-equal (docopt-parse "Usage: prog [<arg>]\n\n")))
 
   (it "should parse a multi line string"
     (expect (parsec-with-input "r\"\"\"Usage: prog [options]\n\nOptions: -a  All.\n\n\"\"\""
-              (docopt--parse-testcase-program))
+              (docopt-testcase--parse-program))
             :to-equal (docopt-parse "Usage: prog [options]\n\nOptions: -a  All.\n\n"))))
 
 ;;; docopt-testcase-test.el ends here

@@ -61,8 +61,8 @@
 ;; (docopt-eval my-program "prog -o this")
 ;; (docopt-eval my-program "prog 20 40")
 
-;; (seq-doseq (testcase (docopt-parse-testcases (f-read-text "test/testcases.docopt")))
+;; (seq-doseq (testcase (docopt-testcase-parse (f-read-text "test/testcases.docopt")))
 ;;   (docopt-test-define-describe testcase))
 
-(seq-doseq (testcase (seq-take (docopt-parse-testcases (f-read-text "test/testcases.docopt")) 16))
+(seq-doseq (testcase (seq-take (docopt-testcase-parse (f-read-text "test/testcases.docopt")) 16))
   (docopt-test-define-describe testcase))
