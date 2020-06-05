@@ -285,7 +285,7 @@
 
 (defun docopt-transient--program-list (program args)
   "Return the PROGRAM with ARGS as a list."
-  (append (s-split " " (docopt-program-name program)) args))
+  (append (s-split " " (docopt-program-name program)) (cdr args)))
 
 (defun docopt-transient--program-string (program args)
   "Return the PROGRAM with ARGS as a string."
