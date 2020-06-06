@@ -1,10 +1,9 @@
-;;; docopt-testcase.el --- The Docopt testcase parser -*- lexical-binding: t -*-
+;;; docopt-testcase.el --- Docopt testcase -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019-2020 r0man
 
 ;; Author: r0man <roman@burningswell.com>
 ;; Maintainer: r0man <roman@burningswell.com>
-;; Created: 29 Feb 2020
 ;; Keywords: docopt, tools, processes
 ;; Homepage: https://github.com/r0man/docopt.el
 

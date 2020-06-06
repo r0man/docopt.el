@@ -1,10 +1,9 @@
-;;; docopt-argv.el --- The Docopt argument vector parser -*- lexical-binding: t -*-
+;;; docopt-argv.el --- Docopt argument vector -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019-2020 r0man
 
 ;; Author: r0man <roman@burningswell.com>
 ;; Maintainer: r0man <roman@burningswell.com>
-;; Created: 29 Feb 2020
 ;; Keywords: docopt, tools, processes
 ;; Homepage: https://github.com/r0man/docopt.el
 

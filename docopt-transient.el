@@ -477,7 +477,7 @@
   (let ((command (docopt-transient--program-symbol program)))
     (if (functionp command)
         (funcall command)
-      (user-error "Docopt command %s not defined." (docopt-bold command)))))
+      (user-error "Docopt command %s not defined" (docopt-bold command)))))
 
 (defun docopt-transient (program)
   "Define the transient command for PROGRAM."
