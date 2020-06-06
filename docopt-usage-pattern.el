@@ -29,6 +29,7 @@
 ;;; Code:
 
 (require 'docopt-generic)
+(require 'docopt-util)
 (require 'eieio)
 (require 'subr-x)
 
@@ -111,13 +112,22 @@
 
 (defun docopt-usage-pattern-set-repeat (usage-pattern)
   "Set the :repeat slot of repeatable elements occurring more then once in USAGE-PATTERN to t."
-  (thread-last (docopt-usage-pattern-collect-repeatable usage-pattern)
-    (seq-group-by (lambda (element)
-                    (cons (eieio-object-class-name element)
-                          (docopt-name element))))
-    (seq-map #'cdr)
-    (seq-filter (lambda (group) (> (length group) 1)))
-    (seq-map (lambda (group) (docopt-set-repeat group t)))))
+  (let ((eithers (docopt-by-type usage-pattern 'docopt-either)))
+    (thread-last (docopt-usage-pattern-collect-repeatable usage-pattern)
+      (seq-group-by (lambda (element)
+                      (cons (eieio-object-class-name element)
+                            (docopt-name element))))
+      (seq-map #'cdr)
+      (seq-filter (lambda (group) (> (length group) 1)))
+      ;; Don't mark argument as repeated if it appears in all members of an either
+      (seq-remove (lambda (group)
+                    (and (cl-typep (car group) 'docopt-argument)
+                         (cl-some (lambda (either)
+                                    (cl-every (lambda (member)
+                                                (docopt-find member (car group)))
+                                              (oref either members)))
+                                  eithers))))
+      (seq-map (lambda (group) (docopt-set-repeat group t))))))
 
 (provide 'docopt-usage-pattern)
 

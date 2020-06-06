@@ -53,6 +53,26 @@
   "Remove duplicate Docopt objects from LST."
   (cl-remove-duplicates lst :test #'docopt-equal))
 
+(defun docopt-by-type (object type)
+  "Find all elements in OBJECT with the given TYPE."
+  (let ((objects nil))
+    (docopt-walk object
+                 (lambda (element)
+                   (when (cl-typep element type)
+                     (setq objects (cons element objects)))
+                   element))
+    (docopt-remove-duplicates objects)))
+
+(defun docopt-find (object element)
+  "Find ELEMENT in OBJECT."
+  (let ((objects nil))
+    (docopt-walk object
+                 (lambda (object)
+                   (when (docopt-equal element object)
+                     (setq objects (cons object objects)))
+                   object))
+    (car objects)))
+
 (provide 'docopt-util)
 
 ;;; docopt-util.el ends here
