@@ -38,46 +38,59 @@
 (require 'json)
 (require 'parsec)
 (require 's)
+(require 'seq)
 
 (defclass docopt-testcase-example ()
-  ((ast
-    :accessor docopt-testcase-example-ast
-    :documentation "The argument vector of the testcase example."
-    :initarg :ast
-    :initform nil)
+  ((actual
+    :accessor docopt-testcase-example-actual
+    :documentation "The actual result of the testcase example."
+    :initarg :actual
+    :initform nil
+    :type (or list symbol null))
    (argv
     :accessor docopt-testcase-example-argv
     :documentation "The argument vector of the testcase example."
     :initarg :argv
     :initform nil
     :type (or string null))
-   (actual
-    :accessor docopt-testcase-example-actual
-    :documentation "The actual result of the testcase example."
-    :initarg :actual
-    :initform nil
-    :type (or list symbol null))
+   (ast
+    :accessor docopt-testcase-example-ast
+    :documentation "The argument vector of the testcase example."
+    :initarg :ast
+    :initform nil)
    (expected
     :accessor docopt-testcase-example-expected
     :documentation "The expected result of the testcase example."
     :initarg :expected
     :initform nil
-    :type (or list symbol null)))
+    :type (or list symbol null))
+   (index
+    :accessor docopt-testcase-example-index
+    :documentation "The index of the testcase example."
+    :initarg :index
+    :initform nil
+    :type (or null number)))
   "A class representing a Docopt testcase example.")
 
 (defclass docopt-testcase ()
-  ((program
-    :accessor docopt-testcase-program
-    :documentation "The program of the testcase."
-    :initarg :program
-    :initform nil
-    :type (or docopt-program null))
-   (examples
+  ((examples
     :accessor docopt-testcase-examples
     :documentation "The examples of the testcase."
     :initarg :examples
     :initform nil
-    :type (or list null)))
+    :type (or list null))
+   (index
+    :accessor docopt-testcase-index
+    :documentation "The index of the testcase."
+    :initarg :index
+    :initform nil
+    :type (or null number))
+   (program
+    :accessor docopt-testcase-program
+    :documentation "The program of the testcase."
+    :initarg :program
+    :initform nil
+    :type (or docopt-program null)))
   "A class representing a Docopt testcase.")
 
 (defun docopt-testcase--parse-comment ()
@@ -165,7 +178,10 @@
 
 (defun docopt-testcase--parse-examples ()
   "Parse Docopt testcase examples."
-  (parsec-many1 (docopt-testcase--parse-example)))
+  (thread-last (parsec-many1 (docopt-testcase--parse-example))
+    (seq-map-indexed (lambda (example index)
+                       (setf (oref example index) index)
+                       example))))
 
 (defun docopt-testcase--parse-testcase ()
   "Parse a Docopt testcase."
@@ -182,7 +198,10 @@
 
 (defun docopt-testcase-parse (s)
   "Parse Docopt testcases from the string S."
-  (parsec-with-input s (docopt-testcase--parse-testcases)))
+  (thread-last (parsec-with-input s (docopt-testcase--parse-testcases))
+    (seq-map-indexed (lambda (testcase index)
+                       (setf (oref testcase index) index)
+                       testcase))))
 
 (defun docopt-testcase--test-example (program example)
   "Test the Docopt EXAMPLE of the PROGRAM."
