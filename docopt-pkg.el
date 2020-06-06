@@ -30,6 +30,8 @@
 
 ;;; Code:
 
+(require 'package)
+
 (define-package "docopt" "0.1.0"
   "A Docopt implementation in Elisp"
   '((buttercup "1.21")
