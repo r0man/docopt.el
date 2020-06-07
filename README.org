@@ -4,6 +4,52 @@
 
   A [[http://docopt.org/][Docopt]] implementation in Emacs Lisp.
 
+** Usage
+
+   Parse a Docopt usage help string and return an AST.
+
+   #+BEGIN_SRC emacs-lisp :exports code :results silent
+     (require 'docopt)
+
+     (defvar naval-fate
+       (docopt-parse "Naval Fate.
+
+     Usage:
+       naval_fate ship new <name>...
+       naval_fate ship <name> move <x> <y> [--speed=<kn>]
+       naval_fate ship shoot <x> <y>
+       naval_fate mine (set|remove) <x> <y> [--moored|--drifting]
+       naval_fate -h | --help
+       naval_fate --version
+
+     Options:
+       -h --help     Show this screen.
+       --version     Show version.
+       --speed=<kn>  Speed in knots [default: 10].
+       --moored      Moored (anchored) mine.
+       --drifting    Drifting mine.
+
+     Examples:
+       naval_fate ship new SHIP-123
+       naval_fate ship SHIP-123 move 1 2 --speed=10"))
+   #+END_SRC
+
+   Evaluate a shell command with the Docopt AST.
+
+   #+BEGIN_SRC emacs-lisp :exports code :results both
+     (docopt-eval naval-fate "naval_fate ship TITANIC move 1 2 --speed=10")
+   #+END_SRC
+
+   #+RESULTS:
+   : ((--drifting) (--help) (--moored) (--speed . 10) (--version) (<name> . [TITANIC]) (<x> . 1) (<y> . 2) (mine) (move . t) (new) (remove) (set) (ship . t) (shoot))
+
+   Invoke the [[https://github.com/magit/transient][transient]] command for a Docopt AST.
+
+   #+BEGIN_SRC emacs-lisp :exports code :results silent
+     (require 'docopt-transient)
+     (docopt-transient naval-fate)
+   #+END_SRC
+
 ** License
 
    Copyright © 2020 [[https://github.com/r0man][r0man]]
