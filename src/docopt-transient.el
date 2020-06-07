@@ -483,8 +483,8 @@
 ;; (require 'docopt-naval-fate)
 ;; (setq docopt-naval-fate (docopt-parse docopt-naval-fate-str))
 ;; (docopt-transient--program-form docopt-naval-fate)
-(docopt-transient-define-command docopt-naval-fate)
-(docopt-transient-invoke-command docopt-naval-fate)
+;; (docopt-transient-define-command docopt-naval-fate)
+;; (docopt-transient-invoke-command docopt-naval-fate)
 
 (provide 'docopt-transient)
 
