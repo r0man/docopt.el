@@ -1,0 +1,428 @@
+This is METAFONT, Version 2.7182818 (TeX Live 2019/Arch Linux) (preloaded base=mf 2020.5.6)  7 JUN 2020 19:52
+**src/docopt-testcase.el test/
+(src/docopt-testcase.el
+>> -testcase.el+docopt
+! Isolated expression.
+<to be read again> 
+                   ..
+---->..
+       tension.infinity..
+l.1 ;;; docopt-testcase.el ---
+                               Docopt testcase -*- lexical-binding: t -*-
+? 
+! Extra tokens will be flushed.
+<to be read again> 
+                   ..
+---->..
+       tension.infinity..
+l.1 ;;; docopt-testcase.el ---
+                               Docopt testcase -*- lexical-binding: t -*-
+? 
+! Interruption.
+---->..
+       tension.infinity..
+l.1 ;;; docopt-testcase.el ---
+                               Docopt testcase -*- lexical-binding: t -*-
+? 
+>> Copyright
+! Isolated expression.
+<to be read again> 
+                   (
+l.3 ;; Copyright (
+                  C) 2019-2020 r0man
+? 
+! Extra tokens will be flushed.
+<to be read again> 
+                   (
+l.3 ;; Copyright (
+                  C) 2019-2020 r0man
+? 
+>> Author
+! Isolated expression.
+<to be read again> 
+                   :
+l.5 ;; Author:
+               r0man <roman@burningswell.com>
+? 
+! Extra tokens will be flushed.
+<to be read again> 
+                   :
+l.5 ;; Author:
+               r0man <roman@burningswell.com>
+? 
+>> Maintainer
+! Isolated expression.
+<to be read again> 
+                   :
+l.6 ;; Maintainer:
+                   r0man <roman@burningswell.com>
+? 
+! Extra tokens will be flushed.
+<to be read again> 
+                   :
+l.6 ;; Maintainer:
+                   r0man <roman@burningswell.com>
+? 
+>> Keywords
+! Isolated expression.
+<to be read again> 
+                   :
+l.7 ;; Keywords:
+                 docopt, tools, processes
+? 
+! Extra tokens will be flushed.
+<to be read again> 
+                   :
+l.7 ;; Keywords:
+                 docopt, tools, processes
+? 
+>> Homepage
+! Isolated expression.
+<to be read again> 
+                   :
+l.8 ;; Homepage:
+                 https://github.com/r0man/docopt.el
+? 
+! Extra tokens will be flushed.
+<to be read again> 
+                   :
+l.8 ;; Homepage:
+                 https://github.com/r0man/docopt.el
+? 
+>> This.file.is
+! Isolated expression.
+<to be read again> 
+                   not
+l.10 ;; This file is not
+                         part of GNU Emacs.
+? 
+! Extra tokens will be flushed.
+<to be read again> 
+                   not
+l.10 ;; This file is not
+                         part of GNU Emacs.
+? 
+>> This.program.is.free.software
+! Isolated expression.
+<to be read again> 
+                   ;
+l.12 ;; This program is free software;
+                                       you can redistribute it and/or
+? 
+! A primary expression can't begin with `/'.
+<inserted text> 
+                0
+<to be read again> 
+                   /
+l.12 ...ree software; you can redistribute it and/
+                                                  or
+? 
+>> you.can.redistribute.it
+>> 0
+! Not implemented: (unknown numeric)and(known numeric).
+<to be read again> 
+                   /
+<to be read again> 
+                   or
+l.12 ...e software; you can redistribute it and/or
+                                                  
+? 
+! A primary expression can't begin with `or'.
+<inserted text> 
+                0
+<to be read again> 
+                   or
+l.12 ...e software; you can redistribute it and/or
+                                                  
+? 
+>> 0
+! Division by zero.
+<to be read again> 
+                   or
+l.12 ...e software; you can redistribute it and/or
+                                                  
+? 
+! A secondary expression can't begin with `;'.
+<inserted text> 
+                0
+<to be read again> 
+                   ;
+l.13 ;
+      ; modify it under the terms of the GNU General Public License as
+? 
+>> 0
+>> 0
+! Not implemented: (known numeric)or(known numeric).
+<to be read again> 
+                   ;
+l.13 ;
+      ; modify it under the terms of the GNU General Public License as
+? 
+>> 0
+! Isolated expression.
+<to be read again> 
+                   ;
+l.13 ;
+      ; modify it under the terms of the GNU General Public License as
+? 
+>> modify.it.under.the.terms
+! Isolated expression.
+<to be read again> 
+                   of
+l.13 ;; modify it under the terms of
+                                     the GNU General Public License as
+? 
+! Extra tokens will be flushed.
+<to be read again> 
+                   of
+l.13 ;; modify it under the terms of
+                                     the GNU General Public License as
+? 
+>> published.by.the.Free.Software.Foundation
+! Isolated expression.
+<to be read again> 
+                   ;
+l.14 ;; published by the Free Software Foundation;
+                                                   either version 3, or (at
+? 
+>> either.version3
+! Isolated expression.
+<to be read again> 
+                   ,
+l.14 ...ree Software Foundation; either version 3,
+                                                   or (at
+? 
+! Extra tokens will be flushed.
+<to be read again> 
+                   ,
+l.14 ...ree Software Foundation; either version 3,
+                                                   or (at
+? 
+>> your.option
+! Isolated expression.
+<to be read again> 
+                   )
+l.15 ;; your option)
+                     any later version.
+? 
+! Extra tokens will be flushed.
+<to be read again> 
+                   )
+l.15 ;; your option)
+                     any later version.
+? 
+>> This.program.is.distributed.in.the.hope.that.it.will.be.useful
+! Isolated expression.
+<to be read again> 
+                   ,
+l.17 ...ibuted in the hope that it will be useful,
+                                                   but
+? 
+! Extra tokens will be flushed.
+<to be read again> 
+                   ,
+l.17 ...ibuted in the hope that it will be useful,
+                                                   but
+? 
+>> WITHOUT.ANY.WARRANTY
+! Isolated expression.
+<to be read again> 
+                   ;
+l.18 ;; WITHOUT ANY WARRANTY;
+                              without even the implied warranty of
+? 
+>> without.even.the.implied.warranty
+! Isolated expression.
+<to be read again> 
+                   of
+l.18 ...ANTY; without even the implied warranty of
+                                                  
+? 
+! Extra tokens will be flushed.
+<to be read again> 
+                   of
+l.18 ...ANTY; without even the implied warranty of
+                                                  
+? 
+>> MERCHANTABILITY
+>> FITNESS.FOR.A.PARTICULAR.PURPOSE.See.the.GNU
+! Not implemented: (unknown numeric)or(unknown numeric).
+<to be read again> 
+                   ;
+l.20 ;
+      ; General Public License for more details.
+? 
+>> FITNESS.FOR.A.PARTICULAR.PURPOSE.See.the.GNU
+! Isolated expression.
+<to be read again> 
+                   ;
+l.20 ;
+      ; General Public License for more details.
+? 
+! Missing `=' has been inserted.
+<to be read again> 
+                   details
+l.20 ;; General Public License for more details
+                                               .
+? 
+! Missing `:' has been inserted.
+<to be read again> 
+                   ;
+l.21 ;
+      ;
+? 
+! Incomplete string token has been flushed.
+l.112   (parsec-count 3 (parsec-ch ?\")))
+                                         
+? 
+Runaway loop?
+;;;;You.should.have.received.a.copy.of.the.GNU.General.Public.License ETC.
+! Forbidden token found while scanning the text of a for loop.
+<inserted text> 
+                endfor
+<to be read again> 
+                   end
+l.118 (defun docopt-testcase--parse-usage-end
+                                              ()
+? 
+>> General.Public.License
+! Isolated expression.
+<to be read again> 
+                   ;
+<for(details)> ;
+                ;;;You.should.have.received.a.copy.of.the.GNU.General.Public...
+<inserted text> endfor
+                      
+<to be read again> 
+                   end
+l.118 (defun docopt-testcase--parse-usage-end
+                                              ()
+? 
+>> You.should.have.received.a.copy
+! Isolated expression.
+<to be read again> 
+                   of
+<for(details)> ...u.should.have.received.a.copy.of
+                                                  .the.GNU.General.Public.Li...
+<inserted text> endfor
+                      
+<to be read again> 
+                   end
+l.118 (defun docopt-testcase--parse-usage-end
+                                              ()
+? 
+! Extra tokens will be flushed.
+<to be read again> 
+                   of
+<for(details)> ...u.should.have.received.a.copy.of
+                                                  .the.GNU.General.Public.Li...
+<inserted text> endfor
+                      
+<to be read again> 
+                   end
+l.118 (defun docopt-testcase--parse-usage-end
+                                              ()
+? 
+>> along.with.this.program.If
+! Isolated expression.
+<to be read again> 
+                   not
+<for(details)> ...;;along.with.this.program.If.not
+                                                  ,see.http://www.gnu.org/li...
+<inserted text> endfor
+                      
+<to be read again> 
+                   end
+l.118 (defun docopt-testcase--parse-usage-end
+                                              ()
+? 
+! Extra tokens will be flushed.
+<to be read again> 
+                   not
+<for(details)> ...;;along.with.this.program.If.not
+                                                  ,see.http://www.gnu.org/li...
+<inserted text> endfor
+                      
+<to be read again> 
+                   end
+l.118 (defun docopt-testcase--parse-usage-end
+                                              ()
+? 
+>> Commentary
+! Isolated expression.
+<to be read again> 
+                   :
+<for(details)> ...w.gnu.org/licenses;;;Commentary:
+                                                  ;;The.Docopt.testcase.pars...
+<inserted text> endfor
+                      
+<to be read again> 
+                   end
+l.118 (defun docopt-testcase--parse-usage-end
+                                              ()
+? 
+! Extra tokens will be flushed.
+<to be read again> 
+                   :
+<for(details)> ...w.gnu.org/licenses;;;Commentary:
+                                                  ;;The.Docopt.testcase.pars...
+<inserted text> endfor
+                      
+<to be read again> 
+                   end
+l.118 (defun docopt-testcase--parse-usage-end
+                                              ()
+? 
+>> The.Docopt.testcase.parser
+! Isolated expression.
+<to be read again> 
+                   ;
+<for(details)> ...ry:;;The.Docopt.testcase.parser;
+                                                  ;;Code:(require'buttercup)...
+<inserted text> endfor
+                      
+<to be read again> 
+                   end
+l.118 (defun docopt-testcase--parse-usage-end
+                                              ()
+? 
+>> Code
+! Isolated expression.
+<to be read again> 
+                   :
+<for(details)> ...e.Docopt.testcase.parser;;;Code:
+                                                  (require'buttercup)(requir...
+<inserted text> endfor
+                      
+<to be read again> 
+                   end
+l.118 (defun docopt-testcase--parse-usage-end
+                                              ()
+? 
+! Extra tokens will be flushed.
+<to be read again> 
+                   :
+<for(details)> ...e.Docopt.testcase.parser;;;Code:
+                                                  (require'buttercup)(requir...
+<inserted text> endfor
+                      
+<to be read again> 
+                   end
+l.118 (defun docopt-testcase--parse-usage-end
+                                              ()
+? 
+! Forbidden token found while scanning to the end of the statement.
+<inserted text> 
+                ;
+<to be read again> 
+                    ENDFOR
+<for(details)> ...pt-testcase--parse-usage- ENDFOR
+                                                  
+<inserted text> endfor
+                      
+<to be read again> 
+                   end
+l.118 (defun docopt-testcase--parse-usage-end
+                                              ()
+? 
+ )
