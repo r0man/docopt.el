@@ -50,11 +50,27 @@
 (cl-defgeneric docopt-collect-arguments (object)
   "Collect the arguments from the Docopt OBJECT.")
 
+(cl-defmethod docopt-collect-arguments ((object t))
+  "Collect the arguments from the Docopt OBJECT."
+  (ignore object) nil)
+
 (cl-defgeneric docopt-collect-commands (object)
   "Collect the arguments from the Docopt OBJECT.")
 
+(cl-defmethod docopt-collect-commands ((lst list))
+  "Collect the commands from the list LST."
+  (-flatten (seq-map #'docopt-collect-commands lst)))
+
+(cl-defmethod docopt-collect-commands ((object t))
+  "Collect the commands from the Docopt OBJECT."
+  (ignore object) nil)
+
 (cl-defgeneric docopt-collect-options (object)
   "Collect the options from the Docopt OBJECT.")
+
+(cl-defmethod docopt-collect-options ((object t))
+  "Collect the options from the Docopt OBJECT."
+  (ignore object) nil)
 
 (cl-defgeneric docopt-equal (object-1 object-2)
   "Return t if OBJECT-1 and OBJECT-2 are equal-ish.")

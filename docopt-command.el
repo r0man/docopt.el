@@ -65,18 +65,8 @@
   (with-slots (value) command
     (list (docopt-command-name command))))
 
-(cl-defmethod docopt-collect-arguments ((_ docopt-command))
-  "Collect the arguments from the Docopt COMMAND." nil)
-
 (cl-defmethod docopt-collect-commands ((command docopt-command))
   "Collect the commands from the Docopt COMMAND." command)
-
-(cl-defmethod docopt-collect-commands ((lst list))
-  "Collect the commands from the list LST."
-  (-flatten (seq-map #'docopt-collect-commands lst)))
-
-(cl-defmethod docopt-collect-options ((_ docopt-command))
-  "Collect the options from the Docopt COMMAND." nil)
 
 (cl-defmethod docopt-format ((command docopt-command))
   "Convert the Docopt usage COMMAND to a formatted string."

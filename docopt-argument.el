@@ -83,14 +83,6 @@
   "Collect the arguments from the list LST."
   (-flatten (seq-map #'docopt-collect-arguments lst)))
 
-(cl-defmethod docopt-collect-commands ((argument docopt-argument))
-  "Collect the commands from the Docopt ARGUMENT."
-  (ignore argument) nil)
-
-(cl-defmethod docopt-collect-options ((argument docopt-argument))
-  "Collect the options from the Docopt ARGUMENT."
-  (ignore argument) nil)
-
 (cl-defmethod docopt-format ((argument docopt-argument))
   "Convert the Docopt usage ARGUMENT to a formatted string."
   (let ((name (if-let ((value (docopt-value argument)))

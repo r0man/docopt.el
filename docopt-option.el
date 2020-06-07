@@ -187,13 +187,6 @@
       (when value
         (list (concat "-" name))))))
 
-(cl-defmethod docopt-collect-arguments ((_ docopt-option))
-  "Collect the arguments from the Docopt OPTION." nil)
-
-(cl-defmethod docopt-collect-commands ((option docopt-option))
-  "Collect the commands from the Docopt OPTION."
-  (ignore option) nil)
-
 (cl-defmethod docopt-collect-options ((option docopt-option))
   "Collect the options from the Docopt OPTION." option)
 
