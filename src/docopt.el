@@ -31,12 +31,19 @@
 
 (require 'docopt-argv)
 (require 'docopt-parser)
+(require 'docopt-transient)
 (require 'docopt-util)
 (require 'parsec)
 (require 's)
 
 (define-error 'docopt-invalid-program
   "Invalid Docopt program.")
+
+;;;###autoload
+(defun docopt (command)
+  "Invoke the transient command for the Docopt shell COMMAND."
+  (interactive (list (read-from-minibuffer "Docopt: ")))
+  (docopt-transient (docopt-program-shell-command command)))
 
 ;;;###autoload
 (defun docopt-parse (s)
