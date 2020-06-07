@@ -444,12 +444,19 @@
   (append (docopt-transient--incompatible-commands program)
           (docopt-transient--incompatible-options program)))
 
+(defun docopt-transient--defaults (program)
+  "Return the transient defaults for PROGRAM."
+  (with-slots (usage) program
+    (when-let ((pattern (car usage)))
+      (list (concat (docopt-format pattern))))))
+
 (defun docopt-transient--define-program-form (program)
   "Return the transient infix argument s-exprs for the options PROGRAM."
   (let ((program-symbol (docopt-transient--program-symbol program)))
     `(define-transient-command ,program-symbol ()
        ,(docopt-transient--program-doc program)
        :incompatible (quote ,(docopt-transient--incompatible program))
+       :value (quote ,(docopt-transient--defaults program))
        ,(docopt-transient--section-header program)
        ,(docopt-transient--section-usage-patterns program)
        ,(docopt-transient--section-commands program)
