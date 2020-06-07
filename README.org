@@ -2,7 +2,7 @@
 
   [[https://github.com/r0man/docopt.el/actions?query=workflow%3ACI][https://github.com/r0man/docopt.el/workflows/CI/badge.svg]]
 
-  A [[http://docopt.org/][Docopt]] implementation in Emacs Lisp.
+  A [[http://docopt.org/][Docopt]] implementation and [[https://github.com/magit/transient][transient]] command in Emacs Lisp.
 
 ** License
 
