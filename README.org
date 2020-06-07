@@ -36,7 +36,7 @@
 
    Evaluate a shell command with the Docopt AST.
 
-   #+BEGIN_SRC emacs-lisp :exports code :results both
+   #+BEGIN_SRC emacs-lisp :exports both :results result
      (docopt-eval naval-fate "naval_fate ship TITANIC move 1 2 --speed=10")
    #+END_SRC
 
