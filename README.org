@@ -4,6 +4,16 @@
 
   A [[http://docopt.org/][Docopt]] implementation in Emacs Lisp.
 
+** Usage
+
+   The Emacs command =M-x docopt= builds an Emacs [[https://github.com/magit/transient][transient]] command
+   from the usage help of a [[http://docopt.org/][Docopt]] shell command, and invokes it.
+
+   Given the [[https://github.com/r0man/docopt.el/blob/master/bin/naval-fate][naval-fate]] is in your =PATH= the following transient can
+   be invoked: =M-x docopt [RET] "naval-fate" [RET]=
+
+   [[doc/docopt.gif]]
+
 ** License
 
    Copyright © 2020 [[https://github.com/r0man][r0man]]
