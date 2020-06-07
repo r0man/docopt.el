@@ -40,7 +40,7 @@
 (require 'transient)
 
 (defcustom docopt-transient-switch-to-buffer #'switch-to-buffer
-  "The buffer switch function for the Docopt transient command.")
+  "The buffer switch function of the Docopt transient command.")
 
 (define-error 'docopt-usage-pattern-index
   "Invalid Docopt usage pattern index.")
