@@ -30,8 +30,8 @@
 
 (require 'buttercup)
 (require 'cl-lib)
+(require 'docopt)
 (require 'docopt-argv)
-(require 'docopt-parser)
 (require 'docopt-util)
 (require 'eieio)
 (require 'json)
