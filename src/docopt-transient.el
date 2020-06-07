@@ -39,6 +39,9 @@
 (require 'subr-x)
 (require 'transient)
 
+(defcustom docopt-transient-switch-to-buffer #'switch-to-buffer
+  "The buffer switch function for the Docopt transient command.")
+
 (define-error 'docopt-usage-pattern-index
   "Invalid Docopt usage pattern index.")
 
@@ -330,7 +333,7 @@
          (buffer-name (docopt-transient--program-buffer-name program)))
     (when-let ((buffer (get-buffer buffer-name)))
       (kill-buffer buffer))
-    (switch-to-buffer-other-window (get-buffer-create buffer-name))
+    (funcall docopt-transient-switch-to-buffer (get-buffer-create buffer-name))
     (require 'vterm nil t)
     (cond
      ((boundp 'vterm-shell)
