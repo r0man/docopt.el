@@ -50,6 +50,8 @@
      (docopt-transient naval-fate)
    #+END_SRC
 
+   [[docopt.png]]
+
 ** License
 
    Copyright © 2020 [[https://github.com/r0man][r0man]]
