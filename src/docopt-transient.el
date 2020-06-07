@@ -363,26 +363,24 @@
     (insert command)
     (message "Inserted %s to current buffer." (docopt-bold command))))
 
+(defun docopt-transient--section-list (program section elements)
+  "Return the transient SECTION for the ELEMENTS of the PROGRAM."
+  (thread-last elements
+    (seq-map (lambda (element) (list (docopt-transient--suffix-symbol program element))))
+    (append (list section))
+    (apply #'vector)))
+
 (defun docopt-transient--section-arguments (program)
   "Return the transient arguments section for the PROGRAM."
-  (thread-last (docopt-transient--program-arguments program)
-    (seq-map (lambda (argument) (list (docopt-transient--suffix-symbol program argument))))
-    (append (list "Arguments"))
-    (apply #'vector)))
+  (docopt-transient--section-list program "Arguments" (docopt-transient--program-arguments program)))
 
 (defun docopt-transient--section-commands (program)
   "Return the transient commands section for the PROGRAM."
-  (thread-last (docopt-transient--program-commands program)
-    (seq-map (lambda (argument) (list (docopt-transient--suffix-symbol program argument))))
-    (append (list "Commands"))
-    (apply #'vector)))
+  (docopt-transient--section-list program "Commands" (docopt-transient--program-commands program)))
 
 (defun docopt-transient--section-options (program)
   "Return the transient options section for the PROGRAM."
-  (thread-last (docopt-transient--program-options program)
-    (seq-map (lambda (option) (list (docopt-transient--suffix-symbol program option))))
-    (cons "Options")
-    (apply #'vector)))
+  (docopt-transient--section-list program "Options" (docopt-transient--program-options program)))
 
 (defun docopt-transient--section-actions (program)
   "Return the transient actions for the PROGRAM."
@@ -485,8 +483,8 @@
 ;; (require 'docopt-naval-fate)
 ;; (setq docopt-naval-fate (docopt-parse docopt-naval-fate-str))
 ;; (docopt-transient--program-form docopt-naval-fate)
-;; (docopt-transient-define-command docopt-naval-fate)
-;; (docopt-transient-invoke-command docopt-naval-fate)
+(docopt-transient-define-command docopt-naval-fate)
+(docopt-transient-invoke-command docopt-naval-fate)
 
 (provide 'docopt-transient)
 
