@@ -36,55 +36,55 @@
 (describe "Evaluating docopt-format with the Naval Fate usage pattern"
   :var ((patterns (docopt-program-usage (docopt-parse docopt-naval-fate-str))))
 
-  (it "at index 0 should return \"naval_fate ship new <name>...\""
+  (it "at index 0 should return \"naval-fate ship new <name>...\""
     (expect (docopt-format (nth 0 patterns))
-            :to-equal "naval_fate ship new <name>..."))
+            :to-equal "naval-fate ship new <name>..."))
 
-  (it "at index 1 should return \"naval_fate ship <name> move <x> <y> [--speed=<kn>]\""
+  (it "at index 1 should return \"naval-fate ship <name> move <x> <y> [--speed=<kn>]\""
     (expect (docopt-format (nth 1 patterns))
-            :to-equal "naval_fate ship <name> move <x> <y> [--speed=<kn>]"))
+            :to-equal "naval-fate ship <name> move <x> <y> [--speed=<kn>]"))
 
-  (it "at index 2 should return \"naval_fate ship shoot <x> <y>\""
+  (it "at index 2 should return \"naval-fate ship shoot <x> <y>\""
     (expect (docopt-format (nth 2 patterns))
-            :to-equal "naval_fate ship shoot <x> <y>"))
+            :to-equal "naval-fate ship shoot <x> <y>"))
 
-  (it "at index 3 should return \"naval_fate mine (set | remove) <x> <y> [--moored | --drifting]\""
+  (it "at index 3 should return \"naval-fate mine (set | remove) <x> <y> [--moored | --drifting]\""
     (expect (docopt-format (nth 3 patterns))
-            :to-equal "naval_fate mine (set | remove) <x> <y> [--moored | --drifting]"))
+            :to-equal "naval-fate mine (set | remove) <x> <y> [--moored | --drifting]"))
 
-  (it "at index 4 should return \"naval_fate -h | --help\""
+  (it "at index 4 should return \"naval-fate -h | --help\""
     (expect (docopt-format (nth 4 patterns))
-            :to-equal "naval_fate -h | --help"))
+            :to-equal "naval-fate -h | --help"))
 
-  (it "at index 5 should return \"naval_fate --version\""
+  (it "at index 5 should return \"naval-fate --version\""
     (expect (docopt-format (nth 5 patterns))
-            :to-equal "naval_fate --version")))
+            :to-equal "naval-fate --version")))
 
 (describe "Evaluating docopt-string with the Naval Fate usage pattern"
   :var ((patterns (docopt-program-usage (docopt-parse docopt-naval-fate-str))))
 
-  (it "at index 0 should return \"naval_fate ship new <name>...\""
+  (it "at index 0 should return \"naval-fate ship new <name>...\""
     (expect (docopt-string (nth 0 patterns))
-            :to-equal "naval_fate ship new <name>..."))
+            :to-equal "naval-fate ship new <name>..."))
 
-  (it "at index 1 should return \"naval_fate ship <name> move <x> <y> [--speed=<kn>]\""
+  (it "at index 1 should return \"naval-fate ship <name> move <x> <y> [--speed=<kn>]\""
     (expect (docopt-string (nth 1 patterns))
-            :to-equal "naval_fate ship <name> move <x> <y> [--speed=<kn>]"))
+            :to-equal "naval-fate ship <name> move <x> <y> [--speed=<kn>]"))
 
-  (it "at index 2 should return \"naval_fate ship shoot <x> <y>\""
+  (it "at index 2 should return \"naval-fate ship shoot <x> <y>\""
     (expect (docopt-string (nth 2 patterns))
-            :to-equal "naval_fate ship shoot <x> <y>"))
+            :to-equal "naval-fate ship shoot <x> <y>"))
 
-  (it "at index 3 should return \"naval_fate mine (set | remove) <x> <y> [--moored | --drifting]\""
+  (it "at index 3 should return \"naval-fate mine (set | remove) <x> <y> [--moored | --drifting]\""
     (expect (docopt-string (nth 3 patterns))
-            :to-equal "naval_fate mine (set | remove) <x> <y> [--moored | --drifting]"))
+            :to-equal "naval-fate mine (set | remove) <x> <y> [--moored | --drifting]"))
 
-  (it "at index 4 should return \"naval_fate -h | --help\""
+  (it "at index 4 should return \"naval-fate -h | --help\""
     (expect (docopt-string (nth 4 patterns))
-            :to-equal "naval_fate -h | --help"))
+            :to-equal "naval-fate -h | --help"))
 
-  (it "at index 5 should return \"naval_fate --version\""
+  (it "at index 5 should return \"naval-fate --version\""
     (expect (docopt-string (nth 5 patterns))
-            :to-equal "naval_fate --version")))
+            :to-equal "naval-fate --version")))
 
 ;;; docopt-usage-pattern-test.el ends here

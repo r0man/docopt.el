@@ -39,12 +39,12 @@
 
 (defvar docopt-naval-fate-usage-str
   "Usage:
-  naval_fate ship new <name>...
-  naval_fate ship <name> move <x> <y> [--speed=<kn>]
-  naval_fate ship shoot <x> <y>
-  naval_fate mine (set|remove) <x> <y> [--moored|--drifting]
-  naval_fate -h | --help
-  naval_fate --version")
+  naval-fate ship new <name>...
+  naval-fate ship <name> move <x> <y> [--speed=<kn>]
+  naval-fate ship shoot <x> <y>
+  naval-fate mine (set|remove) <x> <y> [--moored|--drifting]
+  naval-fate -h | --help
+  naval-fate --version")
 
 (defvar docopt-naval-fate-options-str
   "Options:
@@ -56,8 +56,8 @@
 
 (defvar docopt-naval-fate-examples-str
   "Examples:
-  naval_fate ship new SHIP-123
-  naval_fate ship SHIP-123 move 1 2 --speed=10")
+  naval-fate ship new SHIP-123
+  naval-fate ship SHIP-123 move 1 2 --speed=10")
 
 (defvar docopt-naval-fate-str
   (concat docopt-naval-fate-header-str
@@ -133,14 +133,14 @@
 
 (defvar docopt-naval-fate-pattern-ship-new
   (docopt-make-usage-pattern
-   (docopt-command :name "naval_fate")
+   (docopt-command :name "naval-fate")
    (docopt-command :name "ship")
    (docopt-command :name "new")
    (docopt-make-repeated (docopt-argument :name "name"))))
 
 (defvar docopt-naval-fate-pattern-ship-name
   (docopt-make-usage-pattern
-   (docopt-command :name "naval_fate")
+   (docopt-command :name "naval-fate")
    (docopt-command :name "ship")
    (docopt-argument :name "name" :repeat t)
    (docopt-command :name "move")
@@ -150,7 +150,7 @@
 
 (defvar docopt-naval-fate-pattern-ship-shoot
   (docopt-make-usage-pattern
-   (docopt-command :name "naval_fate")
+   (docopt-command :name "naval-fate")
    (docopt-command :name "ship")
    (docopt-command :name "shoot")
    (docopt-argument :name "x")
@@ -170,7 +170,7 @@
 
 (defvar docopt-naval-fate-pattern-mine
   (docopt-make-usage-pattern
-   (docopt-command :name "naval_fate")
+   (docopt-command :name "naval-fate")
    (docopt-command :name "mine")
    (docopt-make-required-group
     (docopt-make-either
@@ -185,14 +185,14 @@
 
 (defvar docopt-naval-fate-pattern-help
   (docopt-make-usage-pattern
-   (docopt-command :name "naval_fate")
+   (docopt-command :name "naval-fate")
    (docopt-make-either
     (list docopt-naval-fate-option-h)
     (list docopt-naval-fate-option-help))))
 
 (defvar docopt-naval-fate-pattern-version
   (docopt-make-usage-pattern
-   (docopt-command :name "naval_fate")
+   (docopt-command :name "naval-fate")
    docopt-naval-fate-option-version))
 
 (defvar docopt-naval-fate

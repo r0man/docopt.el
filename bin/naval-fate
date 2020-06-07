@@ -2,12 +2,12 @@
 """Naval Fate.
 
 Usage:
-  naval_fate ship new <name>...
-  naval_fate ship <name> move <x> <y> [--speed=<kn>]
-  naval_fate ship shoot <x> <y>
-  naval_fate mine (set|remove) <x> <y> [--moored|--drifting]
-  naval_fate -h | --help
-  naval_fate --version
+  naval-fate ship new <name>...
+  naval-fate ship <name> move <x> <y> [--speed=<kn>]
+  naval-fate ship shoot <x> <y>
+  naval-fate mine (set|remove) <x> <y> [--moored|--drifting]
+  naval-fate -h | --help
+  naval-fate --version
 
 Options:
   -h --help     Show this screen.
@@ -17,8 +17,8 @@ Options:
   --drifting    Drifting mine.
 
 Examples:
-  naval_fate ship new SHIP-123
-  naval_fate ship SHIP-123 move 1 2 --speed=10
+  naval-fate ship new SHIP-123
+  naval-fate ship SHIP-123 move 1 2 --speed=10
 """
 from docopt import docopt
 

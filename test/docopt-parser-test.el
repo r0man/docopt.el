@@ -35,8 +35,8 @@
 (describe "Parsing tokens"
 
   (it "should parse a command name"
-    (expect (parsec-with-input "naval_fate.py" (docopt-parser-command-name))
-            :to-equal "naval_fate.py"))
+    (expect (parsec-with-input "naval-fate.py" (docopt-parser-command-name))
+            :to-equal "naval-fate.py"))
 
   (it "should parse a space"
     (expect (parsec-with-input " " (docopt-parser-space)) :to-equal " "))
@@ -451,16 +451,16 @@
 
   (it "should parse a spaceship argument"
     (expect (parsec-with-input
-                (concat "Usage: naval_fate ship new <name>...\n"
-                        "       naval_fate ship <name> move <x> <y> [--speed=<kn>]")
+                (concat "Usage: naval-fate ship new <name>...\n"
+                        "       naval-fate ship <name> move <x> <y> [--speed=<kn>]")
               (docopt-parser--usage))
             :to-equal (list (docopt-make-usage-pattern
-                             (docopt-command :name "naval_fate")
+                             (docopt-command :name "naval-fate")
                              (docopt-command :name "ship")
                              (docopt-command :name "new")
                              (docopt-make-repeated (docopt-argument :name "name")))
                             (docopt-make-usage-pattern
-                             (docopt-command :name "naval_fate")
+                             (docopt-command :name "naval-fate")
                              (docopt-command :name "ship")
                              (docopt-argument :name "name")
                              (docopt-command :name "move")
@@ -469,20 +469,20 @@
                              (docopt-make-optional-group
                               (docopt-long-option :name "speed" :argument (docopt-argument :name "kn")))))))
 
-  (it "should parse \"Usage: naval_fate -h | --help\""
-    (expect (parsec-with-input "Usage: naval_fate -h | --help"
+  (it "should parse \"Usage: naval-fate -h | --help\""
+    (expect (parsec-with-input "Usage: naval-fate -h | --help"
               (docopt-parser--usage))
             :to-equal (list (docopt-make-usage-pattern
-                             (docopt-command :name "naval_fate")
+                             (docopt-command :name "naval-fate")
                              (docopt-make-either
                               (list (docopt-short-option :name "h"))
                               (list (docopt-long-option :name "help")))))))
 
-  (it "should parse \"Usage: naval_fate mine (set | remove all) <x> <y> [--moored|--drifting]"
-    (expect (parsec-with-input "Usage: naval_fate mine (set many | remove all) <x> <y> [--moored|--drifting]"
+  (it "should parse \"Usage: naval-fate mine (set | remove all) <x> <y> [--moored|--drifting]"
+    (expect (parsec-with-input "Usage: naval-fate mine (set many | remove all) <x> <y> [--moored|--drifting]"
               (docopt-parser--usage))
             :to-equal (list (docopt-make-usage-pattern
-                             (docopt-command :name "naval_fate")
+                             (docopt-command :name "naval-fate")
                              (docopt-command :name "mine")
                              (docopt-make-required-group
                               (docopt-make-either
@@ -497,11 +497,11 @@
                                (list (docopt-long-option :name "moored"))
                                (list (docopt-long-option :name "drifting"))))))))
 
-  (it "should parse \"Usage: naval_fate mine (set|remove) <x> <y> [--moored|--drifting]"
-    (expect (parsec-with-input "Usage: naval_fate mine (set|remove) <x> <y> [--moored|--drifting]"
+  (it "should parse \"Usage: naval-fate mine (set|remove) <x> <y> [--moored|--drifting]"
+    (expect (parsec-with-input "Usage: naval-fate mine (set|remove) <x> <y> [--moored|--drifting]"
               (docopt-parser--usage))
             :to-equal (list (docopt-make-usage-pattern
-                             (docopt-command :name "naval_fate")
+                             (docopt-command :name "naval-fate")
                              (docopt-command :name "mine")
                              (docopt-make-required-group
                               (docopt-make-either
@@ -544,7 +544,7 @@
   :var ((program (docopt-parse docopt-naval-fate-str)))
 
   (it "should parse the name"
-    (expect (docopt-program-name program) :to-equal "naval_fate"))
+    (expect (docopt-program-name program) :to-equal "naval-fate"))
 
   (it "should parse the header"
     (expect (docopt-program-header program) :to-equal "Naval Fate."))
@@ -569,8 +569,8 @@
 
   (it "should parse the examples"
     (expect (docopt-program-examples program)
-            :to-equal '(("naval_fate" "ship" "new" "SHIP-123")
-                        ("naval_fate" "ship" "SHIP-123" "move" "1" "2" "--speed=10")))))
+            :to-equal '(("naval-fate" "ship" "new" "SHIP-123")
+                        ("naval-fate" "ship" "SHIP-123" "move" "1" "2" "--speed=10")))))
 
 (describe "Parsing naval fate with different section order"
   :var ((program (docopt-parse docopt-naval-fate-str)))
