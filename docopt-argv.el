@@ -57,9 +57,9 @@
                   (parsec-and
                    (parsec-peek
                     (parsec-and
-                     (docopt--parse-spaces1)
+                     (docopt-parser-spaces1)
                      (docopt-argv-parser ,program ,(nth (+ index 1) lst))))
-                   (docopt--parse-spaces1))))))
+                   (docopt-parser-spaces1))))))
             ((< index num-elements)
              `(docopt-argv-parser ,program ,element))))
          lst))))
@@ -71,7 +71,7 @@
 (defun docopt-argv--parse-short-option-argument (program option)
   "Parse the short OPTION argument of PROGRAM."
   (when-let ((argument (docopt-option-argument option)))
-    (parsec-and (parsec-optional (docopt--parse-short-option-separator))
+    (parsec-and (parsec-optional (docopt-parser-short-option-separator))
                 (docopt-argv-parser program argument))))
 
 (defun docopt-argv--parse-short-option-name (program option)
@@ -129,7 +129,7 @@
                     (parsec-or
                      (docopt-argv--parse-long-option program options)
                      (docopt-argv--parse-short-options program options))
-                    (parsec-try (parsec-and (docopt--parse-whitespaces)
+                    (parsec-try (parsec-and (docopt-parser-whitespaces)
                                             (parsec-lookahead (parsec-str "-"))))))
       (apply #'append)
       (seq-remove #'null))))
@@ -153,11 +153,11 @@
 
 (cl-defmethod docopt-argv--parse-option-separator ((option docopt-long-option))
   "Parse the long OPTION separator."
-  (docopt--parse-long-option-separator))
+  (docopt-parser-long-option-separator))
 
 (cl-defmethod docopt-argv--parse-option-separator ((option docopt-short-option))
   "Parse the short OPTION separator."
-  (parsec-optional (docopt--parse-short-option-separator)))
+  (parsec-optional (docopt-parser-short-option-separator)))
 
 (cl-defgeneric docopt-argv-parser (program object)
   "Return an argument vector parser for PROGRAM and OBJECT.")
@@ -223,7 +223,7 @@
 (cl-defmethod docopt-argv-parser (program (repeated docopt-repeated))
   "Return an argument vector parser for PROGRAM and REPEATED."
   (parsec-sepby (docopt-argv-parser program (docopt-repeated-object repeated))
-                (docopt--parse-spaces1)))
+                (docopt-parser-spaces1)))
 
 (cl-defmethod docopt-argv-parser (program (shortcut docopt-options-shortcut))
   "Return an argument vector parser for PROGRAM and SHORTCUT."
@@ -266,20 +266,20 @@
     (seq-let [command exprs options]
         (parsec-try
          (parsec-collect
-          (docopt--parse-command-name)
+          (docopt-parser-command-name)
           (parsec-return
               (cond
                ((zerop num-expressions)
-                (parsec-and (docopt--parse-spaces) nil))
+                (parsec-and (docopt-parser-spaces) nil))
                ((cl-every (lambda (expr)
                             (or (docopt-group-child-p expr)
                                 (docopt-option-child-p expr)))
                           expressions)
                 (parsec-and
-                 (docopt--parse-spaces)
+                 (docopt-parser-spaces)
                  (docopt-argv--parse-exprs-any-order program expressions)))
                (t (parsec-and
-                   (docopt--parse-spaces)
+                   (docopt-parser-spaces)
                    (docopt-argv-parser program expressions)))))
           (parsec-eof)))
       (cons (docopt-command :name command)

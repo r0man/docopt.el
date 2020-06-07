@@ -41,7 +41,7 @@
 ;;;###autoload
 (defun docopt-parse (s)
   "Parse the Docopt program from S."
-  (let ((program (parsec-with-input s (docopt--parse-program))))
+  (let ((program (parsec-with-input s (docopt-parser-program))))
     (when (docopt--parsec-error-p program)
       (signal 'docopt-invalid-program program))
     (setf (oref program :source) (docopt-strip s))

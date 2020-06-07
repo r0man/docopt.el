@@ -67,15 +67,15 @@
 
 (defvar docopt-naval-fate-usage-ast
   (parsec-with-input docopt-naval-fate-usage-str
-    (docopt--parse-usage)))
+    (docopt-parser--usage)))
 
 (defvar docopt-naval-fate-options-ast
   (parsec-with-input docopt-naval-fate-options-str
-    (docopt--parse-options)))
+    (docopt-parser--options)))
 
 (defvar docopt-naval-fate-examples-ast
   (parsec-with-input docopt-naval-fate-examples-str
-    (docopt--parse-examples)))
+    (docopt-parser--examples)))
 
 ;; Naval Fate Options
 

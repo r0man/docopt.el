@@ -94,14 +94,14 @@
 
 (defun docopt-testcase--parse-comment ()
   "Parse a Docopt testcase comment."
-  (parsec-and (docopt--parse-spaces)
+  (parsec-and (docopt-parser-spaces)
               (parsec-ch ?\#)
               (parsec-until-s (parsec-eol-or-eof))))
 
 (defun docopt-testcase--parse-blank-line ()
   "Parse a Docopt testcase comment."
   (parsec-or (docopt-testcase--parse-comment)
-             (parsec-try (parsec-and (docopt--parse-spaces) (parsec-eol)))))
+             (parsec-try (parsec-and (docopt-parser-spaces) (parsec-eol)))))
 
 (defun docopt-testcase--parse-blank-lines ()
   "Parse Docopt testcase blank lines."
@@ -123,7 +123,7 @@
   "Parse the Docopt testcase usage."
   (docopt-strip (parsec-and (docopt-testcase--parse-usage-start)
                             (parsec-return (parsec-until-s (docopt-testcase--parse-usage-end))
-                              (docopt--parse-whitespaces)))))
+                              (docopt-parser-whitespaces)))))
 
 (defun docopt-testcase--parse-program ()
   "Parse the Docopt testcase program."
@@ -132,7 +132,7 @@
 (defun docopt-testcase--parse-argv ()
   "Parse the Docopt testcase argument vector."
   (parsec-and (parsec-ch ?$)
-              (docopt--parse-spaces1)
+              (docopt-parser-spaces1)
               (parsec-until-s (parsec-eol))))
 
 (defun docopt-testcase--parse-expected-error ()
@@ -146,13 +146,13 @@
   "Parse the Docopt testcase expected result data."
   (let ((json-false nil))
     (cl-sort (json-read-from-string
-              (concat "{" (parsec-and (docopt--parse-spaces)
+              (concat "{" (parsec-and (docopt-parser-spaces)
                                       (parsec-ch ?\{)
                                       (parsec-until-s
                                        (parsec-try (parsec-and
-                                                    (docopt--parse-spaces)
+                                                    (docopt-parser-spaces)
                                                     (parsec-ch ?\})
-                                                    (docopt--parse-spaces)
+                                                    (docopt-parser-spaces)
                                                     (parsec-eol-or-eof))))) "}"))
              #'string< :key #'car)))
 
@@ -167,7 +167,7 @@
       (parsec-return (parsec-collect
                       (docopt-testcase--parse-argv)
                       (docopt-testcase--parse-expected))
-        (docopt--parse-whitespaces))
+        (docopt-parser-whitespaces))
     (make-instance 'docopt-testcase-example :argv argv :expected expected)))
 
 (defun docopt-testcase--parse-examples ()
