@@ -2,6 +2,8 @@
 
   [[https://github.com/r0man/docopt.el/actions?query=workflow%3ACI][https://github.com/r0man/docopt.el/workflows/CI/badge.svg]]
 
+  A Docopt implementation in Elisp.
+
 ** License
 
    Copyright © 2020 [[https://github.com/r0man][r0man]]
