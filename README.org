@@ -6,11 +6,16 @@
 
 ** Usage
 
-   The Emacs command =M-x docopt= builds an Emacs [[https://github.com/magit/transient][transient]] command
-   from the usage help of a [[http://docopt.org/][Docopt]] shell command, and invokes it.
+   The Emacs command =M-x docopt= asks the user for the name of a
+   [[http://docopt.org/][Docopt]] shell command, builds an Emacs [[https://github.com/magit/transient][transient]] command from the
+   usage help of the shell command, and finally, invokes the transient
+   command.
 
-   Given the [[https://github.com/r0man/docopt.el/blob/master/bin/naval-fate][naval-fate]] is in your =PATH= the following transient can
-   be invoked: =M-x docopt [RET] "naval-fate" [RET]=
+** Example
+
+   The Emacs transient command for the [[http://docopt.org/][Docopt]] example program
+   [[https://github.com/r0man/docopt.el/blob/master/bin/naval-fate][naval-fate]] (must be in =PATH=) can be invoked with =M-x docopt
+   [RET] "naval-fate" [RET]=.
 
    [[doc/docopt.gif]]
 
