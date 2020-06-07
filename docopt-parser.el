@@ -69,7 +69,7 @@
 
 (defun docopt--parse-blank-line ()
   "Parse a blank line."
-  (parsec-and (docopt--parse-spaces) (parsec-eol)))
+  (parsec-and (parsec-eol) (docopt--parse-spaces) (parsec-eol)))
 
 (defun docopt--parse-optional-newline ()
   "Parse an optional newline."
@@ -226,7 +226,8 @@ When t, only allow \"=\" as the long option separator, otherwise
   "Parse an option line description."
   (docopt-strip (parsec-many-till-s
                  (parsec-any-ch)
-                 (parsec-or (parsec-try (docopt--parse-option-line-separator))
+                 (parsec-or (parsec-try (docopt--parse-blank-line))
+                            (parsec-try (docopt--parse-option-line-separator))
                             (parsec-lookahead
                              (parsec-try
                               (parsec-or
@@ -260,11 +261,12 @@ When t, only allow \"=\" as the long option separator, otherwise
 (defun docopt--parse-option-line ()
   "Parse an option line."
   (seq-let [_ [long-option short-option] _ description]
-      (parsec-collect
-       (docopt--parse-spaces1)
-       (docopt--parse-option-line-options)
-       (docopt--parse-spaces)
-       (docopt--parse-option-line-description))
+      (parsec-try
+       (parsec-collect
+        (docopt--parse-spaces1)
+        (docopt--parse-option-line-options)
+        (docopt--parse-spaces)
+        (docopt--parse-option-line-description)))
     (let ((default (docopt--parse-default description)))
       (seq-remove #'null (docopt-option-link long-option short-option description default)))))
 
@@ -415,7 +417,7 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 (defun docopt--parse-examples-str ()
   "Parse the \"Examples:\" string."
-  (parsec-str "Examples:"))
+  (parsec-re "\s*Examples:"))
 
 (defun docopt--split-line (line)
   "Trim and split the LINE."

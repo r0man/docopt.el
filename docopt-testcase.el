@@ -101,7 +101,7 @@
 (defun docopt-testcase--parse-blank-line ()
   "Parse a Docopt testcase comment."
   (parsec-or (docopt-testcase--parse-comment)
-             (parsec-try (docopt--parse-blank-line))))
+             (parsec-try (parsec-and (docopt--parse-spaces) (parsec-eol)))))
 
 (defun docopt-testcase--parse-blank-lines ()
   "Parse Docopt testcase blank lines."
