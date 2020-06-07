@@ -127,12 +127,7 @@
 
 (defun docopt-testcase--parse-program ()
   "Parse the Docopt testcase program."
-  (let ((usage (docopt-testcase--parse-usage)))
-    (let ((program (parsec-with-input usage (docopt--parse-program))))
-      (setf (oref program :source) (docopt-strip usage))
-      (if (docopt-program-p program)
-          program
-        (error "Can't parse Docopt program: %s" usage)))))
+  (docopt-parse (docopt-testcase--parse-usage)))
 
 (defun docopt-testcase--parse-argv ()
   "Parse the Docopt testcase argument vector."
