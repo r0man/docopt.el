@@ -483,7 +483,7 @@ When t, only allow \"=\" as the long option separator, otherwise
                              (docopt--parse-program-footer))))))
 
 (defun docopt-parser--set-repeated (program)
-  "Set the :value slot of all repeated arguments in PROGRAM to a vector."
+  "Set the :value slot of all repeated arguments in PROGRAM."
   (let ((arguments (docopt-collect-arguments program)))
     (seq-doseq (repeated (seq-filter #'docopt-repeat-p arguments))
       (seq-doseq (argument arguments)
@@ -513,6 +513,7 @@ When t, only allow \"=\" as the long option separator, otherwise
         (setq name (docopt-parser--program-name program))
         (setq options (docopt-options-merge (docopt-remove-duplicates (docopt-collect-options usage)) options))
         (docopt-parser--set-repeated program)
+        (docopt-program-rewrite-options program)
         (seq-doseq (option options)
           (when (docopt-long-option-p option)
             (setf (oref option prefixes) (docopt-option-prefixes option options))))

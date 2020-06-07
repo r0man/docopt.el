@@ -331,6 +331,24 @@
   "Assign the transient keys for the PROGRAM."
   (docopt-remove-duplicates (docopt-collect-commands program)))
 
+(defun docopt-program-rewrite-options (program)
+  "Rewrite the PROGRAM options and arguments."
+  (let ((options (seq-filter #'docopt-option-argument (oref program options))))
+    (docopt-walk program (lambda (element)
+                           (when (listp element)
+                             (seq-doseq (option options)
+                               (when-let ((found (seq-find (lambda (item)
+                                                             (and (equal (type-of option)
+                                                                         (type-of item))
+                                                                  (equal (docopt-option-name option)
+                                                                         (docopt-option-name item))))
+                                                           element)))
+                                 (let ((index (-elem-index found element)))
+                                   (when (equal (nth (+ index 1) element)
+                                                (docopt-option-argument found))
+                                     (setq element (-remove-at (+ index 1) element)))))))
+                           element))))
+
 (provide 'docopt-program)
 
 ;;; docopt-program.el ends here
