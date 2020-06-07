@@ -384,24 +384,12 @@
     (cons "Options")
     (apply #'vector)))
 
-(defun docopt-transient--copy-to-clipboard-action (program)
-  "Return the transient action list for the copy to clipboard command of PROGRAM."
-  (list "c" "Copy command to clipboard" #'docopt-transient--program-clipboard-copy))
-
-(defun docopt-transient--execute-action (program)
-  "Return the transient action list for the execute command of PROGRAM."
-  (list "x" "Execute command" #'docopt-transient--program-execute))
-
-(defun docopt-transient--insert-action (program)
-  "Return the transient action list for the insert command of PROGRAM."
-  (list "i" "Insert command to current buffer" #'docopt-transient--program-insert))
-
 (defun docopt-transient--section-actions (program)
   "Return the transient actions for the PROGRAM."
-  (vector "Actions"
-          (docopt-transient--copy-to-clipboard-action program)
-          (docopt-transient--insert-action program)
-          (docopt-transient--execute-action program)))
+  ["Actions"
+   ("c" "Copy command to clipboard" docopt-transient--program-clipboard-copy)
+   ("i" "Insert command to current buffer" docopt-transient--program-insert)
+   ("x" "Execute command" docopt-transient--program-execute)])
 
 (defun docopt-transient--section-usage-patterns (program)
   "Return the transient usage pattern section for the PROGRAM."
