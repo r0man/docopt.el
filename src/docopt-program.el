@@ -124,6 +124,14 @@
          (equal usage (docopt-program-usage other))
          (equal options (docopt-program-options other)))))
 
+(defun docopt-program-arguments (program)
+  "Return the arguments of the PROGRAM."
+  (docopt-remove-duplicates (docopt-collect-arguments program)))
+
+(defun docopt-program-commands (program)
+  "Return the commands of the PROGRAM."
+  (docopt-remove-duplicates (docopt-collect-commands program)))
+
 (defun docopt-program-long-options (program)
   "Return the long options of PROGRAM."
   (seq-filter #'docopt-long-option-p (docopt-program-options program)))
@@ -223,131 +231,6 @@
                                      (concat (docopt-string--synonym synonym) ", "))
                                    (docopt-string option))
                                   (or (docopt-option-description option) "")))))))
-
-(defun docopt-program-remove-unknown-options (program)
-  "Remove all options from PROGRAM that are not defined in the options section."
-  (if (docopt-program-options program)
-      (docopt-walk program
-                   (lambda (element)
-                     (cond
-                      ((cl-typep element 'docopt-group)
-                       (with-slots (members) element
-                         (setq members (delete-dups
-                                        (seq-filter (lambda (member)
-                                                      (if (cl-typep member 'docopt-option)
-                                                          (docopt-program-option program (docopt-option-name member))
-                                                        t))
-                                                    members)))
-                         element))
-                      (t element))))
-    program))
-
-(defun docopt-program-set-identity (program)
-  "Remove all options from PROGRAM that are not defined in the options section."
-  (let ((objects (list)))
-    (docopt-walk program
-                 (lambda (element)
-                   (if-let ((found (cl-find element objects :test #'docopt-equal)))
-                       found
-                     (progn
-                       (setq objects (cons element objects))
-                       element))))
-    program))
-
-(defun docopt-program--assign-incompatible-commands (program)
-  "Set the incompatible commands for the PROGRAM."
-  (docopt-walk program
-               (lambda (element)
-                 (when  (docopt-either-all-type-p element 'docopt-command)
-                   (let ((commands (apply #'append (docopt-either-members element))))
-                     (seq-doseq (command commands)
-                       (setf (oref command incompatible)
-                             (seq-remove (lambda (current)
-                                           (docopt-equal current command))
-                                         commands)))))
-                 element))
-  program)
-
-(defun docopt-program--assign-incompatible-options (program)
-  "Set the incompatible options for the PROGRAM."
-  (docopt-walk program
-               (lambda (element)
-                 (when (docopt-either-all-type-p element 'docopt-option)
-                   (let ((options (apply #'append (docopt-either-members element))))
-                     (seq-doseq (option options)
-                       (setf (oref option incompatible)
-                             (seq-remove (lambda (current)
-                                           (docopt-equal current option))
-                                         options)))))
-                 element))
-  program)
-
-(defun docopt-program-assign-incompatible (program)
-  "Assign the incompatible commands and options of PROGRAM."
-  (docopt-program--assign-incompatible-commands program)
-  (docopt-program--assign-incompatible-options program))
-
-(defun docopt-program--assign-argument-keys (program)
-  "Assign the transient argument keys for the PROGRAM."
-  (let ((docopt-abbrev-chars docopt-abbrev-upper-chars)
-        (arguments (docopt-program-arguments program)))
-    (thread-last (seq-map #'docopt-name arguments)
-      (seq-map #'upcase)
-      (docopt-abbrev-list 1)
-      (docopt-assign-keys arguments))))
-
-(defun docopt-program--assign-command-keys (program)
-  "Assign the transient command keys for the PROGRAM."
-  (let ((docopt-abbrev-chars docopt-abbrev-lower-chars)
-        (commands (docopt-program-commands program)))
-    (thread-last (seq-map #'docopt-name commands)
-      (docopt-abbrev-list 2)
-      (docopt-assign-keys commands))))
-
-(defun docopt-program--assign-option-keys (program)
-  "Assign the transient option keys for the PROGRAM."
-  (let ((docopt-abbrev-chars docopt-abbrev-lower-chars)
-        (options (seq-remove (lambda (option)
-                               (and (cl-typep option 'docopt-short-option)
-                                    (oref option synonym)))
-                             (docopt-program-options program))))
-    (thread-last (seq-map #'docopt-name options)
-      (docopt-abbrev-list 1)
-      (seq-map (lambda (key) (concat "-" key)))
-      (docopt-assign-keys options))))
-
-(defun docopt-program-assign-keys (program)
-  "Assign the transient keys for the PROGRAM."
-  (docopt-program--assign-argument-keys program)
-  (docopt-program--assign-command-keys program)
-  (docopt-program--assign-option-keys program)
-  program)
-
-(defun docopt-program-arguments (program)
-  "Assign the transient keys for the PROGRAM."
-  (docopt-remove-duplicates (docopt-collect-arguments program)))
-
-(defun docopt-program-commands (program)
-  "Assign the transient keys for the PROGRAM."
-  (docopt-remove-duplicates (docopt-collect-commands program)))
-
-(defun docopt-program-rewrite-options (program)
-  "Rewrite the PROGRAM options and arguments."
-  (let ((options (seq-filter #'docopt-option-argument (oref program options))))
-    (docopt-walk program (lambda (element)
-                           (when (listp element)
-                             (seq-doseq (option options)
-                               (when-let ((found (seq-find (lambda (item)
-                                                             (and (equal (type-of option)
-                                                                         (type-of item))
-                                                                  (equal (docopt-option-name option)
-                                                                         (docopt-option-name item))))
-                                                           element)))
-                                 (let ((index (-elem-index found element)))
-                                   (when (equal (nth (+ index 1) element)
-                                                (docopt-option-argument found))
-                                     (setq element (-remove-at (+ index 1) element)))))))
-                           element))))
 
 (provide 'docopt-program)
 

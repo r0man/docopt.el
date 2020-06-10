@@ -31,6 +31,7 @@
 
 (require 'cl-lib)
 (require 'dash)
+(require 'docopt-analyzer)
 (require 'docopt-argument)
 (require 'docopt-command)
 (require 'docopt-either)
@@ -460,9 +461,7 @@ When t, only allow \"=\" as the long option separator, otherwise
   (list :footer (parsec-until-s
                  (parsec-or
                   (parsec-eob)
-                  (parsec-eof)
-                  ;; (parsec-peek (docopt-parser--section-header))
-                  ))))
+                  (parsec-eof)))))
 
 (defun docopt-parser--program-options ()
   "Parse and set the Docopt PROGRAM options."
@@ -482,42 +481,11 @@ When t, only allow \"=\" as the long option separator, otherwise
                              (docopt-parser--program-examples)
                              (docopt-parser--program-footer))))))
 
-(defun docopt-parser--set-repeated (program)
-  "Set the :value slot of all repeated arguments in PROGRAM."
-  (let ((arguments (docopt-collect-arguments program)))
-    (seq-doseq (repeated (seq-filter #'docopt-repeat-p arguments))
-      (seq-doseq (argument arguments)
-        (when (equal (docopt-argument-name repeated)
-                     (docopt-argument-name argument))
-          (docopt-set-repeat argument t))))
-    (seq-doseq (usage-pattern (docopt-program-usage program))
-      (docopt-usage-pattern-set-repeat usage-pattern))))
-
-(defun docopt-parser--program-name (program)
-  "Return the name of the PROGRAM."
-  (when-let ((command (thread-last (docopt-program-usage program)
-                        (seq-map #'docopt-usage-pattern-command)
-                        ;; (seq-map #'eieio-object-name-string)
-                        (seq-remove #'null)
-                        (car))))
-    (docopt-command-name command)))
-
 (defun docopt-parser-program ()
   "Parse a Docopt program."
   (let ((program (docopt-program)))
     (docopt-program-set-sections program (docopt-parser--program-sections))
-    (let ((program (docopt-program-remove-unknown-options (docopt-program-set-identity program))))
-      (docopt-program-assign-incompatible program)
-      (with-slots (arguments name options usage) program
-        (docopt-set-shortcut-options program options)
-        (setq name (docopt-parser--program-name program))
-        (setq options (docopt-options-merge (docopt-remove-duplicates (docopt-collect-options usage)) options))
-        (docopt-parser--set-repeated program)
-        (docopt-program-rewrite-options program)
-        (seq-doseq (option options)
-          (when (docopt-long-option-p option)
-            (setf (oref option prefixes) (docopt-option-prefixes option options))))
-        program))))
+    (docopt-analyze-program program)))
 
 (provide 'docopt-parser)
 
