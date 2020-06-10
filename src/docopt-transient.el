@@ -258,7 +258,7 @@
 
 (defun docopt-transient--program-commands (program)
   "Return the transient infix commands s-exprs for the arguments PROGRAM."
-  (seq-filter #'docopt-command-incompatible (docopt-collect-commands program)))
+  (docopt-remove-duplicates (seq-filter #'docopt-command-incompatible (docopt-collect-commands program))))
 
 (defun docopt-transient--program-options (program)
   "Return the transient infix argument s-exprs for the options PROGRAM."
