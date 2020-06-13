@@ -75,9 +75,9 @@
                                                                   (equal (docopt-option-name option)
                                                                          (docopt-option-name item))))
                                                            element)))
+
                                  (let ((index (-elem-index found element)))
-                                   (when (equal (nth (+ index 1) element)
-                                                (docopt-option-argument found))
+                                   (when (docopt-equal (nth (+ index 1) element) (docopt-option-argument found))
                                      (setq element (-remove-at (+ index 1) element)))))))
                            element))))
 
@@ -180,6 +180,14 @@
   (docopt-analyzer--assign-option-keys program)
   program)
 
+(defun docopt-analyzer--assign-prefixes (program)
+  "Assign the option prefixes for the PROGRAM."
+  (with-slots (options) program
+    (seq-doseq (option options)
+      (when (docopt-long-option-p option)
+        (setf (oref option prefixes) (docopt-option-prefixes option options))))
+    program))
+
 (defun docopt-analyze-program (program)
   "Analyze the Docopt PROGRAM."
   (let ((program (docopt-analyzer--remove-unknown-options (docopt-analyzer--deduplicate program))))
@@ -190,9 +198,7 @@
       (setq options (docopt-options-merge (docopt-remove-duplicates (docopt-collect-options usage)) options))
       (docopt-analyzer--set-repeated program)
       (docopt-analyzer--rewrite-options program)
-      (seq-doseq (option options)
-        (when (docopt-long-option-p option)
-          (setf (oref option prefixes) (docopt-option-prefixes option options))))
+      (docopt-analyzer--assign-prefixes program)
       program)))
 
 (provide 'docopt-analyzer)
