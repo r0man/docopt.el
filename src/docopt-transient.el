@@ -254,13 +254,16 @@
 
 (defun docopt-transient--program-arguments (program)
   "Return the transient infix argument s-exprs for the arguments PROGRAM."
-  (docopt-remove-duplicates (docopt-collect-arguments program)))
+  (thread-last (docopt-collect-arguments program)
+    (docopt-remove-duplicates)
+    (seq-sort-by #'docopt-name #'string<)))
 
 (defun docopt-transient--program-commands (program)
   "Return the transient infix commands s-exprs for the arguments PROGRAM."
   (thread-last (docopt-collect-commands program)
     (seq-filter #'docopt-command-incompatible)
-    (docopt-remove-duplicates)))
+    (docopt-remove-duplicates)
+    (seq-sort-by #'docopt-name #'string<)))
 
 (defun docopt-transient--program-options (program)
   "Return the transient infix argument s-exprs for the options PROGRAM."
@@ -268,7 +271,8 @@
     (docopt-remove-duplicates)
     (seq-remove (lambda (option)
                   (and (docopt-short-option-p option)
-                       (docopt-option-synonym option))))))
+                       (docopt-option-synonym option))))
+    (seq-sort-by #'docopt-name #'string<)))
 
 (defun docopt-transient--define-suffix-argument-forms (program)
   "Return the transient infix argument s-exprs for the arguments PROGRAM."
