@@ -473,7 +473,7 @@
 
 (defun docopt-transient-define-command (program)
   "Define the transient command for PROGRAM."
-  (docopt-program-assign-keys program)
+  (docopt-analyzer--assign-keys program)
   (eval (docopt-transient--program-form program)))
 
 (defun docopt-transient-invoke-command (program)
