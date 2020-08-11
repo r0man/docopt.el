@@ -324,7 +324,8 @@
     (kill-buffer buffer))
   (funcall docopt-transient-switch-to-buffer buffer)
   (require 'vterm)
-  (let ((vterm-shell (format "%s -c \"%s\"" shell-file-name command)))
+  (let ((vterm-kill-buffer-on-exit nil)
+        (vterm-shell (format "%s -c \"%s\"" shell-file-name command)))
     (vterm-mode)
     (use-local-map vterm-copy-mode-map)))
 
