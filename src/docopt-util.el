@@ -36,10 +36,16 @@
   "Add the `bold' face property to TEXT."
   (when text (propertize (format "%s" text) 'face 'bold)))
 
+(defun docopt-keyword (s)
+  "Convert the string S into a section keyword."
+  (unless (s-blank-p s)
+    (intern (concat ":" (s-downcase (s-replace-regexp "\s+" "-" s))))))
+
 (defun docopt-strip (s)
   "Trim S, return nil if only the empty string is left."
-  (let ((s (s-trim s)))
-    (unless (s-blank-p s) s)))
+  (unless (s-blank-p s)
+    (let ((s (s-trim s)))
+      (unless (s-blank-p s) s))))
 
 (defun docopt-substring (s from to)
   "Return the substring in S from FROM to TO, or nil when out of bounds."
@@ -72,6 +78,14 @@
                      (setq objects (cons object objects)))
                    object))
     (car objects)))
+
+(defmacro docopt-with-parse-input (s parser)
+  "Parse S using PARSER or signal a 'docopt-invalid-program error."
+  (declare (indent 1))
+  `(let ((ast (parsec-with-input ,s ,parser)))
+     (when (docopt--parsec-error-p ast)
+       (signal 'docopt-invalid-program s))
+     ast))
 
 (provide 'docopt-util)
 

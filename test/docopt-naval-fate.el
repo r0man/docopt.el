@@ -65,13 +65,13 @@
           docopt-naval-fate-options-str "\n\n"
           docopt-naval-fate-examples-str "\n"))
 
-(defvar docopt-naval-fate-usage-ast
-  (parsec-with-input docopt-naval-fate-usage-str
-    (docopt-parser--usage)))
-
 (defvar docopt-naval-fate-options-ast
   (parsec-with-input docopt-naval-fate-options-str
     (docopt-parser--options)))
+
+(defvar docopt-naval-fate-usage-ast
+  (parsec-with-input docopt-naval-fate-usage-str
+    (docopt-parser--usage (list 'options docopt-naval-fate-options-ast))))
 
 (defvar docopt-naval-fate-examples-ast
   (parsec-with-input docopt-naval-fate-examples-str

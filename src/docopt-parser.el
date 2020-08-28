@@ -42,6 +42,7 @@
 (require 'docopt-repeated)
 (require 'docopt-standard-input)
 (require 'docopt-usage-pattern)
+(require 'docopt-util)
 (require 'eieio)
 (require 'parsec)
 (require 's)
@@ -76,8 +77,8 @@
   "Parse an optional newline."
   (parsec-optional (parsec-try (parsec-collect (docopt-parser-spaces) (parsec-eol)))))
 
-(defun docopt-parser--section-header ()
-  "Parse a Docopt section header."
+(defun docopt-parser--section-name ()
+  "Parse a Docopt section name."
   (parsec-query (parsec-re "^\\([[:alnum:]]+\\):") :group 1))
 
 (defun docopt-parser--pipe ()
@@ -248,11 +249,15 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 (defun docopt-parser--option-line-long-short-options ()
   "Parse the options of a Docopt option line where long options come first."
-  (docopt-parser--option-line-separated-options #'docopt-parser--long-option #'docopt-parser--short-option))
+  (docopt-parser--option-line-separated-options
+   #'docopt-parser--long-option
+   #'docopt-parser--short-option))
 
 (defun docopt-parser--option-line-short-long-options ()
   "Parse the options of a Docopt option line where short options come first."
-  (nreverse (docopt-parser--option-line-separated-options #'docopt-parser--short-option #'docopt-parser--long-option)))
+  (nreverse (docopt-parser--option-line-separated-options
+             #'docopt-parser--short-option
+             #'docopt-parser--long-option)))
 
 (defun docopt-parser--option-line-options ()
   "Parse the options of a Docopt option line."
@@ -302,31 +307,72 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 ;; Usage Expression
 
-(defun docopt-parser--usage-group (open close)
-  "Parse an expression group between OPEN and CLOSE."
-  (-flatten (docopt-parser--group open close (docopt-parser--usage-expr))))
+(defun docopt-parser--usage-group (state open close)
+  "Parse an expression group between OPEN and CLOSE using STATE."
+  (-flatten (docopt-parser--group open close (docopt-parser--usage-expr state))))
 
-(defun docopt-parser--usage-group-optional ()
-  "Parse a optional expression group."
-  (apply #'docopt-make-optional-group (docopt-parser--usage-group ?\[ ?\])))
+(defun docopt-parser--usage-group-optional (state)
+  "Parse a optional expression group using STATE."
+  (apply #'docopt-make-optional-group (docopt-parser--usage-group state ?\[ ?\])))
 
-(defun docopt-parser--usage-group-required ()
-  "Parse a required expression group."
-  (apply #'docopt-make-required-group (docopt-parser--usage-group ?\( ?\))))
+(defun docopt-parser--usage-group-required (state)
+  "Parse a required expression group using STATE."
+  (apply #'docopt-make-required-group (docopt-parser--usage-group state ?\( ?\))))
 
-(defun docopt-parser--options-shortcut ()
+(defun  docopt-parser--options-shortcut ()
   "Parse the Docopt options shortcut."
   (when (parsec-str "[options]")
     (make-instance 'docopt-options-shortcut)))
 
-(defun docopt-parser--usage-atom ()
-  "Parse an atom of a usage line expression."
+(defun docopt-parser--usage-option-known-p (name known-options)
+  "Return t if the option with NAME is in KNOWN-OPTIONS, otherwise nil."
+  (not (null (cl-find name known-options :key #'docopt-option-name :test #'string=))))
+
+(defun docopt-parser--usage-option-known-p (name known-options)
+  "Return t if the option with NAME is in KNOWN-OPTIONS, otherwise nil."
+  (let ((option (cl-find name known-options :key #'docopt-option-name :test #'string=)))
+    (and option (not (null (docopt-option-argument option))))))
+
+(defun docopt-parser--usage-long-option (&optional known-options)
+  "Parse a long option in a usage line using KNOWN-OPTIONS."
+  (parsec-with-error-message
+      (format "Long option usage parse error: %s" (cdr parsec-last-error-message))
+    (let ((name (docopt-parser--long-option-name)))
+      (if (docopt-parser--usage-option-known-p name known-options)
+          (let ((argument (parsec-and (parsec-or (parsec-ch ?=) (parsec-ch ?\s))
+                                      (docopt-parser--argument t))))
+            (docopt-long-option :name name :argument argument))
+        (let ((argument (parsec-optional
+                         (parsec-try
+                          (parsec-and (parsec-ch ?=)
+                                      (docopt-parser--argument t))))))
+          (docopt-long-option :name name :argument argument))))))
+
+(defun docopt-parser--usage-short-option (&optional known-options)
+  "Parse a short option in a usage line using KNOWN-OPTIONS."
+  (parsec-with-error-message
+      (format "Long option usage parse error: %s" (cdr parsec-last-error-message))
+    (let ((name (parsec-lookahead (docopt-parser--short-option-name))))
+      (if (docopt-parser--usage-option-known-p name known-options)
+          (let ((name (docopt-parser--short-option-name))
+                (argument (parsec-and (parsec-optional (parsec-or (parsec-ch ?=) (docopt-parser-whitespace)))
+                                      (docopt-parser--argument t))))
+            (docopt-short-option :name name :argument argument))
+        (let ((name (docopt-parser--short-option-name))
+              (argument (parsec-optional
+                         (parsec-try
+                          (parsec-and (parsec-ch ?=)
+                                      (docopt-parser--argument t))))))
+          (docopt-short-option :name name :argument argument))))))
+
+(defun docopt-parser--usage-atom (state)
+  "Parse an atom of an usage line expression using STATE."
   (docopt-parser--repeatable
    (parsec-or
     (docopt-parser--standard-input)
     (docopt-parser--options-shortcut)
-    (docopt-parser--usage-group-optional)
-    (docopt-parser--usage-group-required)
+    (docopt-parser--usage-group-optional state)
+    (docopt-parser--usage-group-required state)
     (docopt-parser--long-option)
     (parsec-try
      (parsec-return (docopt-parser--short-option)
@@ -340,16 +386,39 @@ When t, only allow \"=\" as the long option separator, otherwise
     (docopt-parser--argument)
     (docopt-parser--usage-command))))
 
-(defun docopt-parser--usage-seq ()
-  "Parse an expression sequence."
+(defun docopt-parser--usage-atom (state)
+  "Parse an atom of an usage line expression using STATE."
+  (let ((known-options (cadr (assoc 'options state))))
+    (setq my-options known-options)
+    (docopt-parser--repeatable
+     (parsec-or
+      (docopt-parser--standard-input)
+      (docopt-parser--options-shortcut)
+      (docopt-parser--usage-group-optional state)
+      (docopt-parser--usage-group-required state)
+      (docopt-parser--usage-long-option known-options)
+      (parsec-try
+       (parsec-return (docopt-parser--usage-short-option known-options)
+         (parsec-lookahead
+          (parsec-or (docopt-parser-whitespace)
+                     (parsec-str "|")
+                     (parsec-str "]")
+                     (parsec-str ")")
+                     (parsec-eof)))))
+      (docopt-parser--short-options-stacked)
+      (docopt-parser--argument)
+      (docopt-parser--usage-command)))))
+
+(defun docopt-parser--usage-seq (state)
+  "Parse an expression sequence using STATE."
   (docopt-parser--sep-by1
-   (parsec-return (docopt-parser--usage-atom)
+   (parsec-return (docopt-parser--usage-atom state)
      (parsec-optional (docopt-parser-spaces)))
    (docopt-parser-spaces)))
 
-(defun docopt-parser--usage-expr ()
+(defun docopt-parser--usage-expr (state)
   "Parse an expression sequence."
-  (let ((result (parsec-sepby (docopt-parser--usage-seq) (docopt-parser--pipe))))
+  (let ((result (parsec-sepby (docopt-parser--usage-seq state) (docopt-parser--pipe))))
     (cond
      ((and (= 1 (length result))
            (sequencep (car result))
@@ -369,8 +438,8 @@ When t, only allow \"=\" as the long option separator, otherwise
   "Parse the \"Usage:\" header."
   (parsec-str "Usage:"))
 
-(defun docopt-parser--usage-line (&optional first-line)
-  "Parse a usage line, if FIRST-LINE is t the line must not start with a space."
+(defun docopt-parser--usage-line (state &optional first-line)
+  "Parse a usage line using STATE, if FIRST-LINE is t the line must not start with a space."
   (let ((docopt-strict-long-options t))
     (seq-let [command exprs]
         (parsec-and
@@ -383,24 +452,24 @@ When t, only allow \"=\" as the long option separator, otherwise
               (parsec-optional
                (parsec-and
                 (docopt-parser-spaces1)
-                (docopt-parser--usage-expr))))
+                (docopt-parser--usage-expr state))))
            (parsec-optional (docopt-parser--newlines))))
       (apply #'docopt-make-usage-pattern command (-flatten exprs)))))
 
-(defun docopt-parser--usage-lines ()
-  "Parse Docopt usage lines."
+(defun docopt-parser--usage-lines (state)
+  "Parse Docopt usage lines using STATE."
   (seq-let [first rest]
       (parsec-collect
-       (docopt-parser--usage-line t)
-       (parsec-many (docopt-parser--usage-line)))
+       (docopt-parser--usage-line state t)
+       (parsec-many (docopt-parser--usage-line state)))
     (cons first rest)))
 
-(defun docopt-parser--usage ()
-  "Parse the Docopt usage patterns."
+(defun docopt-parser--usage (state)
+  "Parse the Docopt usage patterns using STATE."
   (parsec-and
    (docopt-parser--usage-header)
    (docopt-parser--optional-newline)
-   (docopt-parser--usage-lines)))
+   (docopt-parser--usage-lines state)))
 
 ;; Sentence
 
@@ -447,10 +516,40 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 ;; Program
 
+(defun docopt-parser--section-header ()
+  "Parse a Docopt section header."
+  (parsec-return (docopt-parser--section-name)
+    (parsec-newline)))
+
 (defun docopt-parser--program-header ()
-  "Parse and set the Docopt PROGRAM header."
-  (when-let ((header (docopt-strip (parsec-until-s (parsec-lookahead (parsec-re "\\([[:alnum:]]+\\):"))))))
+  "Parse the Docopt PROGRAM header section."
+  (when-let (header (docopt-strip (parsec-until-s (parsec-lookahead (parsec-re "usage:[\n\s+]?")))))
     (list :header header)))
+
+(defun docopt-parser--raw-section-seperator ()
+  "Parse the section seperator of a Docopt program."
+  (parsec-and (parsec-re "\n") (parsec-lookahead (parsec-re "[[:alnum:]]"))))
+
+(defun docopt-parser--section-keyword (s)
+  "Convert S into a section keyword, normalizing options."
+  (if (s-matches-p ".*options" s)
+      :options
+    (docopt-keyword s)))
+
+(defun docopt-parser--raw-section ()
+  "Parse a section of a Docopt program."
+  (when-let ((section (parsec-until-s (parsec-or (parsec-eob) (parsec-lookahead (parsec-re "\n[[:alnum:]]"))))))
+    (let ((name (nth 1 (s-match "\\([^:]+\\):[\s\n]*" section))))
+      (if (s-blank-p name)
+          (list :unknown section)
+        (list (docopt-parser--section-keyword name) (docopt-strip section))))))
+
+(defun docopt-parser--raw-sections ()
+  "Parse the sections of a Docopt program."
+  (seq-let [header sections]
+      (parsec-collect (parsec-optional (parsec-try (docopt-parser--program-header)))
+                      (parsec-sepby (docopt-parser--raw-section) (docopt-parser--raw-section-seperator)))
+    (seq-remove #'null (cons header sections))))
 
 (defun docopt-parser--program-examples ()
   "Parse and set the Docopt PROGRAM examples."
@@ -471,20 +570,52 @@ When t, only allow \"=\" as the long option separator, otherwise
   "Parse and set the Docopt PROGRAM usage."
   (list :usage (docopt-parser--usage)))
 
-(defun docopt-parser--program-sections ()
-  "Parse and set the Docopt sections for the PROGRAM."
-  (seq-remove #'null (cons (docopt-parser--program-header)
-                           (parsec-many1
-                            (parsec-or
-                             (docopt-parser--program-usage)
-                             (docopt-parser--program-options)
-                             (docopt-parser--program-examples)
-                             (docopt-parser--program-footer))))))
+(defun docopt-parser--keyword (s)
+  "Convert S to a keyword."
+  (list :usage (docopt-parser--usage)))
+
+(defun docopt-parser--find-raw-section (name sections)
+  "Find the raw section by NAME in SECTIONS."
+  (cl-find name sections :key #'car :test #'equal))
+
+(cl-defgeneric docopt-parser--section (program name section)
+  "Parse the SECTION of the Docopt PROGRAM dispatching on NAME.")
+
+(cl-defmethod docopt-parser--section (program (name (eql :examples)) section)
+  "Parse the examples SECTION of the Docopt PROGRAM dispatching on NAME."
+  (with-slots (examples) program
+    (setq examples (docopt-with-parse-input section (docopt-parser--examples)))))
+
+(cl-defmethod docopt-parser--section (program (name (eql :header)) section)
+  "Parse the header SECTION of the Docopt PROGRAM dispatching on NAME."
+  (with-slots (header) program
+    (setq header (docopt-strip section))))
+
+(cl-defmethod docopt-parser--section (program (name (eql :options)) section)
+  "Parse the options SECTION of the Docopt PROGRAM dispatching on NAME."
+  (with-slots (options) program
+    (let ((section-options (docopt-with-parse-input section (docopt-parser--options))))
+      (setq options (docopt-options-merge options section-options)))))
+
+(cl-defmethod docopt-parser--section (program (name (eql :usage)) section)
+  "Parse the usage SECTION of the Docopt PROGRAM dispatching on NAME."
+  (with-slots (usage options) program
+    (let ((state (list (list 'options options))))
+      (setq usage (docopt-with-parse-input section (docopt-parser--usage state))))))
+
+(cl-defmethod docopt-parser--section (program name section)
+  "Parse the usage SECTION of the Docopt PROGRAM dispatching on NAME." nil)
 
 (defun docopt-parser-program ()
   "Parse a Docopt program."
-  (let ((program (docopt-program)))
-    (docopt-program-set-sections program (docopt-parser--program-sections))
+  (let ((program (docopt-program))
+        (raw-sections (docopt-parser--raw-sections)))
+    (seq-doseq (section raw-sections)
+      (when (equal :options (car section))
+        (docopt-parser--section program (car section) (cadr section))))
+    (seq-doseq (section raw-sections)
+      (unless (equal :options (car section))
+        (docopt-parser--section program (car section) (cadr section))))
     (docopt-analyze-program program)))
 
 (provide 'docopt-parser)

@@ -65,7 +65,7 @@
 (defun docopt-test--testcase-message (testcase)
   "Return the test message for the TESTCASE."
   (with-slots (program) testcase
-    (format "Parsing the Docopt program #%s:\n\n%s"
+    (format "Parsing the Docopt program #%s:\n\n%s\n"
             (docopt-testcase-index testcase)
             (docopt-program-source program))))
 
@@ -88,7 +88,7 @@
 (seq-doseq (testcase (docopt-testcase-parse (f-read-text "test/testcases.docopt")))
   (docopt-test-define-testcase testcase docopt-test-skip-list))
 
-;; (seq-doseq (testcase (docopt-testcase-parse (f-read-text "testcases.docopt")))
+;; (seq-doseq (testcase (docopt-testcase-parse (f-read-text "test/testcases.docopt")))
 ;;   (docopt-test-define-testcase testcase))
 
 ;;; docopt-test.el ends here

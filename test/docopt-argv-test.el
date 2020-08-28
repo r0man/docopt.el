@@ -78,17 +78,17 @@
             :to-equal (docopt-command :name "naval-fate")))
 
   (it "should parse a list of arguments"
-    (expect (parsec-with-input "a b" (docopt-argv-parser program (parsec-with-input "A B" (docopt-parser--usage-expr))))
+    (expect (parsec-with-input "a b" (docopt-argv-parser program (parsec-with-input "A B" (docopt-parser--usage-expr nil))))
             :to-equal (list (docopt-argument :name "A" :value "a")
                             (docopt-argument :name "B" :value "b"))))
 
   (it "should parse an optional group"
-    (expect (parsec-with-input "a b" (docopt-argv-parser program (parsec-with-input "[A B]" (docopt-parser--usage-expr))))
+    (expect (parsec-with-input "a b" (docopt-argv-parser program (parsec-with-input "[A B]" (docopt-parser--usage-expr nil))))
             :to-equal (list (docopt-argument :name "A" :value "a" :optional t)
                             (docopt-argument :name "B" :value "b" :optional t))))
 
   ;; (it "should parse an optional group separated by options"
-  ;;   (expect (parsec-with-input "--version a -h b --moored" (docopt-argv-parser program (parsec-with-input "[A B]" (docopt-parser--usage-expr))))
+  ;;   (expect (parsec-with-input "--version a -h b --moored" (docopt-argv-parser program (parsec-with-input "[A B]" (docopt-parser--usage-expr nil))))
   ;;           :to-equal (list docopt-naval-fate-option-version
   ;;                           (docopt-argument :name "A" :value "a" :optional t)
   ;;                           docopt-naval-fate-option-h
@@ -96,7 +96,8 @@
   ;;                           docopt-naval-fate-option-moored)))
 
   (it "should parse a required group"
-    (expect (parsec-with-input "a b" (docopt-argv-parser program (parsec-with-input "(A B)" (docopt-parser--usage-expr))))
+    (expect (parsec-with-input "a b"
+              (docopt-argv-parser program (parsec-with-input "(A B)" (docopt-parser--usage-expr nil))))
             :to-equal (list (docopt-argument :name "A" :value "a")
                             (docopt-argument :name "B" :value "b"))))
 
@@ -104,7 +105,7 @@
     (expect (parsec-with-input "naval-fate --help"
               (docopt-argv-parser program
                                   (parsec-with-input "Usage: naval-fate -h | --help"
-                                    (docopt-parser--usage))))
+                                    (docopt-parser--usage nil))))
             :to-equal (list (docopt-command :name "naval-fate")
                             (docopt-long-option :name "help"))))
 
@@ -117,7 +118,7 @@
 
 (describe "Parsing an either"
   :var ((program (docopt-parse docopt-naval-fate-str))
-        (exprs (parsec-with-input "a|-b|--c" (docopt-parser--usage-expr))))
+        (exprs (parsec-with-input "a|-b|--c" (docopt-parser--usage-expr nil))))
 
   (it "should parse the branch with a command"
     (expect (parsec-with-input "a" (docopt-argv-parser program exprs))
@@ -133,7 +134,7 @@
 
 (describe "Parsing optional short options within an either"
   :var ((program (docopt-parse docopt-naval-fate-str))
-        (exprs (parsec-with-input "[-a|-b]" (docopt-parser--usage-expr))))
+        (exprs (parsec-with-input "[-a|-b]" (docopt-parser--usage-expr nil))))
 
   (it "should parse the empty string"
     (expect (parsec-with-input "" (docopt-argv-parser program exprs))
@@ -149,7 +150,7 @@
 
 (describe "Parsing a command followed by optional short options within an either"
   :var ((program (docopt-parse docopt-naval-fate-str))
-        (exprs (parsec-with-input "cmd [-a|-b]" (docopt-parser--usage-expr))))
+        (exprs (parsec-with-input "cmd [-a|-b]" (docopt-parser--usage-expr nil))))
 
   (it "should parse just the command"
     (expect (parsec-with-input "cmd" (docopt-argv-parser program exprs))

@@ -32,10 +32,28 @@
 (require 'docopt-util)
 
 (describe "Stripping a string"
+
+  (it "should handle nil"
+    (expect (docopt-strip nil) :to-equal nil))
+
   (it "should remove whitespace at the beginning and end"
     (expect (docopt-strip " \nA\n ") :to-equal "A"))
 
   (it "should return when only a blank string is left"
     (expect (docopt-strip " \n\n ") :to-equal nil)))
+
+(describe "Converting a string to a keyword"
+
+  (it "should handle nil"
+    (expect (docopt-keyword nil) :to-equal nil))
+
+  (it "should handle the empty string string"
+    (expect (docopt-keyword "") :to-equal nil))
+
+  (it "should handle the string \"x\""
+    (expect (docopt-keyword "x") :to-equal :x))
+
+  (it "should handle the string \"x y\""
+    (expect (docopt-keyword "x y") :to-equal :x-y)))
 
 ;;; docopt-util-test.el ends here
