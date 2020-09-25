@@ -82,10 +82,11 @@
 (defmacro docopt-with-parse-input (s parser)
   "Parse S using PARSER or signal a 'docopt-invalid-program error."
   (declare (indent 1))
-  `(let ((ast (parsec-with-input ,s ,parser)))
-     (when (docopt--parsec-error-p ast)
-       (signal 'docopt-invalid-program s))
-     ast))
+  (let ((ast (gensym "ast")))
+    `(let ((,ast (parsec-with-input ,s ,parser)))
+       (when (docopt--parsec-error-p ,ast)
+         (signal 'docopt-invalid-program ,s))
+       ,ast)))
 
 (provide 'docopt-util)
 
