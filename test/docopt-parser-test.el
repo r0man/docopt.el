@@ -513,7 +513,17 @@
                              (docopt-make-optional-group
                               (docopt-make-either
                                (list (docopt-long-option :name "moored"))
-                               (list (docopt-long-option :name "drifting")))))))))
+                               (list (docopt-long-option :name "drifting"))))))))
+
+  (it "should parse \"Usage: naval-fate mine (set | remove all) <x> <y> [--moored|--drifting]"
+    (expect (parsec-with-input "Usage: my_program [options] [--] <file>..."
+              (docopt-parser--usage nil))
+            :to-equal (list (docopt-make-usage-pattern
+                             (docopt-command :name "my_program")
+                             (docopt-options-shortcut)
+                             (docopt-make-optional-group
+                              (docopt-command :name "--"))
+                             (docopt-make-repeated (docopt-argument :name "file")))))))
 
 (describe "The program parser"
 

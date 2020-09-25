@@ -123,7 +123,8 @@
 
 (defun docopt-parser-command-name ()
   "Parse a command name."
-  (parsec-re "[[:alnum:]][[:alnum:]_.-]*"))
+  (parsec-or (parsec-re "[[:alnum:]][[:alnum:]_.-]*")
+             (parsec-str "--")))
 
 ;; Argument
 
