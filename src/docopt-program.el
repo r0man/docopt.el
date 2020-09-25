@@ -100,6 +100,15 @@
    (seq-mapcat #'docopt-collect-options (docopt-program-usage program))
    (docopt-program-options program)))
 
+(defun docopt-collect-standard-input (program)
+  "Collect the standard input from the Docopt PROGRAM."
+  (let ((results nil))
+    (docopt-walk program (lambda (element)
+                           (if (docopt-standard-input-p element)
+                               (setq results (cons element results)))
+                           element))
+    (docopt-remove-duplicates results)))
+
 (cl-defmethod clone ((program docopt-program) &rest params)
   "Return a copy of the usage PROGRAM and apply PARAMS."
   (let ((copy (apply #'cl-call-next-method program params)))
@@ -173,7 +182,8 @@
                    (seq-remove (lambda (option)
                                  (and (docopt-short-option-p option)
                                       (docopt-option-synonym option)))
-                               (docopt-program-options program))))
+                               (docopt-program-options program))
+                   (docopt-collect-standard-input program)))
 
 (cl-defmethod docopt-string ((program docopt-program))
   "Convert the Docopt PROGRAM to a string."

@@ -47,7 +47,6 @@
     (46 . (0))
     (47 . (0))
     (48 . (0 1))
-    (50 . (1))
     (67 . (0)))
   "The examples to skip by testcase.")
 
