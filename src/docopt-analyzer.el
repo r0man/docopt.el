@@ -157,8 +157,8 @@
   "Assign the transient command keys for the PROGRAM."
   (let ((docopt-abbrev-chars docopt-abbrev-lower-chars)
         (commands (docopt-program-commands program)))
-    (thread-last (seq-map #'docopt-name commands)
-      (docopt-abbrev-list 2)
+    (thread-last
+      (docopt-abbrev-list 2 (seq-map #'docopt-name commands) :actions '("c" "e" "i" "x"))
       (docopt-assign-keys commands))))
 
 (defun docopt-analyzer--assign-option-keys (program)
