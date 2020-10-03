@@ -311,15 +311,25 @@
     (seq-map (lambda (pattern) (oref pattern docopt)))
     (car)))
 
-(defun docopt-transient--execute-command-term (command buffer)
-  "Execute the shell COMMAND in BUFFER using term."
+(defun docopt-transient--execute-command-term (program command buffer)
+  "Execute the shell COMMAND of PROGRAM in BUFFER using term."
   (when-let ((buffer (get-buffer buffer)))
     (kill-buffer buffer))
   (funcall docopt-transient-switch-to-buffer buffer)
   (start-process buffer buffer shell-file-name "-c" command))
 
-(defun docopt-transient--execute-command-vterm (command buffer)
-  "Execute the shell COMMAND in BUFFER using vterm."
+(defun docopt-transient--retry-question (command)
+  "Return the retry question for COMMAND."
+  (format "Failed to execute %s. Do you want to retry?" (nucli-bold command)) )
+
+(defun docopt-transient--execute-sentinel (program command process event)
+  "The EVENT handler for PROCESS executing the COMMAND of PROGRAM."
+  (when (and (s-match "exited abnormally" event)
+             (yes-or-no-p (docopt-transient--retry-question command) ))
+    (docopt-transient program)))
+
+(defun docopt-transient--execute-command-vterm (program command buffer)
+  "Execute the shell COMMAND of PROGRAM in BUFFER using vterm."
   (when-let ((buffer (get-buffer buffer)))
     (kill-buffer buffer))
   (funcall docopt-transient-switch-to-buffer buffer)
@@ -327,14 +337,17 @@
   (let ((vterm-kill-buffer-on-exit nil)
         (vterm-shell (format "%s -c \"%s\"" shell-file-name command)))
     (vterm-mode)
+    (set-process-sentinel vterm--process
+                          (lambda (process event)
+                            (docopt-transient--execute-sentinel program command process event)))
     (use-local-map vterm-copy-mode-map)))
 
-(defun docopt-transient--execute-command (command buffer)
-  "Execute the shell COMMAND in BUFFER using vterm or term."
+(defun docopt-transient--execute-command (program command buffer)
+  "Execute the shell COMMAND of PROGRAM in BUFFER using vterm or term."
   (require 'vterm nil t)
   (if (boundp 'vterm-shell)
-      (docopt-transient--execute-command-vterm command buffer)
-    (docopt-transient--execute-command-term command buffer)))
+      (docopt-transient--execute-command-vterm program command buffer)
+    (docopt-transient--execute-command-term program command buffer)))
 
 (defun docopt-transient--program-edit ()
   "Edit and execute the current Docopt transient command."
@@ -345,7 +358,7 @@
          (command (docopt-transient--program-string program args))
          (buffer-name (docopt-transient--program-buffer-name program))
          (command (read-from-minibuffer "Execute: " (docopt-transient--program-string program args))))
-    (docopt-transient--execute-command command buffer-name)))
+    (docopt-transient--execute-command program command buffer-name)))
 
 (defun docopt-transient--program-execute ()
   "Execute the current Docopt transient command."
@@ -355,7 +368,7 @@
          (args (docopt-shell-arguments usage-pattern))
          (command (docopt-transient--program-string program args))
          (buffer-name (docopt-transient--program-buffer-name program)))
-    (docopt-transient--execute-command command buffer-name)
+    (docopt-transient--execute-command program command buffer-name)
     (message "Executed %s." (docopt-bold command))))
 
 (defun docopt-transient--program-clipboard-copy ()
