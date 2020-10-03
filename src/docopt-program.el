@@ -166,7 +166,9 @@
 
 (defun docopt-program-shell-command (command)
   "Run the shell COMMAND with the --help option and parse the result as a Docopt program."
-  (docopt-parse (shell-command-to-string (concat command " --help"))))
+  (let ((program (docopt-parse (shell-command-to-string (concat command " --help")))))
+    (setf (oref program name) command)
+    program))
 
 (defun docopt-program-set-sections (program sections)
   "Set the sections of the PROGRAM to SECTIONS."
