@@ -51,9 +51,14 @@
           docopt-abbrev-numeric-chars)
   "The list of abbreviations chars.")
 
+(defun docopt-abbrev-sanitize (s)
+  "Remove characters from S that should not be used in abbreviations."
+  (s-replace-regexp "[-_]" "" s))
+
 (defun docopt-abbrev-candidates (s)
   "Return the abbreviation candidates for S in it's preferred order."
-  (delete-dups (append (seq-map #'identity s) docopt-abbrev-chars)))
+  (delete-dups (append (seq-map #'identity (docopt-abbrev-sanitize s))
+                       docopt-abbrev-chars)))
 
 (defun docopt-abbrev-next-char (char &optional index candidates)
   "Return the next abbreviation char for CHAR from CANDIDATES at INDEX."
@@ -79,13 +84,17 @@
         (seq-map #'char-to-string)
         (s-join "")))))
 
-(defun docopt-abbrev-list (n lst)
-  "Return the unique abbreviations of length N for each element in LST."
+(cl-defun docopt-abbrev-list (n lst &key actions)
+  "Return the unique abbreviations of length N for each element in LST taking ACTIONS into account."
   (nreverse (seq-reduce
              (lambda (taken-abbrevs next-abbrev)
                (seq-let [_ preferred-abbrev abbrev-candidates] next-abbrev
                  (let ((index 0))
-                   (while (and preferred-abbrev (member preferred-abbrev taken-abbrevs))
+                   (while (and preferred-abbrev
+                               (or (member preferred-abbrev taken-abbrevs)
+                                   (seq-some (lambda (action)
+                                               (s-starts-with-p action preferred-abbrev))
+                                             actions )))
                      (setq preferred-abbrev (docopt-abbrev-next-string preferred-abbrev index abbrev-candidates)
                            index (+ 1 index)))
                    (if preferred-abbrev
@@ -93,8 +102,9 @@
                      taken-abbrevs))))
              (seq-map (lambda (element)
                         (list element
-                              (docopt-substring element 0 n)
-                              (docopt-abbrev-candidates element))) lst)
+                              (docopt-substring (docopt-abbrev-sanitize element) 0 n)
+                              (docopt-abbrev-candidates element)))
+                      lst)
              nil)))
 
 (provide 'docopt-abbrev)

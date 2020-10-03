@@ -42,6 +42,10 @@
     (expect (docopt-abbrev-list 2 words)
             :to-equal '("he" "wo" "da")))
 
+  (it "should calculate 2 letter abbreviations not starting with any of actions"
+    (expect (docopt-abbrev-list 2 words :actions '("h" "wo"))
+            :to-equal '("eI" "wr" "da")))
+
   (it "should calculate 3 letter abbreviations"
     (expect (docopt-abbrev-list 3 words)
             :to-equal '("hel" "wor" "dat"))))
