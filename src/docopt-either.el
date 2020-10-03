@@ -54,7 +54,9 @@
 (cl-defmethod docopt-shell-arguments ((either docopt-either))
   "Return the shell argument list for the EITHER."
   (thread-last (oref either members)
-    (seq-map (lambda (members) (seq-mapcat #'docopt-shell-arguments members)))
+    (seq-map (lambda (members)
+               (seq-mapcat #'docopt-shell-arguments
+                           (seq-filter #'docopt-value members))))
     (seq-remove #'null)
     (car)))
 
