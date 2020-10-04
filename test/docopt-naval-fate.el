@@ -117,12 +117,6 @@
    :name "version"
    :prefixes '("versio" "versi" "vers" "ver" "ve" "v")))
 
-(with-slots (incompatible) docopt-naval-fate-option-h
-  (setf incompatible (list docopt-naval-fate-option-help)))
-
-(with-slots (incompatible) docopt-naval-fate-option-help
-  (setf incompatible (list docopt-naval-fate-option-h)))
-
 (with-slots (incompatible) docopt-naval-fate-option-moored
   (setf incompatible (list docopt-naval-fate-option-drifting)))
 

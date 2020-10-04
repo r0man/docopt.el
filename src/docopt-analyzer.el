@@ -134,7 +134,10 @@
                      (seq-doseq (option options)
                        (setf (oref option incompatible)
                              (seq-remove (lambda (current)
-                                           (docopt-equal current option))
+                                           (or (docopt-equal current option)
+                                               (and (docopt-option-synonym option)
+                                                    (string= (docopt-option-synonym option)
+                                                             (docopt-option-name current)))))
                                          options)))))
                  element))
   program)
@@ -158,7 +161,7 @@
   (let ((docopt-abbrev-chars docopt-abbrev-lower-chars)
         (commands (docopt-program-commands program)))
     (thread-last
-      (docopt-abbrev-list 2 (seq-map #'docopt-name commands) :actions '("c" "e" "i" "x"))
+        (docopt-abbrev-list 2 (seq-map #'docopt-name commands) :actions '("c" "e" "i" "x"))
       (docopt-assign-keys commands))))
 
 (defun docopt-analyzer--assign-option-keys (program)
@@ -191,7 +194,6 @@
 (defun docopt-analyze-program (program)
   "Analyze the Docopt PROGRAM."
   (let ((program (docopt-analyzer--remove-unknown-options (docopt-analyzer--deduplicate program))))
-    (docopt-analyzer--assign-incompatible program)
     (with-slots (arguments name options usage) program
       (docopt-set-shortcut-options program options)
       (setq name (docopt-analyzer--program-name program))
@@ -199,6 +201,7 @@
       (docopt-analyzer--set-repeated program)
       (docopt-analyzer--rewrite-options program)
       (docopt-analyzer--assign-prefixes program)
+      (docopt-analyzer--assign-incompatible program)
       program)))
 
 (provide 'docopt-analyzer)
