@@ -52,7 +52,11 @@
 (cl-defmethod docopt-shell-arguments ((shortcut docopt-options-shortcut))
   "Return the shell argument list for the options SHORTCUT."
   (with-slots (options) shortcut
-    (seq-remove #'null (seq-mapcat #'docopt-shell-arguments options))))
+    (thread-last options
+      (docopt-option-remove-synonyms)
+      (seq-mapcat #'docopt-shell-arguments)
+      (seq-remove #'null))))
+
 
 (cl-defmethod docopt-collect-arguments ((shortcut docopt-options-shortcut))
   "Collect the arguments from the Docopt SHORTCUT."

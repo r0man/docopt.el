@@ -295,6 +295,17 @@ ARGUMENT and ARGUMENT-NAME slots of the instance."
      options-2)
     (seq-sort-by #'docopt-option-name #'string<)))
 
+(defun docopt-option-remove-synonyms (options)
+  "Remove all short options from OPTIONS that have a long option synonym."
+  (seq-remove (lambda (option-1)
+                (and (docopt-short-option-p option-1)
+                     (seq-find (lambda (option-2)
+                                 (and (docopt-long-option-p option-2)
+                                      (string= (oref option-1 :name)
+                                               (oref option-2 :synonym))))
+                               options)))
+              options))
+
 (provide 'docopt-option)
 
 ;;; docopt-option.el ends here

@@ -40,4 +40,13 @@
              (docopt-program-options docopt-naval-fate))
             :to-equal '("hel" "he" "h"))))
 
+(describe "Removing synonyms"
+  (it "should remove short options that have a long option synonym"
+    (expect (docopt-option-remove-synonyms
+             (list (docopt-long-option :name "help" :synonym "h")
+                   (docopt-short-option :name "h" :synonym "help")
+                   (docopt-short-option :name "v" :synonym "version")))
+            :to-equal (list (docopt-long-option :name "help" :synonym "h")
+                            (docopt-short-option :name "v" :synonym "version")))))
+
 ;;; docopt-option-test.el ends here
