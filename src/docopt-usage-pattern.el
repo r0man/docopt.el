@@ -59,8 +59,11 @@
 (cl-defmethod docopt-shell-arguments ((pattern docopt-usage-pattern))
   "Return the shell argument list for the usage PATTERN."
   (with-slots (command expressions) pattern
-    (append (docopt-shell-arguments command)
-            (seq-mapcat #'docopt-shell-arguments expressions))))
+    (let ((args (append (docopt-shell-arguments command)
+                        (seq-mapcat #'docopt-shell-arguments expressions))))
+      (if (string= "--" (car (last args)))
+          (butlast args)
+        args))))
 
 (cl-defmethod docopt-name ((usage-pattern docopt-usage-pattern))
   "Return the name of USAGE-PATTERN."
