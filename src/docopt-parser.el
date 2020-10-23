@@ -609,7 +609,7 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 (defun docopt-parser-program ()
   "Parse a Docopt program."
-  (let ((program (docopt-program))
+  (let ((program (make-instance 'docopt-program))
         (raw-sections (docopt-parser--raw-sections)))
     (seq-doseq (section raw-sections)
       (when (equal :options (car section))
