@@ -301,8 +301,8 @@ ARGUMENT and ARGUMENT-NAME slots of the instance."
                 (and (docopt-short-option-p option-1)
                      (seq-find (lambda (option-2)
                                  (and (docopt-long-option-p option-2)
-                                      (string= (oref option-1 :name)
-                                               (oref option-2 :synonym))))
+                                      (string= (oref option-1 name)
+                                               (oref option-2 synonym))))
                                options)))
               options))
 
