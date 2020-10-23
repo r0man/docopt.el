@@ -313,6 +313,7 @@
 
 (defun docopt-transient--execute-command-term (program command buffer)
   "Execute the shell COMMAND of PROGRAM in BUFFER using term."
+  (ignore program)
   (when-let ((buffer (get-buffer buffer)))
     (kill-buffer buffer))
   (funcall docopt-transient-switch-to-buffer buffer)
@@ -324,6 +325,7 @@
 
 (defun docopt-transient--execute-sentinel (program command process event)
   "The EVENT handler for PROCESS executing the COMMAND of PROGRAM."
+  (ignore process)
   (when (and (s-match "exited abnormally" event)
              (yes-or-no-p (docopt-transient--retry-question command) ))
     (docopt-transient program)))
