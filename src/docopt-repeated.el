@@ -1,4 +1,4 @@
-;;; docoptoup-repeated.el --- Docopt repeated -*- lexical-binding: t -*-
+;;; docopt-repeated.el --- Docopt repeated -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019-2020 r0man
 
