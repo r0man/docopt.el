@@ -37,6 +37,7 @@
 (require 'parsec)
 (require 's)
 (require 'seq)
+(require 'subr-x)
 
 (defun docopt-argv--parse-exprs-any-order (program exprs)
   "Parse the EXPRS of PROGRAM in any order."
