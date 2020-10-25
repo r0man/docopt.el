@@ -43,7 +43,7 @@
 ;;;###autoload
 (defun docopt-parse (s)
   "Parse the Docopt program from S."
-  (let ((program (make-instance 'docopt-program))
+  (let ((program (make-instance 'docopt-program :source s))
         (raw-sections (parsec-with-input s (docopt-parser--raw-sections))))
     (when (docopt--parsec-error-p raw-sections)
       (signal 'docopt-invalid-program program))

@@ -532,6 +532,7 @@
             :to-equal (docopt-program
                        :header "PROGRAM"
                        :name "prog"
+                       :source "PROGRAM Usage: prog --foo"
                        :usage (list (docopt-make-usage-pattern
                                      (docopt-command :name "prog")
                                      (docopt-long-option :name "foo" :prefixes '("fo" "f"))))
@@ -540,6 +541,7 @@
   (it "should parse \"Usage: prog [options]\n\nOptions: -a,--all  All.\""
     (expect (docopt-parse "Usage: prog [options]\n\nOptions: -a,--all  All.")
             :to-equal (docopt-program
+                       :source "Usage: prog [options]\n\nOptions: -a,--all  All."
                        :name "prog"
                        :usage (list (docopt-make-usage-pattern
                                      (docopt-command :name "prog")

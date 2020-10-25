@@ -69,13 +69,11 @@
 (describe "The `docopt-testcase-program` parser"
 
   (it "should parse a single line string"
-    (expect (parsec-with-input "r\"\"\"Usage: prog [<arg>]\n\n\"\"\""
-              (docopt-testcase--parse-program))
-            :to-equal (docopt-parse "Usage: prog [<arg>]\n\n")))
+    (expect (docopt-program-p (docopt-parse "r\"\"\"Usage: prog [<arg>]\n\n\"\"\""))
+            :to-equal t))
 
   (it "should parse a multi line string"
-    (expect (parsec-with-input "r\"\"\"Usage: prog [options]\n\nOptions: -a  All.\n\n\"\"\""
-              (docopt-testcase--parse-program))
-            :to-equal (docopt-parse "Usage: prog [options]\n\nOptions: -a  All.\n\n"))))
+    (expect (docopt-program-p (docopt-parse "r\"\"\"Usage: prog [options]\n\nOptions: -a  All.\n\n\"\"\""))
+            :to-equal t)))
 
 ;;; docopt-testcase-test.el ends here
