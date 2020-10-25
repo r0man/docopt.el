@@ -199,7 +199,7 @@
 (defun docopt-transient--usage-pattern-toggle ()
   "Toggle the usage pattern of the program."
   (let ((obj (transient-suffix-object)))
-    (seq-doseq (suffix  transient--suffixes)
+    (seq-doseq (suffix transient--suffixes)
       (when (cl-typep suffix 'docopt-transient--usage-pattern)
         (setf (oref suffix value) nil)))
     (transient-infix-set obj (transient-infix-read obj))
