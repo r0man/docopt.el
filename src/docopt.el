@@ -29,6 +29,7 @@
 
 ;;; Code:
 
+(require 'docopt-analyzer)
 (require 'docopt-argv)
 (require 'docopt-parser)
 (require 'docopt-transient)
@@ -40,18 +41,25 @@
   "Invalid Docopt program.")
 
 ;;;###autoload
-(defun docopt (command)
-  "Invoke the transient command for the Docopt shell COMMAND."
-  (interactive (list (read-from-minibuffer "Docopt: ")))
-  (docopt-transient (docopt-program-shell-command command)))
-
-;;;###autoload
 (defun docopt-parse (s)
   "Parse the Docopt program from S."
-  (let ((program (parsec-with-input s (docopt-parser-program))))
-    (when (docopt--parsec-error-p program)
+  (let ((program (make-instance 'docopt-program))
+        (raw-sections (parsec-with-input s (docopt-parser--raw-sections))))
+    (when (docopt--parsec-error-p raw-sections)
       (signal 'docopt-invalid-program program))
-    (setf (oref program :source) (docopt-strip s))
+    (seq-doseq (section raw-sections)
+      (when (equal :options (car section))
+        (docopt-parser--section program (car section) (cadr section))))
+    (seq-doseq (section raw-sections)
+      (unless (equal :options (car section))
+        (docopt-parser--section program (car section) (cadr section))))
+    (docopt-analyze-program program)))
+
+;;;###autoload
+(defun docopt-shell-command (command)
+  "Run the shell COMMAND with the --help option and parse the result as a Docopt program."
+  (let ((program (docopt-parse (shell-command-to-string (concat command " --help")))))
+    (setf (oref program name) command)
     program))
 
 ;;;###autoload
@@ -63,6 +71,12 @@
 (defun docopt-eval (program s)
   "Parse the argument vector from S using the Docopt PROGRAM."
   (docopt--argv-to-alist program (docopt-argv-parse program s)))
+
+;;;###autoload
+(defun docopt (command)
+  "Invoke the transient command for the Docopt shell COMMAND."
+  (interactive (list (read-from-minibuffer "Docopt: ")))
+  (docopt-transient (docopt-shell-command command)))
 
 (provide 'docopt)
 

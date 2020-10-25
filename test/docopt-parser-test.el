@@ -528,8 +528,7 @@
 (describe "The program parser"
 
   (it "should parse \"PROGRAM Usage: prog --foo\""
-    (expect (parsec-with-input "PROGRAM Usage: prog --foo"
-              (docopt-parser-program))
+    (expect (docopt-parse "PROGRAM Usage: prog --foo")
             :to-equal (docopt-program
                        :header "PROGRAM"
                        :name "prog"
@@ -539,8 +538,7 @@
                        :options (list (docopt-long-option :name "foo" :prefixes '("fo" "f"))))))
 
   (it "should parse \"Usage: prog [options]\n\nOptions: -a,--all  All.\""
-    (expect (parsec-with-input "Usage: prog [options]\n\nOptions: -a,--all  All."
-              (docopt-parser-program))
+    (expect (docopt-parse "Usage: prog [options]\n\nOptions: -a,--all  All.")
             :to-equal (docopt-program
                        :name "prog"
                        :usage (list (docopt-make-usage-pattern

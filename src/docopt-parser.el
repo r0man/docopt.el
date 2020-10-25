@@ -31,7 +31,6 @@
 
 (require 'cl-lib)
 (require 'dash)
-(require 'docopt-analyzer)
 (require 'docopt-argument)
 (require 'docopt-command)
 (require 'docopt-either)
@@ -606,18 +605,6 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 (cl-defmethod docopt-parser--section (program name section)
   "Parse the usage SECTION of the Docopt PROGRAM dispatching on NAME." nil)
-
-(defun docopt-parser-program ()
-  "Parse a Docopt program."
-  (let ((program (make-instance 'docopt-program))
-        (raw-sections (docopt-parser--raw-sections)))
-    (seq-doseq (section raw-sections)
-      (when (equal :options (car section))
-        (docopt-parser--section program (car section) (cadr section))))
-    (seq-doseq (section raw-sections)
-      (unless (equal :options (car section))
-        (docopt-parser--section program (car section) (cadr section))))
-    (docopt-analyze-program program)))
 
 (provide 'docopt-parser)
 
