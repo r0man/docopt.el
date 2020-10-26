@@ -188,11 +188,6 @@
 (defclass docopt-transient--usage-pattern (transient-switch)
   ((docopt :initarg :docopt :type docopt-usage-pattern)))
 
-(cl-defmethod transient-infix-set ((obj docopt-transient--usage-pattern) value)
-  "Set the value of the Docopt usage pattern transient OBJ to VALUE."
-  (let ((usage-pattern (oref obj docopt)))
-    (cl-call-next-method obj (docopt-string usage-pattern))))
-
 (cl-defmethod transient-format-value ((usage-pattern docopt-transient--usage-pattern))
   "Format USAGE-PATTERN for display and return the result."
   (with-slots (docopt value) usage-pattern
@@ -246,9 +241,8 @@
       `(define-suffix-command ,(docopt-transient--suffix-symbol program usage-pattern) ()
          :argument ,(docopt-string usage-pattern)
          :class 'docopt-transient--usage-pattern
-         :description ,(docopt-format usage-pattern)
+         :description ,(docopt-string usage-pattern)
          :docopt ,usage-pattern
-         :format " %k %v"
          :key ,(number-to-string index)
          (interactive)
          (docopt-transient--usage-pattern-toggle))
@@ -433,7 +427,7 @@
     (seq-map-indexed
      (lambda (usage-pattern index)
        (list (number-to-string (+ 1 index))
-             (docopt-format usage-pattern)
+             (docopt-string usage-pattern)
              (docopt-transient--suffix-symbol program usage-pattern))))
     (cons "Usage Patterns")
     (apply #'vector)))
