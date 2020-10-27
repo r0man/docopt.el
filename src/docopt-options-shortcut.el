@@ -57,7 +57,6 @@
       (seq-mapcat #'docopt-shell-arguments)
       (seq-remove #'null))))
 
-
 (cl-defmethod docopt-collect-arguments ((shortcut docopt-options-shortcut))
   "Collect the arguments from the Docopt SHORTCUT."
   (ignore shortcut) nil)
@@ -69,6 +68,19 @@
 (cl-defmethod docopt-collect-options ((shortcut docopt-options-shortcut))
   "Collect the options from the Docopt SHORTCUT."
   (ignore shortcut) nil)
+
+(cl-defmethod docopt-format ((shortcut docopt-options-shortcut))
+  "Convert the Docopt options SHORTCUT to a formatted string."
+  (with-slots (options) shortcut
+    (thread-last options
+      (docopt-option-remove-synonyms)
+      (seq-filter (lambda (option)
+                    (if-let ((argument (oref option argument)))
+                        (not (null (docopt-value argument)))
+                      (not (null (docopt-value option))))))
+      (seq-map #'docopt-format)
+      (seq-remove #'null)
+      (s-join " "))))
 
 (cl-defmethod docopt-string ((shortcut docopt-options-shortcut))
   "Convert the Docopt options SHORTCUT to a string."

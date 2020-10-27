@@ -85,10 +85,11 @@
 
 (cl-defmethod docopt-format ((argument docopt-argument))
   "Convert the Docopt usage ARGUMENT to a formatted string."
-  (let ((name (if-let ((value (docopt-value argument)))
-                  (docopt-bold value)
-                (docopt-argument-name argument))))
-    (if (s-uppercase? name) name (concat "<" name ">"))))
+  (with-slots (name value) argument
+    (concat "<" (cond
+                 (value (docopt-bold value))
+                 ((s-uppercase? name) name)
+                 (t name)) ">")))
 
 (cl-defmethod docopt-name ((argument docopt-argument))
   "Return the name of ARGUMENT."

@@ -73,7 +73,11 @@
 (cl-defmethod docopt-format ((pattern docopt-usage-pattern))
   "Convert the Docopt usage PATTERN to a formatted string."
   (with-slots (command expressions) pattern
-    (concat (docopt-string command) " " (s-join " " (seq-map #'docopt-format expressions)))))
+    (thread-last (seq-map #'docopt-format expressions)
+      (seq-remove #'s-blank-p)
+      (s-join " ")
+      (concat (docopt-string command) " ")
+      (s-trim))))
 
 (cl-defmethod docopt-string ((pattern docopt-usage-pattern))
   "Convert the Docopt usage PATTERN to a string."

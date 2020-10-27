@@ -36,9 +36,9 @@
 (describe "Evaluating docopt-format with the Naval Fate usage pattern"
   :var ((patterns (docopt-program-usage (docopt-parse docopt-naval-fate-str))))
 
-  (it "at index 0 should return \"naval-fate ship new <name>...\""
+  (it "at index 0 should return \"naval-fate ship new <name>\""
     (expect (docopt-format (nth 0 patterns))
-            :to-equal "naval-fate ship new <name>..."))
+            :to-equal "naval-fate ship new <name>"))
 
   (it "at index 1 should return \"naval-fate ship <name> move <x> <y> [--speed=<kn>]\""
     (expect (docopt-format (nth 1 patterns))

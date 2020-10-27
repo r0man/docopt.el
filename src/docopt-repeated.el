@@ -62,7 +62,7 @@
 
 (cl-defmethod docopt-format ((repeated docopt-repeated))
   "Convert the Docopt usage REPEATED to a formatted string."
-  (concat (docopt-format (docopt-repeated-object repeated)) "..."))
+  (docopt-format (docopt-repeated-object repeated)))
 
 (cl-defmethod docopt-string ((repeated docopt-repeated))
   "Convert the Docopt usage REPEATED to a string."

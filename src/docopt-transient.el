@@ -243,6 +243,7 @@
          :class 'docopt-transient--usage-pattern
          :description ,(docopt-string usage-pattern)
          :docopt ,usage-pattern
+         :format " %k %d \n   %v"
          :key ,(number-to-string index)
          (interactive)
          (docopt-transient--usage-pattern-toggle))
