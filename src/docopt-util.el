@@ -33,7 +33,7 @@
 (require 's)
 
 (defun docopt-bold (text)
-  "Add the `bold' face property to TEXT."
+  "Format TEXT as a string and add the `bold' face property to it."
   (when text (propertize (format "%s" text) 'face 'bold)))
 
 (defun docopt-keyword (s)
