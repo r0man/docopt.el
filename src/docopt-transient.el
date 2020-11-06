@@ -29,6 +29,7 @@
 
 ;;; Code:
 
+(require 'docopt-analyzer)
 (require 'docopt-argument)
 (require 'docopt-command)
 (require 'docopt-generic)
@@ -321,7 +322,7 @@
 
 (defun docopt-transient--retry-question (command)
   "Return the retry question for COMMAND."
-  (format "Failed to execute %s. Do you want to retry?" (nucli-bold command)) )
+  (format "Failed to execute %s. Do you want to retry?" (docopt-bold command)) )
 
 (defun docopt-transient--execute-sentinel (program command process event)
   "The EVENT handler for PROCESS executing the COMMAND of PROGRAM."
@@ -332,10 +333,10 @@
 
 (defun docopt-transient--execute-command-vterm (program command buffer)
   "Execute the shell COMMAND of PROGRAM in BUFFER using vterm."
+  (require 'vterm)
   (when-let ((buffer (get-buffer buffer)))
     (kill-buffer buffer))
   (funcall docopt-transient-switch-to-buffer buffer)
-  (require 'vterm)
   (let ((vterm-kill-buffer-on-exit nil)
         (vterm-shell (format "%s -c \"%s\"" shell-file-name command)))
     (vterm-mode)
@@ -346,18 +347,16 @@
 
 (defun docopt-transient--execute-command (program command buffer)
   "Execute the shell COMMAND of PROGRAM in BUFFER using vterm or term."
-  (require 'vterm nil t)
-  (if (boundp 'vterm-shell)
+  (if (require 'vterm nil t)
       (docopt-transient--execute-command-vterm program command buffer)
     (docopt-transient--execute-command-term program command buffer)))
 
 (defun docopt-transient--program-edit ()
   "Edit and execute the current Docopt transient command."
   (interactive)
-  (let* ((program (oref transient-current-prefix :scope))
+  (let* ((program (oref transient-current-prefix scope))
          (usage-pattern (docopt-transient--selected-usage-pattern transient-current-suffixes))
          (args (docopt-shell-arguments usage-pattern))
-         (command (docopt-transient--program-string program args))
          (buffer-name (docopt-transient--program-buffer-name program))
          (command (read-from-minibuffer "Execute: " (docopt-transient--program-string program args))))
     (docopt-transient--execute-command program command buffer-name)))
@@ -365,7 +364,7 @@
 (defun docopt-transient--program-execute ()
   "Execute the current Docopt transient command."
   (interactive)
-  (let* ((program (oref transient-current-prefix :scope))
+  (let* ((program (oref transient-current-prefix scope))
          (usage-pattern (docopt-transient--selected-usage-pattern transient-current-suffixes))
          (args (docopt-shell-arguments usage-pattern))
          (command (docopt-transient--program-string program args))
@@ -376,10 +375,9 @@
 (defun docopt-transient--program-clipboard-copy ()
   "Copy the current Docopt transient command to the clipboard."
   (interactive)
-  (let* ((program (oref transient-current-prefix :scope))
+  (let* ((program (oref transient-current-prefix scope))
          (usage-pattern (docopt-transient--selected-usage-pattern transient-current-suffixes))
-         (args (docopt-shell-arguments usage-pattern))
-         (buffer-name (docopt-transient--program-buffer-name program)))
+         (args (docopt-shell-arguments usage-pattern)))
     (with-temp-buffer
       (insert (docopt-transient--program-string program args))
       (clipboard-kill-region (point-min) (point-max)))
@@ -388,7 +386,7 @@
 (defun docopt-transient--program-insert ()
   "Insert the current Docopt transient command into the current buffer."
   (interactive)
-  (let* ((program (oref transient-current-prefix :scope))
+  (let* ((program (oref transient-current-prefix scope))
          (usage-pattern (docopt-transient--selected-usage-pattern transient-current-suffixes))
          (args (docopt-shell-arguments usage-pattern))
          (command (docopt-transient--program-string program args)))
@@ -414,13 +412,13 @@
   "Return the transient options section for the PROGRAM."
   (docopt-transient--section-list program "Options" (docopt-transient--program-options program)))
 
-(defun docopt-transient--section-actions (program)
-  "Return the transient actions for the PROGRAM."
+(defvar docopt-transient--section-actions
   ["Actions"
    ("c" "Copy command to clipboard" docopt-transient--program-clipboard-copy)
    ("e" "Edit and execute command" docopt-transient--program-edit)
    ("i" "Insert command to current buffer" docopt-transient--program-insert)
-   ("x" "Execute command" docopt-transient--program-execute)])
+   ("x" "Execute command" docopt-transient--program-execute)]
+  "Return the transient actions for the PROGRAM.")
 
 (defun docopt-transient--section-usage-patterns (program)
   "Return the transient usage pattern section for the PROGRAM."
@@ -484,7 +482,7 @@
        ,(docopt-transient--section-commands program)
        ,(docopt-transient--section-options program)
        ,(docopt-transient--section-arguments program)
-       ,(docopt-transient--section-actions program)
+       ,docopt-transient--section-actions
        (interactive)
        (transient-setup (quote ,program-symbol) nil nil :scope ,program))))
 
@@ -498,7 +496,7 @@
 
 (defun docopt-transient-define-command (program)
   "Define the transient command for PROGRAM."
-  (docopt-analyzer--assign-keys program)
+  (docopt-analyzer-assign-keys program)
   (eval (docopt-transient--program-form program)))
 
 (defun docopt-transient-invoke-command (program)

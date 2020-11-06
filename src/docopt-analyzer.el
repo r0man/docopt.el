@@ -176,7 +176,7 @@
       (seq-map (lambda (key) (concat "-" key)))
       (docopt-assign-keys options))))
 
-(defun docopt-analyzer--assign-keys (program)
+(defun docopt-analyzer-assign-keys (program)
   "Assign the transient keys for the PROGRAM."
   (docopt-analyzer--assign-argument-keys program)
   (docopt-analyzer--assign-command-keys program)
