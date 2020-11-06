@@ -40,6 +40,7 @@
 (require 'seq)
 (require 'subr-x)
 (require 'transient)
+(require 'vterm)
 
 (defcustom docopt-transient-switch-to-buffer #'switch-to-buffer-other-window
   "The buffer switch function of the transient command."

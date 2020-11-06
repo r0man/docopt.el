@@ -39,6 +39,7 @@
     (parsec "0.1.3")
     (s "1.12.0")
     (seq "2.21")
-    (transient "0.3.0")))
+    (transient "0.3.0")
+    (vterm "0.0.1")))
 
 ;;; docopt-pkg.el ends here

@@ -11,6 +11,7 @@
 (depends-on "s")
 (depends-on "seq")
 (depends-on "transient")
+(depends-on "vterm")
 
 (development
  (depends-on "buttercup"))
