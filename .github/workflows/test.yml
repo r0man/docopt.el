@@ -47,6 +47,9 @@ jobs:
 
     - uses: actions/checkout@v2
 
+    - name: Install Emacs VTerm
+      run: apt-cache search libvterm;  apt-cache search emacs-vterm;
+
     - name: Initialize sandbox
       run: |
         SANDBOX_DIR=$(mktemp -d) || exit 1
