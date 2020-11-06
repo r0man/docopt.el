@@ -500,7 +500,7 @@
   (eval (docopt-transient--program-form program)))
 
 (defun docopt-transient-invoke-command (program)
-  "Define the transient command for PROGRAM."
+  "Invoke the transient command for PROGRAM."
   (let ((command (docopt-transient--program-symbol program)))
     (if (functionp command)
         (funcall command)
