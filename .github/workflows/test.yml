@@ -53,6 +53,9 @@ jobs:
     - name: Install dependencies
       run: "nix-shell -p cowsay --run 'cowsay hello'"
 
+    - name: Install Emacs Libvterm
+      run: "sudo nixos-rebuild emacs-libvterm"
+
     - name: Initialize sandbox
       run: |
         SANDBOX_DIR=$(mktemp -d) || exit 1
