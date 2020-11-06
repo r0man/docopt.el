@@ -42,7 +42,7 @@
     :initarg :members
     :initform nil
     :type (or list null)))
-  "A class representing a Docopt either.")
+  "A class representing a either.")
 
 (cl-defmethod clone ((either docopt-either) &rest params)
   "Return a copy of EITHER and apply PARAMS."
@@ -61,7 +61,7 @@
     (car)))
 
 (cl-defmethod docopt-format ((either docopt-either))
-  "Convert the Docopt EITHER to a formatted string."
+  "Convert the EITHER to a formatted string."
   (with-slots (members) either
     (s-join " | " (seq-map #'docopt-format members))))
 
@@ -71,12 +71,12 @@
   either)
 
 (cl-defmethod docopt-string ((either docopt-either))
-  "Convert the Docopt EITHER to a string."
+  "Convert the EITHER to a string."
   (with-slots (members) either
     (s-join " | " (seq-map #'docopt-string members))))
 
 (defun docopt-make-either (&rest members)
-  "Make a new Docopt argument using MEMBERS and OPTIONAL."
+  "Make a new argument using MEMBERS and OPTIONAL."
   (make-instance 'docopt-either :members members))
 
 (defun docopt-either-concat (&rest eithers)
@@ -94,15 +94,15 @@
                  (docopt-either-members either))))
 
 (cl-defmethod docopt-collect-arguments ((either docopt-either))
-  "Collect the arguments from the Docopt EITHER."
+  "Collect the arguments from the EITHER."
   (seq-mapcat #'docopt-collect-arguments (docopt-either-members either)))
 
 (cl-defmethod docopt-collect-commands ((either docopt-either))
-  "Collect the commands from the Docopt EITHER."
+  "Collect the commands from the EITHER."
   (seq-mapcat #'docopt-collect-commands (docopt-either-members either)))
 
 (cl-defmethod docopt-collect-options ((either docopt-either))
-  "Collect the options from the Docopt EITHER."
+  "Collect the options from the EITHER."
   (seq-mapcat #'docopt-collect-options (docopt-either-members either)))
 
 (cl-defmethod docopt-walk ((either docopt-either) f)

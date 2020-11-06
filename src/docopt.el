@@ -42,7 +42,7 @@
 
 ;;;###autoload
 (defun docopt-parse (s)
-  "Parse the Docopt program from S."
+  "Parse the program from S."
   (let ((program (make-instance 'docopt-program :source s))
         (raw-sections (parsec-with-input s (docopt-parser--raw-sections))))
     (when (docopt--parsec-error-p raw-sections)
@@ -57,24 +57,24 @@
 
 ;;;###autoload
 (defun docopt-shell-command (command)
-  "Run the shell COMMAND with the --help option and parse the result as a Docopt program."
+  "Run the shell COMMAND with the --help option and parse the result as a program."
   (let ((program (docopt-parse (shell-command-to-string (concat command " --help")))))
     (setf (oref program name) command)
     program))
 
 ;;;###autoload
 (defun docopt-eval-ast (program s)
-  "Parse the argument vector from S using the Docopt PROGRAM."
+  "Parse the argument vector from S using the PROGRAM."
   (docopt-argv-parse program s))
 
 ;;;###autoload
 (defun docopt-eval (program s)
-  "Parse the argument vector from S using the Docopt PROGRAM."
+  "Parse the argument vector from S using the PROGRAM."
   (docopt--argv-to-alist program (docopt-argv-parse program s)))
 
 ;;;###autoload
 (defun docopt (command)
-  "Invoke the transient command for the Docopt shell COMMAND."
+  "Invoke the transient command for the shell COMMAND."
   (interactive (list (read-from-minibuffer "Docopt: ")))
   (docopt-transient (docopt-shell-command command)))
 

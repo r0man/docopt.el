@@ -36,7 +36,7 @@
 (require 'seq)
 
 (defcustom docopt-string-options-width 20
-  "The width of the options on a Docopt options line."
+  "The width of the options on a options line."
   :type 'number
   :group 'docopt)
 
@@ -83,25 +83,25 @@
     :initarg :usage
     :initform nil
     :type (or list null)))
-  "A class representing a Docopt program.")
+  "A class representing a program.")
 
 (cl-defmethod docopt-collect-arguments ((program docopt-program))
-  "Collect the arguments from the Docopt PROGRAM."
+  "Collect the arguments from the PROGRAM."
   (seq-mapcat #'docopt-collect-arguments (docopt-program-usage program)))
 
 (cl-defmethod docopt-collect-commands ((program docopt-program))
-  "Collect the commands from the Docopt PROGRAM."
+  "Collect the commands from the PROGRAM."
   (seq-mapcat #'docopt-collect-commands (docopt-program-usage program)))
 
 (cl-defmethod docopt-collect-options ((program docopt-program))
-  "Collect the options from the Docopt PROGRAM."
+  "Collect the options from the PROGRAM."
   (seq-concatenate
    'list
    (seq-mapcat #'docopt-collect-options (docopt-program-usage program))
    (docopt-program-options program)))
 
 (defun docopt-collect-standard-input (program)
-  "Collect the standard input from the Docopt PROGRAM."
+  "Collect the standard input from the PROGRAM."
   (let ((results nil))
     (docopt-walk program (lambda (element)
                            (if (docopt-standard-input-p element)
@@ -127,7 +127,7 @@
     (docopt-name usage-pattern)))
 
 (cl-defmethod docopt-equal ((program docopt-program) other)
-  "Return t if PROGRAM and OTHER are equal-ish."
+  "Return t if PROGRAM and OTHER are equal according to #'docopt-equal."
   (with-slots (usage options) program
     (and (docopt-program-p other)
          (equal usage (docopt-program-usage other))
@@ -171,7 +171,7 @@
       (eieio-oset program slot value))))
 
 (defun docopt-program-argv-normalize (program)
-  "Return a list of normalized Docopt argv elements for PROGRAM."
+  "Return a list of normalized argv elements for PROGRAM."
   (seq-concatenate 'list
                    (docopt-remove-duplicates (docopt-collect-arguments program))
                    (docopt-collect-commands program)
@@ -182,7 +182,7 @@
                    (docopt-collect-standard-input program)))
 
 (cl-defmethod docopt-string ((program docopt-program))
-  "Convert the Docopt PROGRAM to a string."
+  "Convert the PROGRAM to a string."
   (thread-last (list (docopt-program-header program)
                      (docopt-string--usage (docopt-program-usage program))
                      (docopt-string--options (docopt-program-options program))
@@ -200,31 +200,31 @@
     (funcall f program)))
 
 (defun docopt-string--section (header content)
-  "Convert the Docopt section HEADER and CONTENT to a string."
+  "Convert the section HEADER and CONTENT to a string."
   (unless (zerop (length content))
     (concat header ":\n  " (string-join content "\n  "))))
 
 (defun docopt-string--example (example)
-  "Convert the Docopt EXAMPLE to a string."
+  "Convert the EXAMPLE to a string."
   (string-join example " "))
 
 (defun docopt-string--examples (examples)
-  "Convert the Docopt EXAMPLES to a string."
+  "Convert the EXAMPLES to a string."
   (docopt-string--section "Examples" (seq-map #'docopt-string--example examples)))
 
 (defun docopt-string--usage (usage)
-  "Convert the Docopt USAGE to a string."
+  "Convert the USAGE to a string."
   (docopt-string--section "Usage" (seq-map #'docopt-string usage)))
 
 (defun docopt-string--synonym (synonym)
-  "Convert the Docopt SYNONYM to a string."
+  "Convert the SYNONYM to a string."
   (when synonym
     (if (= 1 (length synonym))
         (concat "-" synonym)
       (concat "--" synonym))))
 
 (defun docopt-string--options (options)
-  "Convert the Docopt OPTIONS to a string."
+  "Convert the OPTIONS to a string."
   (docopt-string--section
    "Options" (thread-last options
                (seq-remove (lambda (option)

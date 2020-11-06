@@ -48,46 +48,46 @@
   "Return the shell argument list for the OBJECT.")
 
 (cl-defgeneric docopt-collect-arguments (object)
-  "Collect the arguments from the Docopt OBJECT.")
+  "Collect the arguments from the OBJECT.")
 
 (cl-defmethod docopt-collect-arguments ((object t))
-  "Collect the arguments from the Docopt OBJECT."
+  "Collect the arguments from the OBJECT."
   (ignore object) nil)
 
 (cl-defgeneric docopt-collect-commands (object)
-  "Collect the arguments from the Docopt OBJECT.")
+  "Collect the arguments from the OBJECT.")
 
 (cl-defmethod docopt-collect-commands ((lst list))
   "Collect the commands from the list LST."
   (-flatten (seq-map #'docopt-collect-commands lst)))
 
 (cl-defmethod docopt-collect-commands ((object t))
-  "Collect the commands from the Docopt OBJECT."
+  "Collect the commands from the OBJECT."
   (ignore object) nil)
 
 (cl-defgeneric docopt-collect-options (object)
-  "Collect the options from the Docopt OBJECT.")
+  "Collect the options from the OBJECT.")
 
 (cl-defmethod docopt-collect-options ((object t))
-  "Collect the options from the Docopt OBJECT."
+  "Collect the options from the OBJECT."
   (ignore object) nil)
 
 (cl-defgeneric docopt-equal (object-1 object-2)
-  "Return t if OBJECT-1 and OBJECT-2 are equal-ish.")
+  "Return t if OBJECT-1 and OBJECT-2 are equal according to #'docopt-equal.")
 
 (cl-defmethod docopt-equal (object-1 object-2)
-  "Return t if OBJECT-1 and OBJECT-2 are equal-ish."
+  "Return t if OBJECT-1 and OBJECT-2 are equal according to #'docopt-equal."
   (equal object-1 object-2))
 
 (cl-defgeneric docopt-format (object)
-  "Convert the Docopt OBJECT to a formatted string.")
+  "Convert the OBJECT to a formatted string.")
 
 (cl-defmethod docopt-format ((lst list))
   "Convert the list LST to a formatted string."
   (s-join " " (seq-map #'docopt-format lst)))
 
 (cl-defmethod docopt-format ((object t))
-  "Convert the Docopt OBJECT to a formatted string."
+  "Convert the OBJECT to a formatted string."
   (docopt-string object))
 
 (cl-defgeneric docopt-name (object)
@@ -101,7 +101,7 @@
   (seq-map (lambda (element) (docopt-set-repeat element value)) lst))
 
 (cl-defgeneric docopt-string (object)
-  "Convert the Docopt OBJECT to a string.")
+  "Convert the OBJECT to a string.")
 
 (cl-defmethod docopt-string ((lst list))
   "Convert the list LST to a string."

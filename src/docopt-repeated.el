@@ -37,10 +37,10 @@
     :initform nil
     :accessor docopt-repeated-object
     :documentation "The repeated object."))
-  "A class representing a repeatable Docopt object.")
+  "A class representing a repeatable object.")
 
 (defun docopt-make-repeated (object)
-  "Make a new Docopt argument using OBJECT."
+  "Make a new argument using OBJECT."
   (docopt-repeated :object (docopt-set-repeat object t)))
 
 (cl-defmethod docopt-shell-arguments ((repeated docopt-repeated))
@@ -49,23 +49,23 @@
     (docopt-shell-arguments object)))
 
 (cl-defmethod docopt-collect-arguments ((repeated docopt-repeated))
-  "Collect the arguments from the Docopt REPEATED."
+  "Collect the arguments from the REPEATED."
   (docopt-collect-arguments (docopt-repeated-object repeated)))
 
 (cl-defmethod docopt-collect-commands ((repeated docopt-repeated))
-  "Collect the commands from the Docopt REPEATED."
+  "Collect the commands from the REPEATED."
   (docopt-collect-commands (docopt-repeated-object repeated)))
 
 (cl-defmethod docopt-collect-options ((repeated docopt-repeated))
-  "Collect the options from the Docopt REPEATED."
+  "Collect the options from the REPEATED."
   (docopt-collect-options (docopt-repeated-object repeated)))
 
 (cl-defmethod docopt-format ((repeated docopt-repeated))
-  "Convert the Docopt usage REPEATED to a formatted string."
+  "Convert the usage REPEATED to a formatted string."
   (docopt-format (docopt-repeated-object repeated)))
 
 (cl-defmethod docopt-string ((repeated docopt-repeated))
-  "Convert the Docopt usage REPEATED to a string."
+  "Convert the usage REPEATED to a string."
   (concat (docopt-string (docopt-repeated-object repeated)) "..."))
 
 (cl-defmethod docopt-walk ((repeated docopt-repeated) f)
@@ -82,7 +82,7 @@
     :initform nil
     :accessor docopt-repeat-p
     :documentation "Whether the object can be repeated or not."))
-  "A class providing a :repeat slot for a Docopt object.")
+  "A class providing a :repeat slot for a object.")
 
 (cl-defmethod docopt-set-repeat ((object docopt-repeatable) value)
   "Set the :repeat slot of OBJECT to VALUE."

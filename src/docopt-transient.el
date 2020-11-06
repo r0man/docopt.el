@@ -42,7 +42,7 @@
 (require 'transient)
 
 (defcustom docopt-transient-switch-to-buffer #'switch-to-buffer-other-window
-  "The buffer switch function of the Docopt transient command."
+  "The buffer switch function of the transient command."
   :type 'function
   :group 'docopt)
 
@@ -116,7 +116,7 @@
     'docopt-transient--switch))
 
 (defun docopt-transient--option-key (option)
-  "Return the transient shortarg for OPTION."
+  "Return the transient short argument for OPTION."
   (format "-%s" (substring (docopt-option-name option) 0 1)))
 
 ;; Argument
@@ -130,7 +130,7 @@
     (docopt-transient--set-docopt-value argument (oref argument value))))
 
 (cl-defmethod transient-infix-set ((argument docopt-transient--argument) value)
-  "Set the value of the Docopt transient ARGUMENT to VALUE."
+  "Set the value of the transient ARGUMENT to VALUE."
   (docopt-transient--set-docopt-value argument value)
   (cl-call-next-method argument value))
 
@@ -145,7 +145,7 @@
     (docopt-transient--set-docopt-value command (oref command value))))
 
 (cl-defmethod transient-infix-set ((command docopt-transient--command) value)
-  "Set the value of the Docopt transient COMMAND to VALUE."
+  "Set the value of the transient COMMAND to VALUE."
   (with-slots (docopt) command
     (docopt-transient--set-docopt-value command value)
     (cl-call-next-method command value)))
@@ -163,7 +163,7 @@
         (setf (oref argument value) value)))))
 
 (cl-defmethod transient-infix-set ((option docopt-transient--option) value)
-  "Set the value of the Docopt transient OPTION to VALUE."
+  "Set the value of the transient OPTION to VALUE."
   (with-slots (docopt) option
     (with-slots (argument) docopt
       (setf (oref argument value) value)
@@ -180,7 +180,7 @@
     (docopt-transient--set-docopt-value option (oref option value))))
 
 (cl-defmethod transient-infix-set ((option docopt-transient--switch) value)
-  "Set the value of the Docopt transient OPTION to VALUE."
+  "Set the value of the transient OPTION to VALUE."
   (docopt-transient--set-docopt-value option value)
   (cl-call-next-method option value))
 
@@ -251,20 +251,20 @@
     (signal 'docopt-usage-pattern-index usage-pattern)))
 
 (defun docopt-transient--program-arguments (program)
-  "Return the transient infix argument s-exprs for the arguments PROGRAM."
+  "Return the transient infix argument s-expressions for the arguments PROGRAM."
   (thread-last (docopt-collect-arguments program)
     (docopt-remove-duplicates)
     (seq-sort-by #'docopt-name #'string<)))
 
 (defun docopt-transient--program-commands (program)
-  "Return the transient infix commands s-exprs for the arguments PROGRAM."
+  "Return the transient infix commands s-expressions for the arguments PROGRAM."
   (thread-last (docopt-collect-commands program)
     (seq-filter #'docopt-command-incompatible)
     (docopt-remove-duplicates)
     (seq-sort-by #'docopt-name #'string<)))
 
 (defun docopt-transient--program-options (program)
-  "Return the transient infix argument s-exprs for the options PROGRAM."
+  "Return the transient infix argument s-expressions for the options PROGRAM."
   (thread-last (docopt-collect-options program)
     (docopt-remove-duplicates)
     (seq-remove (lambda (option)
@@ -273,22 +273,22 @@
     (seq-sort-by #'docopt-name #'string<)))
 
 (defun docopt-transient--define-suffix-argument-forms (program)
-  "Return the transient infix argument s-exprs for the arguments PROGRAM."
+  "Return the transient infix argument s-expressions for the arguments PROGRAM."
   (seq-map (lambda (argument) (docopt-transient--define-suffix-form program argument))
            (docopt-transient--program-arguments program)))
 
 (defun docopt-transient--define-suffix-command-forms (program)
-  "Return the transient infix command s-exprs for the commands PROGRAM."
+  "Return the transient infix command s-expressions for the commands PROGRAM."
   (seq-map (lambda (command) (docopt-transient--define-suffix-form program command))
            (docopt-transient--program-commands program)))
 
 (defun docopt-transient--define-suffix-option-forms (program)
-  "Return the transient infix argument s-exprs for the options PROGRAM."
+  "Return the transient infix argument s-expressions for the options PROGRAM."
   (seq-map (lambda (option) (docopt-transient--define-suffix-form program option))
            (docopt-transient--program-options program)))
 
 (defun docopt-transient--define-suffix-usage-pattern-forms (program)
-  "Return the transient usage pattern s-exprs for the PROGRAM."
+  "Return the transient usage pattern s-expressions for the PROGRAM."
   (seq-map (lambda (usage-pattern) (docopt-transient--define-suffix-form program usage-pattern))
            (docopt-program-usage program)))
 
@@ -332,7 +332,7 @@
     (docopt-transient program)))
 
 (defun docopt-transient--execute-command-vterm (program command buffer)
-  "Execute the shell COMMAND of PROGRAM in BUFFER using vterm."
+  "Execute the shell COMMAND of PROGRAM in BUFFER with a fully-featured terminal emulator."
   (require 'vterm)
   (when-let ((buffer (get-buffer buffer)))
     (kill-buffer buffer))
@@ -346,13 +346,13 @@
     (use-local-map vterm-copy-mode-map)))
 
 (defun docopt-transient--execute-command (program command buffer)
-  "Execute the shell COMMAND of PROGRAM in BUFFER using vterm or term."
+  "Execute the shell COMMAND of PROGRAM in BUFFER with a terminal emulator."
   (if (require 'vterm nil t)
       (docopt-transient--execute-command-vterm program command buffer)
     (docopt-transient--execute-command-term program command buffer)))
 
 (defun docopt-transient--program-edit ()
-  "Edit and execute the current Docopt transient command."
+  "Edit and execute the current transient command."
   (interactive)
   (let* ((program (oref transient-current-prefix scope))
          (usage-pattern (docopt-transient--selected-usage-pattern transient-current-suffixes))
@@ -362,7 +362,7 @@
     (docopt-transient--execute-command program command buffer-name)))
 
 (defun docopt-transient--program-execute ()
-  "Execute the current Docopt transient command."
+  "Execute the current transient command."
   (interactive)
   (let* ((program (oref transient-current-prefix scope))
          (usage-pattern (docopt-transient--selected-usage-pattern transient-current-suffixes))
@@ -373,7 +373,7 @@
     (message "Executed %s." (docopt-bold command))))
 
 (defun docopt-transient--program-clipboard-copy ()
-  "Copy the current Docopt transient command to the clipboard."
+  "Copy the current transient command to the clipboard."
   (interactive)
   (let* ((program (oref transient-current-prefix scope))
          (usage-pattern (docopt-transient--selected-usage-pattern transient-current-suffixes))
@@ -384,7 +384,7 @@
     (message "Copied %s to clipboard." (docopt-bold (docopt-transient--program-string program args)))))
 
 (defun docopt-transient--program-insert ()
-  "Insert the current Docopt transient command into the current buffer."
+  "Insert the current transient command into the current buffer."
   (interactive)
   (let* ((program (oref transient-current-prefix scope))
          (usage-pattern (docopt-transient--selected-usage-pattern transient-current-suffixes))
@@ -432,7 +432,7 @@
     (apply #'vector)))
 
 (defun docopt-transient--set-docopt-value (object value)
-  "Set the value of the Docopt OBJECT to VALUE."
+  "Set the value of the OBJECT to VALUE."
   (with-slots (docopt) object
     (setf (oref docopt value) value)))
 
@@ -471,7 +471,7 @@
       (list (concat (docopt-format pattern))))))
 
 (defun docopt-transient--define-program-form (program)
-  "Return the transient infix argument s-exprs for the options PROGRAM."
+  "Return the transient infix argument s-expressions for the options PROGRAM."
   (let ((program-symbol (docopt-transient--program-symbol program)))
     `(define-transient-command ,program-symbol ()
        ,(docopt-transient--documentation program)
@@ -487,7 +487,7 @@
        (transient-setup (quote ,program-symbol) nil nil :scope ,program))))
 
 (defun docopt-transient--program-form (program)
-  "Return the transient infix argument s-exprs for the options PROGRAM."
+  "Return the transient infix argument s-expressions for the options PROGRAM."
   `(progn ,@(docopt-transient--define-suffix-argument-forms program)
           ,@(docopt-transient--define-suffix-command-forms program)
           ,@(docopt-transient--define-suffix-option-forms program)

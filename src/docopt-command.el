@@ -51,7 +51,7 @@
     :initarg :incompatible
     :initform nil
     :type (or list null)))
-  "A class representing a Docopt command.")
+  "A class representing a command.")
 
 (cl-defmethod clone ((command docopt-command) &rest params)
   "Return a copy of the COMMAND and apply PARAMS."
@@ -66,10 +66,10 @@
     (list (docopt-command-name command))))
 
 (cl-defmethod docopt-collect-commands ((command docopt-command))
-  "Collect the commands from the Docopt COMMAND." command)
+  "Collect the commands from the COMMAND." command)
 
 (cl-defmethod docopt-format ((command docopt-command))
-  "Convert the Docopt usage COMMAND to a formatted string."
+  "Convert the COMMAND to a formatted string."
   (let ((s (docopt-string command)))
     (if (docopt-value command) (docopt-bold s) s)))
 
@@ -78,7 +78,7 @@
   (docopt-command-name command))
 
 (cl-defmethod docopt-string ((command docopt-command))
-  "Convert the Docopt usage COMMAND to a string."
+  "Convert the COMMAND to a string."
   (docopt-command-name command))
 
 (cl-defmethod docopt-walk ((command docopt-command) f)

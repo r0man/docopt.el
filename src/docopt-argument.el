@@ -53,7 +53,7 @@
     :initarg :name
     :initform nil
     :type (or string null)))
-  "A class representing a Docopt argument.")
+  "A class representing a argument.")
 
 (cl-defmethod clone ((argument docopt-argument) &rest params)
   "Return a copy of the ARGUMENT and apply PARAMS."
@@ -70,13 +70,13 @@
     (when value (list value))))
 
 (cl-defmethod docopt-equal ((argument docopt-argument) object)
-  "Return t if ARGUMENT and OBJECT are equal-ish."
+  "Return t if ARGUMENT and OBJECT are equal according to #'docopt-equal."
   (and (docopt-argument-p object)
        (string= (docopt-argument-name argument)
                 (docopt-argument-name object))))
 
 (cl-defmethod docopt-collect-arguments ((argument docopt-argument))
-  "Collect the arguments from the Docopt ARGUMENT."
+  "Collect the arguments from the ARGUMENT."
   (list argument))
 
 (cl-defmethod docopt-collect-arguments ((lst list))
@@ -84,7 +84,7 @@
   (-flatten (seq-map #'docopt-collect-arguments lst)))
 
 (cl-defmethod docopt-format ((argument docopt-argument))
-  "Convert the Docopt usage ARGUMENT to a formatted string."
+  "Convert the ARGUMENT to a formatted string."
   (with-slots (name value) argument
     (concat "<" (cond
                  (value (docopt-bold value))
@@ -96,7 +96,7 @@
   (docopt-argument-name argument))
 
 (cl-defmethod docopt-string ((argument docopt-argument))
-  "Convert the Docopt usage ARGUMENT to a string."
+  "Convert the ARGUMENT to a string."
   (let ((name (docopt-argument-name argument)))
     (if (s-uppercase? name) name (concat "<" name ">"))))
 

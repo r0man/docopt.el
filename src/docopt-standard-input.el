@@ -32,18 +32,18 @@
 (require 'eieio)
 
 (defclass docopt-standard-input () ()
-  "A class representing the Docopt standard input.")
+  "A class representing the standard input.")
 
 (cl-defmethod docopt-collect-arguments ((input docopt-standard-input))
-  "Collect the arguments from the Docopt standard INPUT."
+  "Collect the arguments from the standard INPUT."
   (ignore input) nil)
 
 (cl-defmethod docopt-collect-commands ((input docopt-standard-input))
-  "Collect the commands from the Docopt standard INPUT."
+  "Collect the commands from the standard INPUT."
   (ignore input) nil)
 
 (cl-defmethod docopt-collect-options ((input docopt-standard-input))
-  "Collect the options from the Docopt standard INPUT."
+  "Collect the options from the standard INPUT."
   (ignore input) nil)
 
 (cl-defmethod docopt-name ((input docopt-standard-input))
@@ -51,7 +51,7 @@
   (ignore input) "-")
 
 (cl-defmethod docopt-string ((input docopt-standard-input))
-  "Convert the Docopt options standard INPUT to a string."
+  "Convert the standard INPUT to a string."
   (ignore input)
   "[-]")
 

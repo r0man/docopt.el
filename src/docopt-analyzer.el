@@ -25,7 +25,7 @@
 
 ;;; Commentary:
 
-;; The Docopt anylyzer
+;; The Docopt program analyzer
 
 ;;; Code:
 
@@ -45,7 +45,7 @@
 (require 'subr-x)
 
 (defun docopt-analyzer--set-repeated (program)
-  "Set the :repeat slot of all repeated Docopt elements in PROGRAM to t."
+  "Set the :repeat slot of all repeated elements in PROGRAM to t."
   (let ((arguments (docopt-collect-arguments program)))
     (seq-doseq (repeated (seq-filter #'docopt-repeat-p arguments))
       (seq-doseq (argument arguments)
@@ -100,7 +100,7 @@
     program))
 
 (defun docopt-analyzer--deduplicate (program)
-  "Deduplicate all Docopt elements in PROGRAM."
+  "Remove all duplicate elements from PROGRAM."
   (let ((objects (list)))
     (docopt-walk program
                  (lambda (element)
@@ -192,7 +192,7 @@
     program))
 
 (defun docopt-analyze-program (program)
-  "Analyze the Docopt PROGRAM."
+  "Analyze the PROGRAM."
   (let ((program (docopt-analyzer--remove-unknown-options (docopt-analyzer--deduplicate program))))
     (with-slots (arguments name options usage) program
       (docopt-set-shortcut-options program options)

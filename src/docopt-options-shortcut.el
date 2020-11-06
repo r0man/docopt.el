@@ -47,7 +47,7 @@
     :initarg :options
     :initform nil
     :type (or list null)))
-  "A class representing a Docopt options shortcut.")
+  "A class representing a options shortcut.")
 
 (cl-defmethod docopt-shell-arguments ((shortcut docopt-options-shortcut))
   "Return the shell argument list for the options SHORTCUT."
@@ -58,19 +58,19 @@
       (seq-remove #'null))))
 
 (cl-defmethod docopt-collect-arguments ((shortcut docopt-options-shortcut))
-  "Collect the arguments from the Docopt SHORTCUT."
+  "Collect the arguments from the SHORTCUT."
   (ignore shortcut) nil)
 
 (cl-defmethod docopt-collect-commands ((shortcut docopt-options-shortcut))
-  "Collect the commands from the Docopt SHORTCUT."
+  "Collect the commands from the SHORTCUT."
   (ignore shortcut) nil)
 
 (cl-defmethod docopt-collect-options ((shortcut docopt-options-shortcut))
-  "Collect the options from the Docopt SHORTCUT."
+  "Collect the options from the SHORTCUT."
   (ignore shortcut) nil)
 
 (cl-defmethod docopt-format ((shortcut docopt-options-shortcut))
-  "Convert the Docopt options SHORTCUT to a formatted string."
+  "Convert the options SHORTCUT to a formatted string."
   (with-slots (options) shortcut
     (thread-last options
       (docopt-option-remove-synonyms)
@@ -83,7 +83,7 @@
       (s-join " "))))
 
 (cl-defmethod docopt-string ((shortcut docopt-options-shortcut))
-  "Convert the Docopt options SHORTCUT to a string."
+  "Convert the options SHORTCUT to a string."
   (ignore shortcut)
   "[options]")
 
@@ -94,7 +94,7 @@
     (funcall f shortcut)))
 
 (defun docopt-make-options-shortcut (&rest options)
-  "Make a new Docopt options shortcut using OPTIONS."
+  "Make a new options shortcut using OPTIONS."
   (make-instance 'docopt-options-shortcut :options options))
 
 (cl-defgeneric docopt-set-shortcut-options (object options)

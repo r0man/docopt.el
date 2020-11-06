@@ -41,7 +41,7 @@
     :initarg :members
     :initform nil
     :type (or list null)))
-  "A class representing a Docopt group.")
+  "A class representing a group.")
 
 (cl-defmethod clone ((group docopt-group) &rest params)
   "Return a copy of the GROUP and apply PARAMS."
@@ -68,10 +68,10 @@
 ;;; Optional Group
 
 (defclass docopt-optional-group (docopt-group docopt-optionable) ()
-  "A class representing a required Docopt group.")
+  "A class representing a required group.")
 
 (defun docopt-make-optional-group (&rest members)
-  "Make a new optional Docopt group with MEMBERS."
+  "Make a new optional group with MEMBERS."
   (let ((group (docopt-optional-group :members members)))
     (docopt-set-optional group t)
     group))
@@ -82,43 +82,43 @@
   (docopt-set-optional (docopt-group-members group) optional))
 
 (cl-defmethod docopt-format ((group docopt-optional-group))
-  "Convert the Docopt usage GROUP to a formatted string."
+  "Convert the usage GROUP to a formatted string."
   (with-slots (members) group
     (concat "[" (s-join " " (seq-map #'docopt-format members)) "]")))
 
 (cl-defmethod docopt-string ((group docopt-optional-group))
-  "Convert the Docopt usage GROUP to a string."
+  "Convert the usage GROUP to a string."
   (with-slots (members) group
     (concat "[" (s-join " " (seq-map #'docopt-string members)) "]")))
 
 ;;; Required Group
 
 (defclass docopt-required-group (docopt-group) ()
-  "A class representing a required Docopt group.")
+  "A class representing a required group.")
 
 (defun docopt-make-required-group (&rest members)
-  "Make a new required Docopt group with MEMBERS."
+  "Make a new required group with MEMBERS."
   (make-instance 'docopt-required-group :members members))
 
 (cl-defmethod docopt-collect-arguments ((group docopt-group))
-  "Collect the arguments from the Docopt GROUP."
+  "Collect the arguments from the GROUP."
   (docopt-collect-arguments (docopt-group-members group)))
 
 (cl-defmethod docopt-collect-commands ((group docopt-group))
-  "Collect the commands from the Docopt GROUP."
+  "Collect the commands from the GROUP."
   (docopt-collect-commands (docopt-group-members group)))
 
 (cl-defmethod docopt-collect-options ((group docopt-group))
-  "Collect the options from the Docopt GROUP."
+  "Collect the options from the GROUP."
   (docopt-collect-options (docopt-group-members group)))
 
 (cl-defmethod docopt-format ((group docopt-required-group))
-  "Convert the Docopt required GROUP to a formatted string."
+  "Convert the required GROUP to a formatted string."
   (with-slots (members) group
     (concat "(" (s-join " " (seq-map #'docopt-format members)) ")")))
 
 (cl-defmethod docopt-string ((group docopt-required-group))
-  "Convert the Docopt required GROUP to a string."
+  "Convert the required GROUP to a string."
   (with-slots (members) group
     (concat "(" (s-join " " (seq-map #'docopt-string members)) ")")))
 

@@ -46,7 +46,7 @@
     :initarg :expressions
     :initform nil
     :type (or list null)))
-  "A class representing a Docopt usage pattern.")
+  "A class representing a usage pattern.")
 
 (cl-defmethod clone ((pattern docopt-usage-pattern) &rest params)
   "Return a copy of the usage PATTERN and apply PARAMS."
@@ -71,7 +71,7 @@
     (docopt-name command)))
 
 (cl-defmethod docopt-format ((pattern docopt-usage-pattern))
-  "Convert the Docopt usage PATTERN to a formatted string."
+  "Convert the usage PATTERN to a formatted string."
   (with-slots (command expressions) pattern
     (thread-last (seq-map #'docopt-format expressions)
       (seq-remove #'s-blank-p)
@@ -80,7 +80,7 @@
       (s-trim))))
 
 (cl-defmethod docopt-string ((pattern docopt-usage-pattern))
-  "Convert the Docopt usage PATTERN to a string."
+  "Convert the usage PATTERN to a string."
   (with-slots (command expressions) pattern
     (concat (docopt-string command) " " (s-join " " (seq-map #'docopt-string expressions)))))
 
@@ -92,19 +92,19 @@
     (funcall f pattern)))
 
 (cl-defmethod docopt-collect-arguments ((usage-pattern docopt-usage-pattern))
-  "Collect the arguments from the Docopt USAGE-PATTERN."
+  "Collect the arguments from the USAGE-PATTERN."
   (docopt-collect-arguments (docopt-usage-pattern-expressions usage-pattern)))
 
 (cl-defmethod docopt-collect-commands ((usage-pattern docopt-usage-pattern))
-  "Collect the commands from the Docopt USAGE-PATTERN."
+  "Collect the commands from the USAGE-PATTERN."
   (docopt-collect-commands (docopt-usage-pattern-expressions usage-pattern)))
 
 (cl-defmethod docopt-collect-options ((usage-pattern docopt-usage-pattern))
-  "Collect the options from the Docopt USAGE-PATTERN."
+  "Collect the options from the USAGE-PATTERN."
   (docopt-collect-options (docopt-usage-pattern-expressions usage-pattern)))
 
 (defun docopt-make-usage-pattern (command &rest expressions)
-  "Make a new Docopt usage pattern with COMMAND and EXPRESSIONS."
+  "Make a new usage pattern with COMMAND and EXPRESSIONS."
   (make-instance 'docopt-usage-pattern :command command :expressions expressions))
 
 (defun docopt-usage-pattern-collect-repeatable (usage-pattern)

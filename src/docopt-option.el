@@ -72,7 +72,7 @@
     :initarg :synonym
     :initform nil
     :type (or string null)))
-  "A class representing a Docopt base option.")
+  "A class representing a base option.")
 
 (cl-defmethod clone ((option docopt-option) &rest params)
   "Return a copy of the OPTION and apply PARAMS."
@@ -84,7 +84,7 @@
       copy)))
 
 (cl-defmethod docopt-equal ((option docopt-option) object)
-  "Return t if OPTION and OBJECT are equal-ish."
+  "Return t if OPTION and OBJECT are equal according to #'docopt-equal."
   (and (eieio-object-p option)
        (eieio-object-p object)
        (equal (eieio-object-class option)
@@ -115,7 +115,7 @@
     :initarg :prefixes
     :initform nil
     :type (or list null)))
-  "A class representing a Docopt long option.")
+  "A class representing a long option.")
 
 (cl-defmethod clone ((option docopt-long-option) &rest params)
   "Return a copy of the long OPTION and apply PARAMS."
@@ -134,7 +134,7 @@
         (list (concat "--" name))))))
 
 (defun docopt-format--option-argument (option)
-  "Convert the Docopt OPTION argument to a formatted string."
+  "Convert the OPTION argument to a formatted string."
   (with-slots (argument value) option
     (when argument (concat "=" (or value (docopt-format argument))))))
 
@@ -144,16 +144,16 @@
     (if (docopt-value option) (docopt-bold s) s)))
 
 (cl-defmethod docopt-format ((option docopt-long-option))
-  "Convert the Docopt long OPTION to a formatted string."
+  "Convert the long OPTION to a formatted string."
   (docopt-format--option "--" option))
 
 (defun docopt-string--option-argument (option)
-  "Convert the Docopt OPTION argument to a string."
+  "Convert the OPTION argument to a string."
   (when-let ((argument (docopt-option-argument option)))
     (concat "=" (docopt-string argument))))
 
 (cl-defmethod docopt-string ((option docopt-long-option))
-  "Convert the Docopt long OPTION to a string."
+  "Convert the long OPTION to a string."
   (concat "--" (docopt-option-name option) (docopt-string--option-argument option)))
 
 (cl-defmethod docopt-walk ((option docopt-long-option) f)
@@ -172,7 +172,7 @@
 ;;; Short option
 
 (defclass docopt-short-option (docopt-option) ()
-  "A class representing a Docopt short option.")
+  "A class representing a short option.")
 
 (defun docopt-short-option-format (name)
   "Format the short option NAME."
@@ -188,18 +188,18 @@
         (list (concat "-" name))))))
 
 (cl-defmethod docopt-collect-options ((option docopt-option))
-  "Collect the options from the Docopt OPTION." option)
+  "Collect the options from the OPTION." option)
 
 (cl-defmethod docopt-collect-options ((lst list))
   "Collect the options from the list LST."
   (-flatten (seq-map #'docopt-collect-options lst)))
 
 (cl-defmethod docopt-format ((option docopt-short-option))
-  "Convert the Docopt short OPTION to a formatted string."
+  "Convert the short OPTION to a formatted string."
   (docopt-format--option "-" option))
 
 (cl-defmethod docopt-string ((option docopt-short-option))
-  "Convert the Docopt short OPTION to a string."
+  "Convert the short OPTION to a string."
   (concat "-" (docopt-option-name option) (docopt-string--option-argument option)))
 
 (defun docopt-option-set-default (option default)
@@ -248,7 +248,7 @@
       (nreverse))))
 
 (cl-defun docopt-make-options (&key description default long-name short-name argument argument-name)
-  "Make a new Docopt option line instance.
+  "Make a new option line instance.
 
 Initialize the DESCRIPTION, DEFAULT, LONG-NAME, SHORT-NAME,
 ARGUMENT and ARGUMENT-NAME slots of the instance."

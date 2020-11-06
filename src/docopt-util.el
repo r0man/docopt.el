@@ -56,7 +56,7 @@
   (and (sequencep result) (equal 'parsec-error (car result))))
 
 (defun docopt-remove-duplicates (lst)
-  "Remove duplicate Docopt objects from LST."
+  "Remove duplicate objects from LST using #'docopt-equal as test function."
   (cl-remove-duplicates lst :test #'docopt-equal))
 
 (defun docopt-by-type (object type)
