@@ -385,7 +385,7 @@ When t, only allow \"=\" as the long option separator, otherwise
    (docopt-parser-spaces)))
 
 (defun docopt-parser--usage-expr (state)
-  "Parse an expression sequence."
+  "Parse an expression sequence using STATE."
   (let ((result (parsec-sepby (docopt-parser--usage-seq state) (docopt-parser--pipe))))
     (cond
      ((and (= 1 (length result))
