@@ -278,8 +278,8 @@ ARGUMENT and ARGUMENT-NAME slots of the instance."
       (setq name (or name (docopt-option-name option-2)))
       (setq synonym (or synonym (docopt-option-synonym option-2)))
       option-1))
-   ((option-1 option-1))
-   ((option-2 option-2))))
+   (option-1 option-1)
+   (option-2 option-2)))
 
 (defun docopt-options-merge (options-1 options-2)
   "Merge OPTIONS-2 into OPTIONS-1."
