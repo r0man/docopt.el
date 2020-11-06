@@ -515,7 +515,7 @@
                                (list (docopt-long-option :name "moored"))
                                (list (docopt-long-option :name "drifting"))))))))
 
-  (it "should parse \"Usage: naval-fate mine (set | remove all) <x> <y> [--moored|--drifting]"
+  (it "should parse \"Usage: my_program [options] [--] <file>...\""
     (expect (parsec-with-input "Usage: my_program [options] [--] <file>..."
               (docopt-parser--usage nil))
             :to-equal (list (docopt-make-usage-pattern
