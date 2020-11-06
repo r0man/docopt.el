@@ -51,7 +51,7 @@ jobs:
       run: sudo apt-get install libvterm-dev
 
     - name: Install dependencies
-      run: sudo nix --help
+      run: "nix-shell -p cowsay --run 'cowsay hello'"
 
     - name: Initialize sandbox
       run: |
