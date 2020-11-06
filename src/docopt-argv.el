@@ -103,35 +103,31 @@
 
 (defun docopt-argv--parse-short-options (program options)
   "Parse the short OPTIONS of PROGRAM."
-  (thread-last (parsec-with-error-message
-                   (format "Can't parse short options: %s" (cdr parsec-last-error-message))
-                 (parsec-or
-                  (parsec-try
-                   (parsec-and
-                    (parsec-str "-")
-                    (parsec-collect
-                     (docopt-argv--parse-short-options-stacked-arg-0 program options)
-                     (parsec-optional (docopt-argv--parse-short-options-stacked-arg-1 program options)))))
-                  (parsec-try
-                   (parsec-and
-                    (parsec-str "-")
-                    (parsec-collect
-                     (parsec-optional (docopt-argv--parse-short-options-stacked-arg-0 program options))
-                     (docopt-argv--parse-short-options-stacked-arg-1 program options))))))
+  (thread-last (parsec-or
+                (parsec-try
+                 (parsec-and
+                  (parsec-str "-")
+                  (parsec-collect
+                   (docopt-argv--parse-short-options-stacked-arg-0 program options)
+                   (parsec-optional (docopt-argv--parse-short-options-stacked-arg-1 program options)))))
+                (parsec-try
+                 (parsec-and
+                  (parsec-str "-")
+                  (parsec-collect
+                   (parsec-optional (docopt-argv--parse-short-options-stacked-arg-0 program options))
+                   (docopt-argv--parse-short-options-stacked-arg-1 program options)))))
     (seq-remove #'null)
     (-flatten)))
 
 (defun docopt-argv--parse-options (program &optional options)
   "Parse the OPTIONS of PROGRAM."
   (let ((options (or options (docopt-program-options program))))
-    (thread-last (parsec-with-error-message
-                     (format "Can't parse options: %s" (cdr parsec-last-error-message))
-                   (parsec-sepby
-                    (parsec-or
-                     (docopt-argv--parse-long-option program options)
-                     (docopt-argv--parse-short-options program options))
-                    (parsec-try (parsec-and (docopt-parser-whitespaces)
-                                            (parsec-lookahead (parsec-str "-"))))))
+    (thread-last (parsec-sepby
+                  (parsec-or
+                   (docopt-argv--parse-long-option program options)
+                   (docopt-argv--parse-short-options program options))
+                  (parsec-try (parsec-and (docopt-parser-whitespaces)
+                                          (parsec-lookahead (parsec-str "-")))))
       (apply #'append)
       (seq-remove #'null))))
 
@@ -154,10 +150,12 @@
 
 (cl-defmethod docopt-argv--parse-option-separator ((option docopt-long-option))
   "Parse the long OPTION separator."
+  (ignore option)
   (docopt-parser-long-option-separator))
 
 (cl-defmethod docopt-argv--parse-option-separator ((option docopt-short-option))
   "Parse the short OPTION separator."
+  (ignore option)
   (parsec-optional (docopt-parser-short-option-separator)))
 
 (cl-defgeneric docopt-argv-parser (program object)
@@ -165,6 +163,7 @@
 
 (cl-defmethod docopt-argv-parser (program (argument docopt-argument))
   "Return an argument vector parser for PROGRAM and ARGUMENT."
+  (ignore program)
   (when-let ((value (parsec-and
                      (parsec-lookahead (parsec-none-of ?-))
                      (parsec-re "[^ ]+"))))
@@ -174,6 +173,7 @@
 
 (cl-defmethod docopt-argv-parser (program (argument docopt-argument))
   "Return an argument vector parser for PROGRAM and ARGUMENT."
+  (ignore program)
   (when-let ((value (parsec-and
                      (parsec-lookahead (parsec-none-of ?-))
                      (parsec-re "[^ ]+"))))
@@ -186,6 +186,7 @@
 
 (cl-defmethod docopt-argv-parser (program (command docopt-command))
   "Return an argument vector parser for the PROGRAM and COMMAND."
+  (ignore program)
   (when (parsec-str (docopt-command-name command))
     (clone command)))
 
@@ -210,7 +211,7 @@
 
 (cl-defmethod docopt-argv-parser (program (option docopt-option))
   "Return an argument vector parser for PROGRAM and OPTION."
-  (seq-let [name argument]
+  (seq-let [_ argument]
       (parsec-collect
        (docopt-argv--parse-option-name option)
        (when-let ((argument (docopt-option-argument option)))
@@ -228,13 +229,14 @@
 
 (cl-defmethod docopt-argv-parser (program (shortcut docopt-options-shortcut))
   "Return an argument vector parser for PROGRAM and SHORTCUT."
+  (ignore shortcut)
   (docopt-argv--parse-options program))
 
 (cl-defmethod docopt-argv-parser (program (group docopt-optional-group))
   "Return an argument vector parser for the PROGRAM and GROUP."
   (with-slots (members) group
     (cond ((and (< 1 (length members))
-                (cl-every #'docopt-option-child-p members))
+                (cl-every (lambda (member) (cl-typep member 'docopt-option)) members))
            (docopt-argv--parse-options program members))
           (t (docopt-argv-parser program members)))))
 
@@ -244,7 +246,7 @@
       (parsec-optional (cl-call-next-method program object))
     (cl-call-next-method program object)))
 
-(cl-defmethod docopt-argv-parser (program (program docopt-program))
+(cl-defmethod docopt-argv-parser (_ (program docopt-program))
   "Return an argument vector parser for the PROGRAM."
   (-flatten (eval `(parsec-or ,@(seq-map (lambda (pattern) `(docopt-argv-parser ,program ,pattern))
                                          (docopt-program-usage program))))))
@@ -252,13 +254,14 @@
 (cl-defmethod docopt-argv-parser (program (group docopt-required-group))
   "Return an argument vector parser for PROGRAM and GROUP."
   (with-slots (members) group
-    (if (cl-every #'docopt-option-child-p members)
+    (if (cl-every (lambda (member) (cl-typep member 'docopt-option)) members)
         (docopt-argv--parse-exprs-any-order program members)
       (docopt-argv-parser program members))))
 
-(cl-defmethod docopt-argv-parser (program (standard-input docopt-standard-input))
-  "Return an argument vector parser for PROGRAM and STANDARD-INPUT."
-  (when (parsec-optional (parsec-str "-")) standard-input))
+(cl-defmethod docopt-argv-parser (program (stdin docopt-standard-input))
+  "Return an argument vector parser for PROGRAM and STDIN."
+  (ignore program)
+  (when (parsec-optional (parsec-str "-")) stdin))
 
 (cl-defmethod docopt-argv-parser (program (pattern docopt-usage-pattern))
   "Return an argument vector parser for PROGRAM and PATTERN."
@@ -273,8 +276,8 @@
                ((zerop num-expressions)
                 (parsec-and (docopt-parser-spaces) nil))
                ((cl-every (lambda (expr)
-                            (or (docopt-group-child-p expr)
-                                (docopt-option-child-p expr)))
+                            (or (cl-typep expr 'docopt-group)
+                                (cl-typep expr 'docopt-option)))
                           expressions)
                 (parsec-and
                  (docopt-parser-spaces)
@@ -305,9 +308,9 @@
   "Return the symbol for the long OPTION in an alist."
   (intern (docopt-long-option-format (docopt-option-name option))))
 
-(cl-defmethod docopt-argv--symbol ((standard-input docopt-standard-input))
-  "Return the symbol for the STANDARD-INPUT in an alist."
-  '-)
+(cl-defmethod docopt-argv--symbol ((stdin docopt-standard-input))
+  "Return the symbol for the STDIN in an alist."
+  (ignore stdin) '-)
 
 (cl-defmethod docopt-argv--symbol ((option docopt-short-option))
   "Return the symbol for the short OPTION in an alist."
@@ -322,10 +325,12 @@
 
 (cl-defmethod docopt-argv--value ((object t) default)
   "Return the value for the OBJECT in an alist or DEFAULT."
+  (ignore object)
   default)
 
 (cl-defmethod docopt-argv--value ((argument docopt-argument) default)
   "Return the value for the ARGUMENT in an alist or DEFAULT."
+  (ignore default)
   (docopt-value argument))
 
 (cl-defmethod docopt-argv--value ((option docopt-option) default)
@@ -340,8 +345,8 @@
   "Return the default alist of the Docopt PROGRAM."
   (seq-map (lambda (element)
              (cons (docopt-argv--symbol element)
-                   (if (and (docopt-repeatable-child-p element)
-                            (docopt-repeat-p element))
+                   (if (and (cl-typep element 'docopt-repeatable)
+                            (cl-typep element 'docopt-repeat))
                        (let ((value (docopt-argv--value element nil)))
                          (cond
                           ((null value) [])
@@ -362,8 +367,8 @@
                                    (values (seq-map (lambda (expr) (docopt-argv--value expr t)) group)))
                                (cons (docopt-argv--symbol expr)
                                      (cond
-                                      ((and (docopt-repeatable-child-p expr)
-                                            (docopt-repeat-p expr))
+                                      ((and (cl-typep expr 'docopt-repeatable)
+                                            (cl-typep expr 'docopt-repeat))
                                        (if (cl-every (lambda (value) (equal t value)) values)
                                            (length values)
                                          (apply #'vector values)))
