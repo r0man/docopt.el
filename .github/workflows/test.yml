@@ -48,10 +48,10 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Install dependencies
-      run: apt-get install libvterm-dev
+      run: sudo apt-get install libvterm-dev
 
     - name: Install dependencies
-      run: nix --help
+      run: sudo nix --help
 
     - name: Initialize sandbox
       run: |
