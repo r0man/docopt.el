@@ -341,7 +341,7 @@
         (funcall docopt-transient-switch-to-buffer buffer)
         (let ((vterm-kill-buffer-on-exit nil)
               (vterm-shell (format "%s -c \"%s\"" shell-file-name command)))
-          (ignore vterm-shell)
+          (ignore vterm-shell vterm-kill-buffer-on-exit)
           (vterm-mode)
           (set-process-sentinel vterm--process
                                 (lambda (process event)
