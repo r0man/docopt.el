@@ -4,4 +4,5 @@
  (emacs-lisp-mode . ((checkdoc-arguments-in-order-flag)
                      (checkdoc-verb-check-experimental-flag)
                      (indent-tabs-mode . nil)
-                     (ispell-buffer-session-localwords "docopt" "testcases"))))
+                     (ispell-buffer-session-localwords "docopt" "testcases")
+                     (vterm-always-compile-module . t))))
