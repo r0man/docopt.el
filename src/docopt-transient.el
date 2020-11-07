@@ -40,6 +40,7 @@
 (require 'seq)
 (require 'subr-x)
 (require 'transient)
+(require 'vterm nil t)
 
 (defcustom docopt-transient-switch-to-buffer #'switch-to-buffer-other-window
   "The buffer switch function of the transient command."
@@ -333,21 +334,23 @@
 
 (defun docopt-transient--execute-command-vterm (program command buffer)
   "Execute the shell COMMAND of PROGRAM in BUFFER with a fully-featured terminal emulator."
-  (require 'vterm)
-  (when-let ((buffer (get-buffer buffer)))
-    (kill-buffer buffer))
-  (funcall docopt-transient-switch-to-buffer buffer)
-  (let ((vterm-kill-buffer-on-exit nil)
-        (vterm-shell (format "%s -c \"%s\"" shell-file-name command)))
-    (vterm-mode)
-    (set-process-sentinel vterm--process
-                          (lambda (process event)
-                            (docopt-transient--execute-sentinel program command process event)))
-    (use-local-map vterm-copy-mode-map)))
+  (if (fboundp 'vterm-mode)
+      (progn
+        (when-let ((buffer (get-buffer buffer)))
+          (kill-buffer buffer))
+        (funcall docopt-transient-switch-to-buffer buffer)
+        (let ((vterm-kill-buffer-on-exit nil)
+              (vterm-shell (format "%s -c \"%s\"" shell-file-name command)))
+          (vterm-mode)
+          (set-process-sentinel vterm--process
+                                (lambda (process event)
+                                  (docopt-transient--execute-sentinel program command process event)))
+          (use-local-map vterm-copy-mode-map)))
+    (error "The emacs-libvterm library is not installed")))
 
 (defun docopt-transient--execute-command (program command buffer)
   "Execute the shell COMMAND of PROGRAM in BUFFER with a terminal emulator."
-  (if (require 'vterm nil t)
+  (if (fboundp 'vterm-mode)
       (docopt-transient--execute-command-vterm program command buffer)
     (docopt-transient--execute-command-term program command buffer)))
 
