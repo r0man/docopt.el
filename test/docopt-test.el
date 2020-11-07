@@ -5,6 +5,7 @@
 ;; Author: r0man <roman@burningswell.com>
 ;; Maintainer: r0man <roman@burningswell.com>
 ;; Keywords: docopt, tools, processes
+;; Package-Requires: ((buttercup "1.21"))
 ;; Homepage: https://github.com/r0man/docopt.el
 
 ;; This file is not part of GNU Emacs.
