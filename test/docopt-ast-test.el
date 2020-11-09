@@ -1,4 +1,4 @@
-;;; docopt-usage-pattern-test.el --- The Docopt usage pattern tests -*- lexical-binding: t -*-
+;;; docopt-ast-test.el --- The Docopt AST tests -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019-2020 r0man
 
@@ -24,14 +24,81 @@
 
 ;;; Commentary:
 
-;; The Docopt usage pattern tests
+;; The Docopt AST tests
 
 ;;; Code:
 
 (require 'buttercup)
-(require 'docopt)
-(require 'docopt-generic)
+(require 'docopt-ast)
 (require 'test-helper)
+
+;;;; Either
+
+(describe "Concatenate the members of eithers"
+  (it "should concatenate the members"
+    (expect (docopt-either-concat
+             (docopt-make-either (docopt-argument :name "A")
+                                 (docopt-argument :name "B"))
+             (docopt-make-either (docopt-argument :name "C"))
+             (docopt-make-either (docopt-argument :name "D")))
+            :to-equal
+            (docopt-make-either
+             (docopt-argument :name "A")
+             (docopt-argument :name "B")
+             (docopt-argument :name "C")
+             (docopt-argument :name "D")))))
+
+;;;; Option
+
+(describe "Computing option prefixes"
+  (it "should return the prefixes for Naval Fate --help"
+    (expect (docopt-option-prefixes
+             (docopt-program-option docopt-naval-fate "help")
+             (docopt-program-options docopt-naval-fate))
+            :to-equal '("hel" "he" "h"))))
+
+(describe "Removing synonyms"
+  (it "should remove short options that have a long option synonym"
+    (expect (docopt-option-remove-synonyms
+             (list (docopt-long-option :name "help" :synonym "h")
+                   (docopt-short-option :name "h" :synonym "help")
+                   (docopt-short-option :name "v" :synonym "version")))
+            :to-equal (list (docopt-long-option :name "help" :synonym "h")
+                            (docopt-short-option :name "v" :synonym "version")))))
+
+;;;; Program
+
+(describe "Find an option by"
+  :var ((program (docopt-parse docopt-naval-fate-str)))
+
+  (it "long option should return nil when not found"
+    (expect (docopt-program-option program "UNKNOWN")
+            :to-equal nil))
+
+  (it "short option should return nil when not found"
+    (expect (docopt-program-option program "U")
+            :to-equal nil))
+
+  (it "long option should return the long option"
+    (expect (docopt-program-option program "help")
+            :to-equal docopt-naval-fate-option-help))
+
+  (it "short option should return the short option"
+    (expect (docopt-program-option program "h")
+            :to-equal docopt-naval-fate-option-h)))
+
+(describe "The copy of a program"
+  :var ((program (docopt-parse docopt-naval-fate-str)))
+  (it "should be equal to the original"
+    (expect (clone program) :to-equal program)))
+
+(describe "Printing naval fate"
+  :var ((program (docopt-parse docopt-naval-fate-str)))
+  (it "and parsing it should return the same program"
+    (expect (docopt-equal program  (docopt-parse (docopt-string program)))
+            :to-equal t)))
+
+;;;; Usage Pattern
 
 (describe "Evaluating docopt-format with the Naval Fate usage pattern"
   :var ((patterns (docopt-program-usage (docopt-parse docopt-naval-fate-str))))
@@ -87,4 +154,4 @@
     (expect (docopt-string (nth 5 patterns))
             :to-equal "naval-fate --version")))
 
-;;; docopt-usage-pattern-test.el ends here
+;;; docopt-ast-test.el ends here

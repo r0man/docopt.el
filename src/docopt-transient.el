@@ -30,12 +30,8 @@
 ;;; Code:
 
 (require 'docopt-analyzer)
-(require 'docopt-argument)
-(require 'docopt-command)
+(require 'docopt-ast)
 (require 'docopt-generic)
-(require 'docopt-option)
-(require 'docopt-program)
-(require 'docopt-usage-pattern)
 (require 'docopt-util)
 (require 'seq)
 (require 'subr-x)
