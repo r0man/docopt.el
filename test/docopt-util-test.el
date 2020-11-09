@@ -31,17 +31,6 @@
 (require 'buttercup)
 (require 'docopt-util)
 
-(describe "Stripping a string"
-
-  (it "should handle nil"
-    (expect (docopt-strip nil) :to-equal nil))
-
-  (it "should remove whitespace at the beginning and end"
-    (expect (docopt-strip " \nA\n ") :to-equal "A"))
-
-  (it "should return when only a blank string is left"
-    (expect (docopt-strip " \n\n ") :to-equal nil)))
-
 (describe "Converting a string to a keyword"
 
   (it "should handle nil"

@@ -41,12 +41,6 @@
   (unless (s-blank-p s)
     (intern (concat ":" (s-downcase (s-replace-regexp "\s+" "-" s))))))
 
-(defun docopt-strip (s)
-  "Trim S, return nil if only the empty string is left."
-  (unless (s-blank-p s)
-    (let ((s (s-trim s)))
-      (unless (s-blank-p s) s))))
-
 (defun docopt-safe-substring (s from to)
   "Return the substring in S from FROM to TO, or nil when out of bounds."
   (substring s (min from (length s)) (min to (length s))))

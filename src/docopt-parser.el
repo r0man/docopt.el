@@ -217,16 +217,16 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 (defun docopt-parser--option-line-description ()
   "Parse an option line description."
-  (docopt-strip (parsec-many-till-s
-                 (parsec-any-ch)
-                 (parsec-or (parsec-try (docopt-parser--blank-line))
-                            (parsec-try (docopt-parser--option-line-separator))
-                            (parsec-lookahead
-                             (parsec-try
-                              (parsec-or
-                               (docopt-parser--section-header)
-                               (docopt-parser--options-str))))
-                            (parsec-eof)))))
+  (s-trim (parsec-many-till-s
+           (parsec-any-ch)
+           (parsec-or (parsec-try (docopt-parser--blank-line))
+                      (parsec-try (docopt-parser--option-line-separator))
+                      (parsec-lookahead
+                       (parsec-try
+                        (parsec-or
+                         (docopt-parser--section-header)
+                         (docopt-parser--options-str))))
+                      (parsec-eof)))))
 
 (defun docopt-parser--option-line-option-separator ()
   "Parse the option separator of an option line."
@@ -452,8 +452,9 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 (defun docopt--split-line (line)
   "Trim and split the LINE."
-  (when-let ((line (docopt-strip line)))
-    (s-split "\s+" line )))
+  (when-let ((line (s-trim line)))
+    (unless (s-blank-p line)
+      (s-split "\s+" line ))))
 
 (defun docopt-parser--example-line ()
   "Parse an example line."
@@ -484,7 +485,7 @@ When t, only allow \"=\" as the long option separator, otherwise
 
 (defun docopt-parser--program-header ()
   "Parse the PROGRAM header section."
-  (when-let (header (docopt-strip (parsec-until-s (parsec-lookahead (parsec-re "usage:[\n\s+]?")))))
+  (when-let (header (s-trim (parsec-until-s (parsec-lookahead (parsec-re "usage:[\n\s+]?")))))
     (list :header header)))
 
 (defun docopt-parser--raw-section-separator ()
@@ -503,7 +504,7 @@ When t, only allow \"=\" as the long option separator, otherwise
     (let ((name (nth 1 (s-match "\\([^:]+\\):[\s\n]*" section))))
       (if (s-blank-p name)
           (list :unknown section)
-        (list (docopt-parser--section-keyword name) (docopt-strip section))))))
+        (list (docopt-parser--section-keyword name) (s-trim section))))))
 
 (defun docopt-parser--raw-sections ()
   "Parse the sections of a program."
@@ -544,7 +545,9 @@ When t, only allow \"=\" as the long option separator, otherwise
   "Parse the header SECTION of the PROGRAM dispatching on NAME."
   (ignore name)
   (with-slots (header) program
-    (setq header (docopt-strip section))))
+    (let ((section (s-trim section)))
+      (unless (s-blank-p section)
+        (setq header section)))))
 
 (cl-defmethod docopt-parser--section (program (name (eql :options)) section)
   "Parse the options SECTION of the PROGRAM dispatching on NAME."

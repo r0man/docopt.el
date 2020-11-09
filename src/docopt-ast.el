@@ -36,6 +36,7 @@
 (require 'docopt-util)
 (require 'eieio)
 (require 'eieio-base)
+(require 's)
 
 ;;;; Key
 
@@ -917,7 +918,7 @@ ARGUMENT and ARGUMENT-NAME slots of the instance."
                      (docopt-string--examples (docopt-program-examples program)))
     (seq-remove #'s-blank-p)
     (s-join "\n\n")
-    (docopt-strip)))
+    (s-trim)))
 
 (cl-defmethod docopt-walk ((program docopt-program) f)
   "Walk the PROGRAM of an abstract syntax tree and apply F on it."
