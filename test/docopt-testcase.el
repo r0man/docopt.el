@@ -36,6 +36,7 @@
 (require 'eieio)
 (require 'json)
 (require 'parsec)
+(require 'pcase)
 (require 's)
 (require 'seq)
 
@@ -163,11 +164,11 @@
 
 (defun docopt-testcase--parse-example ()
   "Parse a Docopt testcase example."
-  (seq-let [argv expected]
-      (parsec-return (parsec-collect
-                      (docopt-testcase--parse-argv)
-                      (docopt-testcase--parse-expected))
-        (docopt-parser-whitespaces))
+  (pcase-let ((`(,argv ,expected)
+               (parsec-return (parsec-collect
+                               (docopt-testcase--parse-argv)
+                               (docopt-testcase--parse-expected))
+                 (docopt-parser-whitespaces))))
     (make-instance 'docopt-testcase-example :argv argv :expected expected)))
 
 (defun docopt-testcase--parse-examples ()
@@ -179,11 +180,11 @@
 
 (defun docopt-testcase--parse-testcase ()
   "Parse a Docopt testcase."
-  (seq-let [program examples]
-      (parsec-collect
-       (parsec-and (parsec-try (docopt-testcase--parse-blank-lines))
-                   (docopt-testcase--parse-program))
-       (docopt-testcase--parse-examples))
+  (pcase-let ((`(,program ,examples)
+               (parsec-collect
+                (parsec-and (parsec-try (docopt-testcase--parse-blank-lines))
+                            (docopt-testcase--parse-program))
+                (docopt-testcase--parse-examples))))
     (docopt-testcase :program program :examples examples)))
 
 (defun docopt-testcase--parse-testcases ()

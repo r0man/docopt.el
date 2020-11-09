@@ -30,6 +30,7 @@
 
 (require 'cl-lib)
 (require 'docopt-util)
+(require 'pcase)
 (require 'seq)
 (require 'subr-x)
 
@@ -88,7 +89,7 @@
   "Return the unique abbreviations of length N for each element in LST taking ACTIONS into account."
   (nreverse (seq-reduce
              (lambda (taken-abbrevs next-abbrev)
-               (seq-let [_ preferred-abbrev abbrev-candidates] next-abbrev
+               (pcase-let ((`(,_ ,preferred-abbrev ,abbrev-candidates) next-abbrev))
                  (let ((index 0))
                    (while (and preferred-abbrev
                                (or (member preferred-abbrev taken-abbrevs)
