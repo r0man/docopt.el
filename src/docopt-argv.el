@@ -35,6 +35,7 @@
 (require 'docopt-util)
 (require 'docopt-value)
 (require 'parsec)
+(require 'pcase)
 (require 's)
 (require 'seq)
 (require 'subr-x)
@@ -211,12 +212,12 @@
 
 (cl-defmethod docopt-argv-parser (program (option docopt-option))
   "Return an argument vector parser for PROGRAM and OPTION."
-  (seq-let [_ argument]
-      (parsec-collect
-       (docopt-argv--parse-option-name option)
-       (when-let ((argument (docopt-option-argument option)))
-         (docopt-argv--parse-option-separator option)
-         (docopt-argv-parser program argument)))
+  (pcase-let ((`(,_ ,argument)
+               (parsec-collect
+                (docopt-argv--parse-option-name option)
+                (when-let ((argument (docopt-option-argument option)))
+                  (docopt-argv--parse-option-separator option)
+                  (docopt-argv-parser program argument)))))
     (let ((copy (clone option)))
       (when (docopt-option-argument option)
         (setf (oref copy :argument) argument))
@@ -267,25 +268,25 @@
   "Return an argument vector parser for PROGRAM and PATTERN."
   (let* ((expressions (docopt-usage-pattern-expressions pattern))
          (num-expressions (length expressions)))
-    (seq-let [command exprs options]
-        (parsec-try
-         (parsec-collect
-          (docopt-parser-command-name)
-          (parsec-return
-              (cond
-               ((zerop num-expressions)
-                (parsec-and (docopt-parser-spaces) nil))
-               ((cl-every (lambda (expr)
-                            (or (cl-typep expr 'docopt-group)
-                                (cl-typep expr 'docopt-option)))
-                          expressions)
-                (parsec-and
-                 (docopt-parser-spaces)
-                 (docopt-argv--parse-exprs-any-order program expressions)))
-               (t (parsec-and
-                   (docopt-parser-spaces)
-                   (docopt-argv-parser program expressions)))))
-          (parsec-eof)))
+    (pcase-let ((`(,command ,exprs ,options)
+                 (parsec-try
+                  (parsec-collect
+                   (docopt-parser-command-name)
+                   (parsec-return
+                       (cond
+                        ((zerop num-expressions)
+                         (parsec-and (docopt-parser-spaces) nil))
+                        ((cl-every (lambda (expr)
+                                     (or (cl-typep expr 'docopt-group)
+                                         (cl-typep expr 'docopt-option)))
+                                   expressions)
+                         (parsec-and
+                          (docopt-parser-spaces)
+                          (docopt-argv--parse-exprs-any-order program expressions)))
+                        (t (parsec-and
+                            (docopt-parser-spaces)
+                            (docopt-argv-parser program expressions)))))
+                   (parsec-eof)))))
       (cons (docopt-command :name command)
             (append (if (listp exprs) exprs (list exprs))
                     options)))))

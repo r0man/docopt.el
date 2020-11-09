@@ -30,9 +30,10 @@
 
 (require 'docopt-abbrev)
 (require 'docopt-generic)
-(require 'docopt-option)
 (require 'docopt-key)
+(require 'docopt-option)
 (require 'eieio)
+(require 'pcase)
 (require 'seq)
 
 (defcustom docopt-string-options-width 20
@@ -167,7 +168,7 @@
 (defun docopt-program-set-sections (program sections)
   "Set the sections of the PROGRAM to SECTIONS."
   (seq-doseq (section sections)
-    (seq-let [slot value] section
+    (pcase-let ((`(,slot ,value) section))
       (eieio-oset program slot value))))
 
 (defun docopt-program-argv-normalize (program)
