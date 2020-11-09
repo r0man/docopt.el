@@ -191,7 +191,7 @@
     (with-slots (arguments name options usage) program
       (docopt-set-shortcut-options program options)
       (setq name (docopt-analyzer--program-name program))
-      (setq options (docopt-options-merge (docopt-remove-duplicates (docopt-collect-options usage)) options))
+      (setq options (docopt-options-merge (cl-remove-duplicates (docopt-collect-options usage) :test #'docopt-equal) options))
       (docopt-analyzer--set-repeated program)
       (docopt-analyzer--rewrite-options program)
       (docopt-analyzer--assign-prefixes program)

@@ -49,10 +49,6 @@
   "Return t if the car of RESULT is a 'parsec-error."
   (and (sequencep result) (equal 'parsec-error (car result))))
 
-(defun docopt-remove-duplicates (lst)
-  "Remove duplicate objects from LST using #'docopt-equal as test function."
-  (cl-remove-duplicates lst :test #'docopt-equal))
-
 (defun docopt-by-type (object type)
   "Find all elements in OBJECT with the given TYPE."
   (let ((objects nil))
@@ -61,7 +57,7 @@
                    (when (cl-typep element type)
                      (setq objects (cons element objects)))
                    element))
-    (docopt-remove-duplicates objects)))
+    (cl-remove-duplicates objects :test #'docopt-equal)))
 
 (defun docopt-find (object element)
   "Find ELEMENT in OBJECT."

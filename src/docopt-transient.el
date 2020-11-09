@@ -29,6 +29,7 @@
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'docopt-analyzer)
 (require 'docopt-ast)
 (require 'docopt-generic)
@@ -255,21 +256,17 @@
 
 (defun docopt-transient--program-arguments (program)
   "Return the transient infix argument s-expressions for the arguments PROGRAM."
-  (thread-last (docopt-collect-arguments program)
-    (docopt-remove-duplicates)
-    (seq-sort-by #'docopt-name #'string<)))
+  (seq-sort-by #'docopt-name #'string< (docopt-program-arguments program)))
 
 (defun docopt-transient--program-commands (program)
   "Return the transient infix commands s-expressions for the arguments PROGRAM."
-  (thread-last (docopt-collect-commands program)
+  (thread-last (docopt-program-commands program)
     (seq-filter #'docopt-command-incompatible)
-    (docopt-remove-duplicates)
     (seq-sort-by #'docopt-name #'string<)))
 
 (defun docopt-transient--program-options (program)
   "Return the transient infix argument s-expressions for the options PROGRAM."
-  (thread-last (docopt-collect-options program)
-    (docopt-remove-duplicates)
+  (thread-last (cl-remove-duplicates (docopt-collect-options program) :test #'docopt-equal)
     (seq-remove (lambda (option)
                   (and (docopt-short-option-p option)
                        (docopt-option-synonym option))))

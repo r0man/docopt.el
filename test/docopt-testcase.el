@@ -123,8 +123,8 @@
 (defun docopt-testcase--parse-usage ()
   "Parse the Docopt testcase usage."
   (s-trim (parsec-and (docopt-testcase--parse-usage-start)
-                            (parsec-return (parsec-until-s (docopt-testcase--parse-usage-end))
-                              (docopt-parser-whitespaces)))))
+                      (parsec-return (parsec-until-s (docopt-testcase--parse-usage-end))
+                        (docopt-parser-whitespaces)))))
 
 (defun docopt-testcase--parse-program ()
   "Parse the Docopt testcase program."

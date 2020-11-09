@@ -31,6 +31,7 @@
 
 ;;;; Argument
 
+(require 'cl-lib)
 (require 'dash)
 (require 'docopt-generic)
 (require 'docopt-util)
@@ -836,7 +837,7 @@ ARGUMENT and ARGUMENT-NAME slots of the instance."
                            (if (docopt-standard-input-p element)
                                (setq results (cons element results)))
                            element))
-    (docopt-remove-duplicates results)))
+    (cl-remove-duplicates results :test #'docopt-equal)))
 
 (cl-defmethod clone ((program docopt-program) &rest params)
   "Return a copy of the usage PROGRAM and apply PARAMS."
@@ -864,11 +865,11 @@ ARGUMENT and ARGUMENT-NAME slots of the instance."
 
 (defun docopt-program-arguments (program)
   "Return the arguments of the PROGRAM."
-  (docopt-remove-duplicates (docopt-collect-arguments program)))
+  (cl-remove-duplicates (docopt-collect-arguments program) :test #'docopt-equal))
 
 (defun docopt-program-commands (program)
   "Return the commands of the PROGRAM."
-  (docopt-remove-duplicates (docopt-collect-commands program)))
+  (cl-remove-duplicates (docopt-collect-commands program) :test #'docopt-equal))
 
 (defun docopt-program-long-options (program)
   "Return the long options of PROGRAM."
@@ -902,7 +903,7 @@ ARGUMENT and ARGUMENT-NAME slots of the instance."
 (defun docopt-program-argv-normalize (program)
   "Return a list of normalized argv elements for PROGRAM."
   (seq-concatenate 'list
-                   (docopt-remove-duplicates (docopt-collect-arguments program))
+                   (cl-remove-duplicates (docopt-collect-arguments program) :test #'docopt-equal)
                    (docopt-collect-commands program)
                    (seq-remove (lambda (option)
                                  (and (docopt-short-option-p option)
