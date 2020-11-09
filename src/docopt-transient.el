@@ -40,6 +40,13 @@
 (require 'seq)
 (require 'subr-x)
 (require 'transient)
+(require 'vterm nil t)
+
+(declare-function vterm-mode "ext:vterm")
+(defvar vterm--process)
+(defvar vterm-copy-mode-map)
+(defvar vterm-kill-buffer-on-exit)
+(defvar vterm-shell)
 
 (defcustom docopt-transient-switch-to-buffer #'switch-to-buffer-other-window
   "The buffer switch function of the transient command."
@@ -333,7 +340,6 @@
 
 (defun docopt-transient--execute-command-vterm (program command buffer)
   "Execute the shell COMMAND of PROGRAM in BUFFER with a fully-featured terminal emulator."
-  (require 'vterm)
   (when-let ((buffer (get-buffer buffer)))
     (kill-buffer buffer))
   (funcall docopt-transient-switch-to-buffer buffer)
@@ -347,7 +353,7 @@
 
 (defun docopt-transient--execute-command (program command buffer)
   "Execute the shell COMMAND of PROGRAM in BUFFER with a terminal emulator."
-  (if (require 'vterm nil t)
+  (if (fboundp 'vterm-mode)
       (docopt-transient--execute-command-vterm program command buffer)
     (docopt-transient--execute-command-term program command buffer)))
 
