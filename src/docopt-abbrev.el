@@ -103,7 +103,7 @@
                      taken-abbrevs))))
              (seq-map (lambda (element)
                         (list element
-                              (docopt-substring (docopt-abbrev-sanitize element) 0 n)
+                              (docopt-safe-substring (docopt-abbrev-sanitize element) 0 n)
                               (docopt-abbrev-candidates element)))
                       lst)
              nil)))
