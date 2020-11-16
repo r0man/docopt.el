@@ -29,8 +29,8 @@
 ;;; Code:
 
 (require 'buttercup)
+(require 'docopt-naval-fate)
 (require 'docopt-parser)
-(require 'test-helper)
 
 (describe "Parsing tokens"
 
