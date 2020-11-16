@@ -30,7 +30,7 @@
 
 (require 'buttercup)
 (require 'docopt-ast)
-(require 'test-helper)
+(require 'docopt-naval-fate)
 
 ;;;; Either
 

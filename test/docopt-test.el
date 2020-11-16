@@ -32,9 +32,9 @@
 (require 'buttercup)
 (require 'cl-print)
 (require 'docopt)
+(require 'docopt-naval-fate)
 (require 'docopt-testcase)
 (require 'f)
-;; (require 'test-helper)
 
 (setf cl-print-readably t)
 
