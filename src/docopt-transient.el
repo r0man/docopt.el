@@ -233,12 +233,13 @@
 
 (cl-defmethod docopt-transient--define-suffix-form (program (option docopt-option))
   "Return the transient suffix definition form for PROGRAM and OPTION."
-  `(define-infix-argument ,(docopt-transient--suffix-symbol program option) ()
-     :argument ,(docopt-transient--option-argument option)
-     :class ,(docopt-transient--option-class option)
-     :description ,(or (docopt-option-description option) (docopt-option-name option))
-     :docopt ,option
-     :key ,(docopt-key option)))
+  (let ((description (or (docopt-option-description option) (docopt-option-name option))))
+    `(define-infix-argument ,(docopt-transient--suffix-symbol program option) ()
+       :argument ,(docopt-transient--option-argument option)
+       :class ,(docopt-transient--option-class option)
+       :description ,(when description (s-replace-regexp "\\([\n\r]+\\|\s+\\)" " " description))
+       :docopt ,option
+       :key ,(docopt-key option))))
 
 (cl-defmethod docopt-transient--define-suffix-form (program (usage-pattern docopt-usage-pattern))
   "Return the transient suffix definition form for PROGRAM and USAGE-PATTERN."
