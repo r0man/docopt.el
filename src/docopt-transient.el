@@ -346,7 +346,8 @@
    ;; to allow copy and pasting.
    ((string= "finished\n" event)
     (with-current-buffer (process-buffer process)
-      (use-local-map vterm-copy-mode-map)))))
+      (use-local-map vterm-copy-mode-map)
+      (setq buffer-read-only nil)))))
 
 (defun docopt-transient--execute-command-vterm (program command buffer)
   "Execute the shell COMMAND of PROGRAM in BUFFER with a fully-featured terminal emulator."
