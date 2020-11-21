@@ -329,8 +329,24 @@
   "The EVENT handler for PROCESS executing the COMMAND of PROGRAM."
   (ignore process)
   (when (and (s-match "exited abnormally" event)
-             (yes-or-no-p (docopt-transient--retry-question command) ))
+             (yes-or-no-p (docopt-transient--retry-question command)))
     (docopt-transient program)))
+
+(defun docopt-transient--execute-sentinel (program command process event)
+  "Handle EVENT for PROCESS executing the COMMAND of PROGRAM."
+  (ignore process)
+  (cond
+   ;; The command exited abnormally, ask the user to retry the last
+   ;; transient command.
+   ((and (or (s-match "exited abnormally" event)
+             (s-match "failed with code" event))
+         (yes-or-no-p (docopt-transient--retry-question command)))
+    (docopt-transient program))
+   ;; The command finished successfully, use the vterm-copy-mode-map
+   ;; to allow copy and pasting.
+   ((string= "finished\n" event)
+    (with-current-buffer (process-buffer process)
+      (use-local-map vterm-copy-mode-map)))))
 
 (defun docopt-transient--execute-command-vterm (program command buffer)
   "Execute the shell COMMAND of PROGRAM in BUFFER with a fully-featured terminal emulator."
@@ -342,8 +358,7 @@
     (vterm-mode)
     (set-process-sentinel vterm--process
                           (lambda (process event)
-                            (docopt-transient--execute-sentinel program command process event)))
-    (use-local-map vterm-copy-mode-map)))
+                            (docopt-transient--execute-sentinel program command process event)))))
 
 (defun docopt-transient--execute-command (program command buffer)
   "Execute the shell COMMAND of PROGRAM in BUFFER with a terminal emulator."
