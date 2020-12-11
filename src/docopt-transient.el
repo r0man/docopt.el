@@ -326,13 +326,6 @@
   (format "Failed to execute %s. Do you want to retry?" (docopt-bold command)) )
 
 (defun docopt-transient--execute-sentinel (program command process event)
-  "The EVENT handler for PROCESS executing the COMMAND of PROGRAM."
-  (ignore process)
-  (when (and (s-match "exited abnormally" event)
-             (yes-or-no-p (docopt-transient--retry-question command)))
-    (docopt-transient program)))
-
-(defun docopt-transient--execute-sentinel (program command process event)
   "Handle EVENT for PROCESS executing the COMMAND of PROGRAM."
   (ignore process)
   (cond
