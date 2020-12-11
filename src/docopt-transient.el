@@ -493,7 +493,7 @@
   "Return the transient defaults for PROGRAM."
   (with-slots (usage) program
     (when-let ((pattern (car usage)))
-      (list (concat (docopt-format pattern))))))
+      (list (concat (docopt-string pattern))))))
 
 (defun docopt-transient--define-program-form (program)
   "Return the transient infix argument s-expressions for the options PROGRAM."
