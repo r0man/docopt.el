@@ -29,6 +29,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'dash)
 (require 's)
 (require 'seq)
 
