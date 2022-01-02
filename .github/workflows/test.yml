@@ -57,6 +57,11 @@ jobs:
         echo "SANDBOX_DIR=$SANDBOX_DIR" >> $GITHUB_ENV
         ./makem.sh -vv --sandbox=$SANDBOX_DIR --install-deps --install-linters
 
+    - name: Install Emacs Libvterm
+      run: |
+        sudo apt-get install cmake libtool libtool-bin
+        yes | ./makem.sh -vv --sandbox=$SANDBOX_DIR batch -- --eval="(progn (package-install 'vterm) (setq vterm-always-compile-module t) (require 'vterm))"
+
     # The "all" rule is not used, because it treats compilation warnings
     # as failures, so linting and testing are run as separate steps.
 
