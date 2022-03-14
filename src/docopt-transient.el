@@ -215,7 +215,7 @@
 
 (cl-defmethod docopt-transient--define-suffix-form (program (argument docopt-argument))
   "Return the transient suffix definition form for PROGRAM and ARGUMENT."
-  `(define-infix-argument ,(docopt-transient--suffix-symbol program argument) ()
+  `(transient-define-argument ,(docopt-transient--suffix-symbol program argument) ()
      :argument ,(docopt-transient--argument-argument argument)
      :class 'docopt-transient--argument
      :description ,(docopt-argument-name argument)
@@ -224,7 +224,7 @@
 
 (cl-defmethod docopt-transient--define-suffix-form (program (command docopt-command))
   "Return the transient suffix definition form for PROGRAM and COMMAND."
-  `(define-infix-argument ,(docopt-transient--suffix-symbol program command) ()
+  `(transient-define-argument ,(docopt-transient--suffix-symbol program command) ()
      :argument ,(docopt-transient--command-argument command)
      :class 'docopt-transient--command
      :description ,(docopt-command-name command)
@@ -234,7 +234,7 @@
 (cl-defmethod docopt-transient--define-suffix-form (program (option docopt-option))
   "Return the transient suffix definition form for PROGRAM and OPTION."
   (let ((description (or (docopt-option-description option) (docopt-option-name option))))
-    `(define-infix-argument ,(docopt-transient--suffix-symbol program option) ()
+    `(transient-define-argument ,(docopt-transient--suffix-symbol program option) ()
        :argument ,(docopt-transient--option-argument option)
        :class ,(docopt-transient--option-class option)
        :description ,(when description (s-replace-regexp "\\([\n\r]+\\|\s+\\)" " " description))
@@ -491,7 +491,7 @@
 (defun docopt-transient--define-program-form (program)
   "Return the transient infix argument s-expressions for the options PROGRAM."
   (let ((program-symbol (docopt-transient--program-symbol program)))
-    `(define-transient-command ,program-symbol ()
+    `(transient-define-prefix ,program-symbol ()
        ,(docopt-transient--documentation program)
        :incompatible (quote ,(docopt-transient--incompatible program))
        :value (quote ,(docopt-transient--defaults program))
