@@ -39,7 +39,7 @@
 (defun docopt-keyword (s)
   "Convert the string S into a section keyword."
   (unless (s-blank-p s)
-    (intern (concat ":" (s-downcase (s-replace-regexp "\s+" "-" s))))))
+    (intern (concat ":" (s-downcase (replace-regexp-in-string "\s+" "-" s))))))
 
 (defun docopt-safe-substring (s from to)
   "Return the substring in S from FROM to TO, or nil when out of bounds."

@@ -58,7 +58,7 @@
 
 (defun docopt-transient--program-suffix-name (program)
   "Return the transient suffix symbol for PROGRAM."
-  (format "docopt-transient:%s" (s-replace-regexp "[^a-z0-9_]" "-" (docopt-name program))))
+  (format "docopt-transient:%s" (replace-regexp-in-string "[^a-z0-9_]" "-" (docopt-name program))))
 
 (cl-defmethod docopt-transient--suffix-symbol (program (argument docopt-argument))
   "Return the transient suffix symbol for PROGRAM and ARGUMENT."
@@ -237,7 +237,7 @@
     `(transient-define-argument ,(docopt-transient--suffix-symbol program option) ()
        :argument ,(docopt-transient--option-argument option)
        :class ,(docopt-transient--option-class option)
-       :description ,(when description (s-replace-regexp "\\([\n\r]+\\|\s+\\)" " " description))
+       :description ,(when description (replace-regexp-in-string "\\([\n\r]+\\|\s+\\)" " " description))
        :docopt ,option
        :key ,(docopt-key option))))
 

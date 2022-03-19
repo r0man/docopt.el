@@ -54,7 +54,7 @@
 
 (defun docopt-abbrev-sanitize (s)
   "Remove characters from S that should not be used in abbreviations."
-  (s-replace-regexp "[-_]" "" s))
+  (replace-regexp-in-string "[-_]" "" s))
 
 (defun docopt-abbrev-candidates (s)
   "Return the abbreviation candidates for S in it's preferred order."
