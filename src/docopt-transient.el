@@ -244,7 +244,7 @@
 (cl-defmethod docopt-transient--define-suffix-form (program (usage-pattern docopt-usage-pattern))
   "Return the transient suffix definition form for PROGRAM and USAGE-PATTERN."
   (if-let ((index (cl-position usage-pattern (docopt-program-usage program) :test #'equal)))
-      `(define-suffix-command ,(docopt-transient--suffix-symbol program usage-pattern) ()
+      `(transient-define-suffix ,(docopt-transient--suffix-symbol program usage-pattern) ()
          :argument ,(docopt-string usage-pattern)
          :class 'docopt-transient--usage-pattern
          :description ,(docopt-string usage-pattern)
